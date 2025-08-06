@@ -1,9 +1,19 @@
 from datetime import datetime
-from Enums.TipoOrigenPrecio import TipoOrigenPrecio
+
+from sqlalchemy import DateTime, Enum, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from backend.util.database import Base
+from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 from backend.model.ConsultaPrecio import ConsultaPrecio
 
-class Precio:
-    fecha_precio: datetime
-    precio_obtenido: float
-    origen: TipoOrigenPrecio
-    consulta_precio: ConsultaPrecio
+class Precio(Base):
+    __tablename__ = "precio"
+
+    id:  Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    fecha_precio:  Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    precio_obtenido:  Mapped[float] = mapped_column(nullable=False)
+    origen: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=False)
+    consulta_precio_id: Mapped[int] = mapped_column(ForeignKey("consulta_precio.id"), nullable=True)
+    
+    #Relaciones
+    consulta_precio: Mapped["ConsultaPrecio"] = relationship()

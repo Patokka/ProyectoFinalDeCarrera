@@ -1,0 +1,6 @@
+#Para backend
+venv/
+__pycache__/
+*.py[cod]
+
+#Para frontend
