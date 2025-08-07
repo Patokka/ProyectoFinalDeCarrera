@@ -17,7 +17,7 @@ class Pago(Base):
     precio_promedio: Mapped[float] = mapped_column(nullable=True)
     vencimiento: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     fuente_precio: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=True)
-    monto_a_pago: Mapped[float] = mapped_column(nullable=True)
+    monto_a_pagar: Mapped[float] = mapped_column(nullable=True)
     arrendamiento_id: Mapped[int] = mapped_column(ForeignKey("arrendamiento.id"), nullable=False)
 
     #Relaciones

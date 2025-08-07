@@ -1,0 +1,35 @@
+from typing import Optional
+from pydantic import BaseModel, EmailStr, field_validator
+from backend.util.cuilValidator import validar_cuil_cuit
+from backend.dtos.LocalidadDto import LocalidadDtoOut
+
+class ArrendatarioDto(BaseModel):
+    razon_social: str
+    cuit: str
+    mail: Optional[EmailStr]
+    localidad_id: int
+    
+    @field_validator("cuit")
+    @classmethod
+    def validar_cuil(cls, v):
+        if not validar_cuil_cuit(v):
+            raise ValueError("CUIL/CUIT inválido.")
+        return v
+
+class ArrendatarioDtoOut(BaseModel):
+    id: int
+    razon_social: str
+    cuit: str
+    mail: Optional[EmailStr]
+    telefono: Optional[str]
+    localidad: LocalidadDtoOut
+    
+    model_config = {
+        "from_attributes": True
+    }
+
+class ArrendatarioDtoModificacion(BaseModel):
+    mail: Optional[str]
+    razon_social: Optional[str]
+    telefono: Optional[str]
+    localidad_id: Optional[int]
