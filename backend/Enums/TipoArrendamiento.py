@@ -1,5 +1,5 @@
 from enum import Enum
 
 class TipoArrendamiento(Enum):
-    FIJO = "Fijo"
-    A_PORCENTAJE = "A Porcentaje (Aparcería)"
+    FIJO = "FIJO"
+    A_PORCENTAJE = "A_PORCENTAJE"

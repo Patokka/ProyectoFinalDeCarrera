@@ -10,6 +10,10 @@ class FacturacionDto(BaseModel):
     arrendador_id: int
     pago_id: int
     
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }
 class FacturacionDtoOut(BaseModel):
     id: int
     fecha_facturacion: datetime
@@ -18,10 +22,16 @@ class FacturacionDtoOut(BaseModel):
     pago: PagoDtoOut
     
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
     
 class FacturacionDtoModificacion(BaseModel):
     fecha_facturacion: Optional[datetime]
     monto_facturacion: Optional[float]
     arrendador_id: Optional[int]
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }

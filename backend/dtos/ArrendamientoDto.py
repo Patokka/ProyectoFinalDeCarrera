@@ -25,16 +25,9 @@ class ArrendamientoDto(BaseModel):
     porcentaje_aparceria: Optional[float]
     descripcion: Optional[str]
     
-    
-    @field_validator("cuil")
-    @classmethod
-    def validar_cuil(cls, v):
-        if not validar_cuil_cuit(v):
-            raise ValueError("CUIL/CUIT inválido.")
-        return v
-    
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True        
     }
     
 class ArrendamientoDtoOut(BaseModel):
@@ -64,5 +57,6 @@ class ArrendamientoDtoModificacion(BaseModel):
     descripcion: Optional[str]
     
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True         
     }

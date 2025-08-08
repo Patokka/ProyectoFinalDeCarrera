@@ -21,11 +21,11 @@ class ArrendatarioDtoOut(BaseModel):
     razon_social: str
     cuit: str
     mail: Optional[EmailStr]
-    telefono: Optional[str]
     localidad: LocalidadDtoOut
     
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
 
 class ArrendatarioDtoModificacion(BaseModel):
@@ -33,3 +33,8 @@ class ArrendatarioDtoModificacion(BaseModel):
     razon_social: Optional[str]
     telefono: Optional[str]
     localidad_id: Optional[int]
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }

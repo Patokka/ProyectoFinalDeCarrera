@@ -13,17 +13,17 @@ class ArrendadorDto(BaseModel):
     localidad_id: int
     descripcion: Optional[str]
     
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True      
+    }
+    
     @field_validator("cuil")
     @classmethod
     def validar_cuil(cls, v):
         if not validar_cuil_cuit(v):
             raise ValueError("CUIL/CUIT inválido.")
         return v
-    
-    model_config = {
-        "from_attributes": True,     
-        "use_enum_values": True      
-    }
     
 class ArrendadorDtoOut(BaseModel):
     id: int
@@ -48,5 +48,6 @@ class ArrendadorDtoModificacion(BaseModel):
     descripcion: Optional[str]
     
     model_config = {     
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True         
     }

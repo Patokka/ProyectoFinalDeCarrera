@@ -21,7 +21,8 @@ class UsuarioDto(BaseModel):
         return v
     
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
     
 class UsuarioDtoOut(BaseModel):
@@ -33,9 +34,10 @@ class UsuarioDtoOut(BaseModel):
     rol: TipoRol
     
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
-
+    
 class UsuarioDtoModificacion(BaseModel):
     nombre: str
     apellido: str
@@ -43,6 +45,7 @@ class UsuarioDtoModificacion(BaseModel):
     mail: Optional[EmailStr]
     rol: TipoRol
     
-    model_config = {     
-        "use_enum_values": True      
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
     }

@@ -1,6 +1,5 @@
 from typing import Optional
 from pydantic import BaseModel
-from backend.dtos.ArrendadorDto import ArrendadorDtoOut
 from backend.dtos.ProvinciaDto import ProvinciaDtoOut
 
 class LocalidadDto(BaseModel):
@@ -13,9 +12,15 @@ class LocalidadDtoOut(BaseModel):
     provincia: ProvinciaDtoOut
     
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
     
 class LocalidadDtoModificacion(BaseModel):
     nombre_localidad: Optional[str]
     provincia_id: Optional[int]
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }

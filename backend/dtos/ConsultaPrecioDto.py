@@ -11,7 +11,8 @@ class ConsultaPrecioDto(BaseModel):
     pago_id: int
 
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
 
 class ConsultaPrecioDtoOut(BaseModel):
@@ -31,5 +32,6 @@ class ConsultaPrecioDtoModificacion(BaseModel):
     origen: TipoOrigenPrecio
 
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True   
     }

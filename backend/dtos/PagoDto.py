@@ -12,6 +12,11 @@ class PagoDto(BaseModel):
     monto_a_pagar: Optional[float]
     arrendamiento_id: int
     
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }
+    
 class PagoDtoOut(BaseModel):
     id: int
     estado: EstadoPago

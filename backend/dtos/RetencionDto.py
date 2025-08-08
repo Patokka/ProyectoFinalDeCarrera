@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 from backend.dtos.ArrendadorDto import ArrendadorDtoOut
-from backend.dtos.FaturacionDto import FacturacionDtoOut
+from backend.dtos.FacturacionDto import FacturacionDtoOut
 
 class RetencionDto(BaseModel):
     fecha_retencion: datetime
@@ -10,6 +10,11 @@ class RetencionDto(BaseModel):
     total_retencion: float
     arrendador_id: int
     facturacion_id: int
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }
     
 class RetencionDtoOut(BaseModel):
     id: int
@@ -20,7 +25,8 @@ class RetencionDtoOut(BaseModel):
     facturacion: FacturacionDtoOut
     
     model_config = {
-        "from_attributes": True    
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
 
 class RetencionDtoModificacion(BaseModel):
@@ -29,3 +35,8 @@ class RetencionDtoModificacion(BaseModel):
     total_retencion: Optional[float]
     arrendador_id: Optional[int]
     facturacion_id: Optional[int]
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }

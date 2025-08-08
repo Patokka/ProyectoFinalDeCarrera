@@ -11,6 +11,11 @@ class ParticipacionArrendadorDto(BaseModel):
     arrendador_id: int
     arrendamiento_id: int
     
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }
+    
 class ParticipacionArrendadorDtoOut(BaseModel):
     id: int
     hectareas_asignadas: float
@@ -21,7 +26,8 @@ class ParticipacionArrendadorDtoOut(BaseModel):
     arrendamiento: ArrendamientoDtoOut
     
     model_config = {
-        "from_attributes": True
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
 
 class ParticipacionArrendadorDtoModificacion(BaseModel):
@@ -31,3 +37,8 @@ class ParticipacionArrendadorDtoModificacion(BaseModel):
     observacion: Optional[str]
     arrendador_id: Optional[int]
     arrendamiento_id: Optional[int]
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }

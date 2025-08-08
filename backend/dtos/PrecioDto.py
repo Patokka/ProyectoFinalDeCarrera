@@ -12,7 +12,8 @@ class PrecioDto(BaseModel):
     consulta_precio_id: Optional[int]
     
     model_config = {
-        "use_enum_values": True      
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
     
 class PrecioDtoOut(BaseModel):
@@ -33,6 +34,7 @@ class PrecioDtoModificacion(BaseModel):
     origen: Optional[TipoOrigenPrecio]
     consulta_precio_id: Optional[int]
     
-    model_config = {     
-        "use_enum_values": True      
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
     }
