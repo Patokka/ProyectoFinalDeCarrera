@@ -1,16 +1,18 @@
-from datetime import datetime
+from datetime import date
 from typing import Optional
 from pydantic import BaseModel
 from backend.dtos.ArrendamientoDto import ArrendamientoDtoOut
+from backend.dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDtoOut
 from backend.enums.EstadoPago import EstadoPago
 from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 
 class PagoDto(BaseModel):
     quintales: float
     precio_promedio: Optional[float]
-    vencimiento: datetime
+    vencimiento: date
     monto_a_pagar: Optional[float]
     arrendamiento_id: int
+    participacion_arrendador_id: int
     
     model_config = {
         "from_attributes": True,     
@@ -22,10 +24,11 @@ class PagoDtoOut(BaseModel):
     estado: EstadoPago
     quintales: float
     precio_promedio: Optional[float]
-    vencimiento: datetime
-    fuente_precio: TipoOrigenPrecio
+    vencimiento: date
+    fuente_precio: Optional[TipoOrigenPrecio] = None
     monto_a_pagar: Optional[float]
     arrendamiento: ArrendamientoDtoOut
+    participacion_arrendador: ParticipacionArrendadorDtoOut
     
     model_config = {
         "from_attributes": True,
@@ -36,7 +39,7 @@ class PagoDtoModificacion(BaseModel):
     estado: Optional[EstadoPago]
     quintales: Optional[float]
     precio_promedio: Optional[float]
-    vencimiento: Optional[datetime]
+    vencimiento: Optional[date]
     fuente_precio: Optional[TipoOrigenPrecio]
     monto_a_pagar: Optional[float]
     

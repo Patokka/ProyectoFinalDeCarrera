@@ -1,11 +1,11 @@
-from datetime import datetime
+from datetime import date
 from typing import Optional
 from pydantic import BaseModel
 from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 from backend.dtos.PagoDto import PagoDtoOut
 
 class ConsultaPrecioDto(BaseModel):
-    fecha_consulta: datetime
+    fecha_consulta: date
     precio_promedio: float
     origen: TipoOrigenPrecio
     pago_id: int
@@ -17,7 +17,7 @@ class ConsultaPrecioDto(BaseModel):
 
 class ConsultaPrecioDtoOut(BaseModel):
     id: int
-    fecha_consulta: datetime
+    fecha_consulta: date
     precio_promedio: float
     origen: TipoOrigenPrecio
     pago: PagoDtoOut

@@ -1,9 +1,7 @@
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
-from backend.enums.TipoCondicion import TipoCondicion
+from pydantic import BaseModel, EmailStr, field_validator
 from backend.enums.TipoRol import TipoRol
 from backend.util.cuilValidator import validar_cuil_cuit
-from backend.dtos.LocalidadDto import LocalidadDtoOut
 
 class UsuarioDto(BaseModel):
     nombre: str

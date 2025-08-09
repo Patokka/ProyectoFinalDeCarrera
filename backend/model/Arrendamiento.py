@@ -1,5 +1,5 @@
-from datetime import datetime
-from sqlalchemy import DateTime, Enum, ForeignKey, String
+from datetime import date
+from sqlalchemy import Date, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.enums.EstadoArrendamiento import EstadoArrendamiento
 from backend.enums.TipoArrendamiento import TipoArrendamiento
@@ -19,8 +19,8 @@ class Arrendamiento(Base):
     localidad_id: Mapped[int] = mapped_column(ForeignKey("localidad.id"), nullable=False)
     usuario_id: Mapped[int] = mapped_column(ForeignKey("usuario.id"), nullable=False)
     arrendatario_id: Mapped[int] = mapped_column(ForeignKey("arrendatario.id"), nullable=False)
-    fecha_inicio: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    fecha_fin: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    fecha_inicio: Mapped[date] = mapped_column(Date, nullable=False)
+    fecha_fin: Mapped[date] = mapped_column(Date, nullable=False)
     duracion_meses: Mapped[int] = mapped_column(nullable=False)
     quintales: Mapped[float] = mapped_column(nullable=False)
     hectareas: Mapped[float] = mapped_column(nullable=False)

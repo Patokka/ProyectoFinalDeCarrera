@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
+from backend.services.PagoService import PagoService
 from ..model.Arrendamiento import Arrendamiento
 from ..dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 
@@ -22,6 +24,10 @@ class ArrendamientoService:
         db.add(nuevo)
         db.commit()
         db.refresh(nuevo)
+        
+        # Generar las cuotas después de guardar el arrendamiento
+        PagoService.generarCuotas(db, nuevo)
+        
         return nuevo
 
     @staticmethod
