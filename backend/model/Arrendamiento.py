@@ -5,6 +5,7 @@ from backend.enums.EstadoArrendamiento import EstadoArrendamiento
 from backend.enums.TipoArrendamiento import TipoArrendamiento
 from backend.enums.PlazoPago import PlazoPago
 from backend.enums.TipoDiasPromedio import TipoDiasPromedio
+from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 from backend.model.Arrendatario import Arrendatario
 from backend.model.Localidad import Localidad
 from backend.model.Usuario import Usuario
@@ -26,6 +27,7 @@ class Arrendamiento(Base):
     hectareas: Mapped[float] = mapped_column(nullable=False)
     plazo_pago: Mapped[PlazoPago] = mapped_column(Enum(PlazoPago), nullable=False)
     dias_promedio: Mapped[TipoDiasPromedio] = mapped_column(Enum(TipoDiasPromedio), nullable=False)
+    origen_precio: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=False)
     porcentaje_aparceria: Mapped[float] = mapped_column(nullable=True)
     descripcion: Mapped[str] = mapped_column(String(255), nullable=True)
     

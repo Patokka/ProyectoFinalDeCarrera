@@ -8,6 +8,7 @@ from backend.enums.TipoDiasPromedio import TipoDiasPromedio
 from backend.dtos.LocalidadDto import LocalidadDtoOut
 from backend.dtos.UsuarioDto import UsuarioDtoOut
 from backend.dtos.ArrendatarioDto import ArrendatarioDtoOut
+from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 
 class ArrendamientoDto(BaseModel):
     tipo: TipoArrendamiento
@@ -21,6 +22,7 @@ class ArrendamientoDto(BaseModel):
     hectareas: float
     plazo_pago: PlazoPago
     dias_promedio: TipoDiasPromedio
+    origen_precio: TipoOrigenPrecio
     porcentaje_aparceria: Optional[float]
     descripcion: Optional[str]
     
@@ -43,6 +45,7 @@ class ArrendamientoDtoOut(BaseModel):
     hectareas: float
     plazo_pago: PlazoPago
     dias_promedio: TipoDiasPromedio
+    origen_precio: TipoOrigenPrecio
     porcentaje_aparceria: Optional[float]
     descripcion: Optional[str]
 

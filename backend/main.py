@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, ConsultaPrecioController, FacturacionController, LocalidadController, PagoController, PrecioController, ProvinciaController, RetencionController, UsuarioController
+from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, RetencionController, UsuarioController
 
 # Importar la configuración de base de datos
 from .util.database import create_tables
@@ -15,11 +15,11 @@ from .model.Arrendador import Arrendador
 from .model.Arrendatario import Arrendatario
 from .model.Arrendamiento import Arrendamiento
 from .model.Pago import Pago
-from .model.ConsultaPrecio import ConsultaPrecio
 from .model.Precio import Precio
 from .model.Facturacion import Facturacion
 from .model.Retencion import Retencion
 from .model.ParticipacionArrendador import ParticipacionArrendador
+from .model.pago_precio_association import pago_precio_association
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,5 +72,5 @@ app.include_router(RetencionController.router, prefix="/retencion", tags=["Reten
 app.include_router(LocalidadController.router, prefix="/localidad", tags=["Localidad"])
 app.include_router(ProvinciaController.router, prefix="/provincia", tags=["Provincia"])
 app.include_router(PrecioController.router, prefix="/precio", tags=["Precio"])
-app.include_router(ConsultaPrecioController.router, prefix="/consulta", tags=["Consulta de Precio"])
+app.include_router(ParticipacionArrendadorController.router, prefix="/participaciones", tags=["Participacioines de Arrendadores en Arrendamientos"])
 

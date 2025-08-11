@@ -22,7 +22,7 @@ class PagoDto(BaseModel):
 class PagoDtoOut(BaseModel):
     id: int
     estado: EstadoPago
-    quintales: float
+    quintales: Optional[float]
     precio_promedio: Optional[float]
     vencimiento: date
     fuente_precio: Optional[TipoOrigenPrecio] = None

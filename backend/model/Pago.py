@@ -1,7 +1,9 @@
 from datetime import date
 from sqlalchemy import Date, Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from backend.model import pago_precio_association
 from backend.model.ParticipacionArrendador import ParticipacionArrendador
+from backend.model.Precio import Precio
 from backend.util.database import Base
 from backend.enums.EstadoPago import EstadoPago
 from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
@@ -24,3 +26,9 @@ class Pago(Base):
     #Relaciones
     arrendamiento: Mapped["Arrendamiento"] = relationship()
     participacion_arrendador: Mapped["ParticipacionArrendador"] = relationship()
+    
+    precios: Mapped[list["Precio"]] = relationship(
+        "Precio",
+        secondary=pago_precio_association,
+        back_populates="pagos"
+    )

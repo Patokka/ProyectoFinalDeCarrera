@@ -3,3 +3,4 @@ from enum import Enum
 class TipoDiasPromedio(Enum):
     ULTIMOS_5_HABILES = "ULTIMOS_5_HABILES"
     DEL_10_AL_15_MES_ACTUAL = "DEL_10_AL_15_MES_ACTUAL"
+    ULTIMOS_10_HABILES = "ULTIMOS_10_HABILES"

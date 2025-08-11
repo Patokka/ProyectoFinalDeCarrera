@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.model.Arrendador import Arrendador
 from backend.model.Arrendamiento import Arrendamiento
@@ -7,6 +7,10 @@ from backend.util.database import Base
 
 class ParticipacionArrendador(Base):
     __tablename__ = "participacion_arrendador"
+    __table_args__ = (
+        UniqueConstraint("arrendamiento_id", "arrendador_id", name="uq_arrendamiento_arrendador"),
+    )
+
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     hectareas_asignadas: Mapped[float] = mapped_column(nullable=False)
