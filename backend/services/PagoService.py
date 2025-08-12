@@ -1,6 +1,6 @@
 from fastapi import HTTPException
+from sqlalchemy import extract
 from sqlalchemy.orm import Session, joinedload
-
 from backend.enums.EstadoPago import EstadoPago
 from backend.enums.PlazoPago import PlazoPago
 from backend.enums.TipoArrendamiento import TipoArrendamiento
@@ -8,13 +8,14 @@ from backend.enums.TipoDiasPromedio import TipoDiasPromedio
 from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 from backend.model.Precio import Precio
 from backend.model.Arrendamiento import Arrendamiento
+from backend.model.pago_precio_association import pago_precio_association
+from backend.model.ParticipacionArrendador import ParticipacionArrendador
+from ..model.Pago import Pago
 from backend.services import PrecioService
 from ..services.ArrendamientoService import ArrendamientoService
-from ..model.Pago import Pago
 from ..dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion
 from datetime import date, timedelta
-from sqlalchemy.orm import Session
-from backend.model.ParticipacionArrendador import ParticipacionArrendador
+
 
 class PagoService:
 
@@ -26,7 +27,7 @@ class PagoService:
     def obtener_por_id(db: Session, pago_id: int):
         obj = db.query(Pago).get(pago_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Pago no encontrado")
+            raise HTTPException(status_code=404, detail="Pago no encontrado.")
         return obj
 
     @staticmethod
@@ -41,7 +42,7 @@ class PagoService:
     def actualizar(db: Session, pago_id: int, dto: PagoDtoModificacion):
         obj = db.query(Pago).get(pago_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Pago no encontrado")
+            raise HTTPException(status_code=404, detail="Pago no encontrado.")
         for campo, valor in dto.model_dump(exclude_unset=True).items():
             setattr(obj, campo, valor)
         db.commit()
@@ -52,7 +53,7 @@ class PagoService:
     def eliminar(db: Session, pago_id: int):
         obj = db.query(Pago).get(pago_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Pago no encontrado")
+            raise HTTPException(status_code=404, detail="Pago no encontrado.")
         db.delete(obj)
         db.commit()
         
@@ -122,86 +123,82 @@ class PagoService:
         return cuotas
     
     @staticmethod
+    def _obtener_precios_promedio(db: Session, pago: Pago):
+        vencimiento = pago.vencimiento
+        mes_anterior = (vencimiento.replace(day=1) - timedelta(days=1)).month
+        anio_anterior = (vencimiento.replace(day=1) - timedelta(days=1)).year
+
+        query_base = db.query(Precio).filter(
+            Precio.origen == pago.fuente_precio,
+            extract("month", Precio.fecha_precio) == mes_anterior,
+            extract("year", Precio.fecha_precio) == anio_anterior
+        )
+        
+        if pago.arrendamiento.dias_promedio == TipoDiasPromedio.ULTIMOS_5_HABILES:
+            precios = query_base.order_by(Precio.fecha_precio.desc()).limit(5).all()
+
+            if not precios:
+                raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+
+            # Si hay menos de 5, buscar hacia atrás hasta completar
+            if len(precios) < 5:
+                faltan = 5 - len(precios)
+                precios_extra = db.query(Precio).filter(
+                    Precio.origen == pago.fuente_precio,
+                    Precio.fecha_precio < precios[-1].fecha_precio
+                ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
+                precios.extend(precios_extra)
+
+        elif pago.arrendamiento.dias_promedio == TipoDiasPromedio.ULTIMOS_10_HABILES:
+            precios = query_base.order_by(Precio.fecha_precio.desc()).limit(10).all()
+            if not precios:
+                raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+
+            # Si hay menos de 10, buscar hacia atrás hasta completar            
+            if len(precios) < 10:
+                faltan = 10 - len(precios)
+                precios_extra = db.query(Precio).filter(
+                    Precio.origen == pago.fuente_precio,
+                    Precio.fecha_precio < precios[-1].fecha_precio
+                ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
+                precios.extend(precios_extra)
+
+        elif pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
+            precios = query_base.filter(
+                extract("day", Precio.fecha_precio) >= 10,
+                extract("day", Precio.fecha_precio) <= 15
+            ).order_by(Precio.fecha_precio).all()
+            # Aquí no completamos si faltan días
+            if not precios:
+                raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+
+        else:
+            raise ValueError(f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")
+
+        precio_promedio = sum(p.precio_obtenido for p in precios) / len(precios)
+
+        return precio_promedio, precios
+
+
+    @staticmethod
     def generarPrecioCuota(db: Session, pago_id: int):
         pago = db.query(Pago).options(joinedload(Pago.arrendamiento)).get(pago_id)
-        fecha_inicio, fecha_fin = PagoService._calcular_rango_precio(pago.arrendamiento.dias_promedio, pago.vencimiento)
+        
+        if not pago:
+            raise HTTPException(status_code=404, detail="Pago no encontrado.")
+        
+        if pago.precio_promedio or pago.monto_a_pagar:
+            raise HTTPException(status_code=500, detail="El pago ya tiene un monto y precio calculado.")
+        
+        precio_promedio, precios_en_rango = PagoService._obtener_precios_promedio(db, pago)
 
-        precios = db.query(Precio.precio_obtenido)\
-                    .filter(Precio.origen == pago.fuente_precio,
-                            Precio.fecha_precio >= fecha_inicio,
-                            Precio.fecha_precio <= fecha_fin)\
-                    .all()
-
-        precios = [p[0] for p in precios]
-        if not precios:
-            raise ValueError(f"No hay precios para {pago.fuente_precio} entre {fecha_inicio} y {fecha_fin}")
-
-        precio_promedio = sum(precios) / len(precios)
         pago.precio_promedio = precio_promedio
         if pago.quintales is not None:
             pago.monto_a_pagar = precio_promedio * pago.quintales
 
+        #Asignar precios a la relación many-to-many
+        pago.precios.extend(precios_en_rango)
+
         db.commit()
         db.refresh(pago)
         return pago
-
-    @staticmethod
-    def _calcular_rango_precio(dias_promedio: TipoDiasPromedio, fecha_venc: date):
-        """
-        Retorna (fecha_inicio, fecha_fin) para buscar precios.
-        """
-        mes_anterior = fecha_venc.replace(day=1) - timedelta(days=1)
-
-        if dias_promedio == TipoDiasPromedio.ULTIMOS_5_HABILES:
-            fecha_fin = mes_anterior
-            fecha_inicio = PagoService._restar_dias_habiles(fecha_fin, 4)
-        elif dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
-            fecha_inicio = mes_anterior.replace(day=10)
-            fecha_fin = mes_anterior.replace(day=15)
-        elif dias_promedio == TipoDiasPromedio.ULTIMOS_10_HABILES:
-            fecha_fin = mes_anterior
-            fecha_inicio = PagoService._restar_dias_habiles(fecha_fin, 9)
-        else:
-            raise ValueError(f"Días promedio '{dias_promedio}' no soportado.")
-
-        return fecha_inicio, fecha_fin
-
-    @staticmethod
-    def _restar_dias_habiles(fecha: date, cantidad: int):
-        """
-        Resta días hábiles desde una fecha dada (sin contar fines de semana).
-        """
-        dias_restados = 0
-        fecha_actual = fecha
-        while dias_restados < cantidad:
-            fecha_actual -= timedelta(days=1)
-            if fecha_actual.weekday() < 5:  # lunes-viernes
-                dias_restados += 1
-        return fecha_actual
-
-    @staticmethod
-    def actualizar_precios_diarios(db: Session):
-        hoy = date.today()
-
-        # Evitar duplicar si ya existe precio de hoy para esa fuente
-        fuentes = [TipoOrigenPrecio.BCR, TipoOrigenPrecio.AGD]
-        for fuente in fuentes:
-            existe = db.query(Precio).filter(Precio.origen == fuente, Precio.fecha_consulta == hoy).first()
-            if existe:
-                continue  # Ya cargado hoy para esa fuente
-
-            valor = None
-            if fuente == TipoOrigenPrecio.BCR:
-                valor = PrecioService.obtener_precio_bcr()
-            elif fuente == TipoOrigenPrecio.AGD:
-                valor = PrecioService.obtener_precio_agd()
-
-            if valor is not None:
-                nuevo_precio = Precio(
-                    origen=fuente,
-                    valor=valor,
-                    fecha=hoy
-                )
-                db.add(nuevo_precio)
-
-        db.commit()

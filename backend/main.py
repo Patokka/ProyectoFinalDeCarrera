@@ -21,6 +21,14 @@ from .model.Retencion import Retencion
 from .model.ParticipacionArrendador import ParticipacionArrendador
 from .model.pago_precio_association import pago_precio_association
 
+# Importación de elementos necesarios para consultar los precios automaticamente a las 08:00 y 17:00 todos los días
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from datetime import datetime
+import pytz
+from backend.services.PrecioService import PrecioService
+from backend.util.database import SessionLocal  
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestionar el ciclo de vida de la aplicación"""
@@ -53,6 +61,29 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Zona horaria de Argentina
+argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")
+
+# Scheduler
+scheduler = BackgroundScheduler(timezone=argentina_tz)
+
+def job_actualizar_precio():
+    db = SessionLocal()
+    try:
+        print(f"[{datetime.now()}] Ejecutando job de actualización de precio BCR.")
+        PrecioService.actualizar_precio_bcr(db)
+    except Exception as e:
+        print(f"Error en job BCR: {e}")
+    finally:
+        db.close()
+
+# Agregar los dos horarios
+scheduler.add_job(job_actualizar_precio, CronTrigger(hour=8, minute=0))
+scheduler.add_job(job_actualizar_precio, CronTrigger(hour=17, minute=0))
+scheduler.start()
+
 
 # Ruta de prueba
 @app.get("/")

@@ -1,7 +1,7 @@
 from datetime import date
 from sqlalchemy import Date, Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.model import pago_precio_association
+from backend.model.pago_precio_association import pago_precio_association
 from backend.model.ParticipacionArrendador import ParticipacionArrendador
 from backend.model.Precio import Precio
 from backend.util.database import Base

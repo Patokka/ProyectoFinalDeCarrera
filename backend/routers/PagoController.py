@@ -34,7 +34,7 @@ def crear_pago(arrendamiento_id: int, db: Session = Depends(get_db)):
     try:
         return  PagoService.generarCuotas(db, arrendamiento_id)
     except Exception as e:
-        return HTTPException(status_code=500, detail=e)
+        raise HTTPException(status_code=500, detail=e)
 
 
 @router.put("/precio/{pago_id}", response_model=PagoDtoOut, description="Modificación del precio de un pago por id.")
@@ -42,4 +42,4 @@ def actualizar_precio_pago(pago_id: int, db: Session = Depends(get_db)):
     try:
         return PagoService.generarPrecioCuota(db, pago_id)
     except Exception as e:
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
