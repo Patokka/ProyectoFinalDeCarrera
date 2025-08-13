@@ -31,3 +31,9 @@ def eliminar_precio(precio_id: int, db: Session = Depends(get_db)):
 def obtener_precio(db: Session = Depends(get_db)):
     PrecioService.actualizar_precio_bcr(db)
     return  {"mensaje": "LLego sin error, ver base de datos."}
+
+@router.post("/consultarAGD", description="Es el receptor del mensaje diario de AGD para obtener el precio de la soja.")
+def recibir_precio_agd(payload: dict, db: Session = Depends(get_db)):
+    print("Payload recibido:", payload)
+    respuesta = PrecioService.actualizar_precio_agd(db, payload)
+    return respuesta

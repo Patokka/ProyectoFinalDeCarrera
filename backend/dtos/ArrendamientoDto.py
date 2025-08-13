@@ -17,7 +17,6 @@ class ArrendamientoDto(BaseModel):
     arrendatario_id: int
     fecha_inicio: date
     fecha_fin: date
-    duracion_meses: int
     quintales: float
     hectareas: float
     plazo_pago: PlazoPago
@@ -40,7 +39,6 @@ class ArrendamientoDtoOut(BaseModel):
     arrendatario: ArrendatarioDtoOut
     fecha_inicio: date
     fecha_fin: date
-    duracion_meses: int
     quintales: float
     hectareas: float
     plazo_pago: PlazoPago

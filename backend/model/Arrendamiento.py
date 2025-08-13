@@ -22,7 +22,6 @@ class Arrendamiento(Base):
     arrendatario_id: Mapped[int] = mapped_column(ForeignKey("arrendatario.id"), nullable=False)
     fecha_inicio: Mapped[date] = mapped_column(Date, nullable=False)
     fecha_fin: Mapped[date] = mapped_column(Date, nullable=False)
-    duracion_meses: Mapped[int] = mapped_column(nullable=False)
     quintales: Mapped[float] = mapped_column(nullable=False)
     hectareas: Mapped[float] = mapped_column(nullable=False)
     plazo_pago: Mapped[PlazoPago] = mapped_column(Enum(PlazoPago), nullable=False)

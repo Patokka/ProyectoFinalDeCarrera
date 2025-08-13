@@ -1,5 +1,7 @@
 from datetime import date, timedelta
+from fastapi.responses import JSONResponse
 import os, requests
+import re
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -149,11 +151,42 @@ class PrecioService:
         return None
 
     @staticmethod
-    def obtener_precio_agd():
-        url = "https://api.agd.com/precio-diario"  # Cambiar por URL real
-        r = requests.get(url, timeout=10)
-        if r.status_code == 200:
-            data = r.json()
-            return data["valor"]  # Ajustar según respuesta real
-        return None
-        
+    def actualizar_precio_agd(db: Session , payload: dict):
+        mensaje = payload.get("mensaje", "")
+
+        # Buscar valor de soja en el mensaje
+        match = re.search(r"Soja.*?\$([\d\.]+)", mensaje)
+        if not match:
+            return JSONResponse(
+                status_code=404,
+                content={"status": "no encontrado", "mensaje": "No se encontró precio de soja en el texto"}
+            )
+
+        valor = float(match.group(1).replace(".", ""))
+
+        # Evitar duplicados
+        hoy = date.today()
+        existe = db.query(Precio).filter(
+            Precio.origen == TipoOrigenPrecio.AGD,
+            Precio.fecha_precio == hoy
+        ).first()
+
+        if existe:
+            return JSONResponse(
+                status_code=409,  # Conflicto, ya existe
+                content={"status": "ya existe", "valor": existe.precio_obtenido}
+            )
+
+        # Crear nuevo precio
+        precio = Precio(
+            fecha_precio=hoy,
+            precio_obtenido=valor,
+            origen=TipoOrigenPrecio.AGD
+        )
+        db.add(precio)
+        db.commit()
+
+        return JSONResponse(
+            status_code=201,  # Creado
+            content={"status": "ok", "valor": valor}
+        )
