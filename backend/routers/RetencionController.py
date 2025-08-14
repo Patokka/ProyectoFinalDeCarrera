@@ -26,3 +26,7 @@ def actualizar_retencion(retencion_id: int, dto: RetencionDtoModificacion, db: S
 def eliminar_retencion(retencion_id: int, db: Session = Depends(get_db)):
     RetencionService.eliminar(db, retencion_id)
     return {"mensaje": "Retención eliminada correctamente."}
+
+@router.get("/arrendador/{arrendador_id}", response_model=list[RetencionDtoOut], description="Obtención de todas las retencinoes de un arrendador.")
+def obtener_retenciones_arrendador(arrendador_id: int, db: Session = Depends(get_db)):
+    return RetencionService.obtener_retenciones_arrendador(db, arrendador_id)

@@ -81,7 +81,7 @@ def job_actualizar_precio():
 
 # Agregar los dos horarios
 scheduler.add_job(job_actualizar_precio, CronTrigger(hour=8, minute=0))
-scheduler.add_job(job_actualizar_precio, CronTrigger(hour=17, minute=0))
+scheduler.add_job(job_actualizar_precio, CronTrigger(hour=13, minute=38))
 scheduler.start()
 
 

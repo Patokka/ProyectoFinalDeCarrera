@@ -26,3 +26,7 @@ def actualizar_facturacion(facturacion_id: int, dto: FacturacionDtoModificacion,
 def eliminar_facturacion(facturacion_id: int, db: Session = Depends(get_db)):
     FacturacionService.eliminar(db, facturacion_id)
     return {"mensaje": "Facturación eliminada correctamente."}
+
+@router.get("/arrendador/{arrendador_id}", response_model=list[FacturacionDtoOut], description="Obtención de todas las facturaciones de un arrendador.")
+def obtener_facturaciones_arrendador(arrendador_id: int, db: Session = Depends(get_db)):
+    return FacturacionService.obtener_facturaciones_arrendador(db, arrendador_id)

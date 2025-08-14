@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
+from backend.services.ArrendadorService import ArrendadorService
 from ..model.Facturacion import Facturacion
 from backend.dtos.FacturacionDto import FacturacionDto, FacturacionDtoModificacion
 
@@ -42,3 +44,13 @@ class FacturacionService:
             raise HTTPException(status_code=404, detail="Facturación no encontrada.")
         db.delete(obj)
         db.commit()
+        
+    @staticmethod
+    def obtener_facturaciones_arrendador(db: Session, arrendador_id: int):
+        #Solamente se consulta el arrendador para obtener la excepción en caso de que no exista        
+        ArrendadorService.obtener_por_id(db,arrendador_id)
+        
+        facturaciones = db.query(Facturacion).filter(
+            Facturacion.arrendador_id == arrendador_id
+        ).all()
+        return facturaciones

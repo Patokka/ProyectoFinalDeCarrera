@@ -36,6 +36,18 @@ class PrecioService:
 
     @staticmethod
     def crear_precio(db: Session, dto: PrecioDto):
+        #Primero se ve si ya existe un precio para esa fecha y origen
+        existente = db.query(Precio).filter(
+            Precio.fecha_precio == dto.fecha_precio,
+            Precio.origen == dto.origen
+        ).first()
+
+        if existente:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ya existe un precio registrado para el origen '{dto.origen}' en la fecha '{dto.fecha_precio}'."
+            )
+
         nuevo = Precio(**dto.model_dump())
         db.add(nuevo)
         db.commit()
