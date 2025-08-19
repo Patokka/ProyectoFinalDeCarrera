@@ -7,13 +7,12 @@ from backend.enums.TipoArrendamiento import TipoArrendamiento
 from backend.enums.TipoDiasPromedio import TipoDiasPromedio
 from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
 from backend.model.Precio import Precio
-from backend.model.Arrendamiento import Arrendamiento
 from backend.model.pago_precio_association import pago_precio_association
 from backend.model.ParticipacionArrendador import ParticipacionArrendador
 from ..model.Pago import Pago
 from backend.services import PrecioService
 from ..services.ArrendamientoService import ArrendamientoService
-from ..dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion
+from ..dtos.PagoDto import PagoDto, PagoDtoModificacion
 from datetime import date, timedelta
 
 
@@ -133,47 +132,55 @@ class PagoService:
             extract("month", Precio.fecha_precio) == mes_anterior,
             extract("year", Precio.fecha_precio) == anio_anterior
         )
-        
-        if pago.arrendamiento.dias_promedio == TipoDiasPromedio.ULTIMOS_5_HABILES:
-            precios = query_base.order_by(Precio.fecha_precio.desc()).limit(5).all()
 
-            if not precios:
-                raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+        precios = []
 
-            # Si hay menos de 5, buscar hacia atrás hasta completar
-            if len(precios) < 5:
-                faltan = 5 - len(precios)
-                precios_extra = db.query(Precio).filter(
-                    Precio.origen == pago.fuente_precio,
-                    Precio.fecha_precio < precios[-1].fecha_precio
-                ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
-                precios.extend(precios_extra)
+        match pago.arrendamiento.dias_promedio:
+            case TipoDiasPromedio.ULTIMOS_5_HABILES:
+                precios = query_base.order_by(Precio.fecha_precio.desc()).limit(5).all()
 
-        elif pago.arrendamiento.dias_promedio == TipoDiasPromedio.ULTIMOS_10_HABILES:
-            precios = query_base.order_by(Precio.fecha_precio.desc()).limit(10).all()
-            if not precios:
-                raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+                if not precios:
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
 
-            # Si hay menos de 10, buscar hacia atrás hasta completar            
-            if len(precios) < 10:
-                faltan = 10 - len(precios)
-                precios_extra = db.query(Precio).filter(
-                    Precio.origen == pago.fuente_precio,
-                    Precio.fecha_precio < precios[-1].fecha_precio
-                ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
-                precios.extend(precios_extra)
+                if len(precios) < 5:
+                    faltan = 5 - len(precios)
+                    precios_extra = db.query(Precio).filter(
+                        Precio.origen == pago.fuente_precio,
+                        Precio.fecha_precio < precios[-1].fecha_precio
+                    ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
+                    precios.extend(precios_extra)
 
-        elif pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
-            precios = query_base.filter(
-                extract("day", Precio.fecha_precio) >= 10,
-                extract("day", Precio.fecha_precio) <= 15
-            ).order_by(Precio.fecha_precio).all()
-            # Aquí no completamos si faltan días
-            if not precios:
-                raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+            case TipoDiasPromedio.ULTIMOS_10_HABILES:
+                precios = query_base.order_by(Precio.fecha_precio.desc()).limit(10).all()
 
-        else:
-            raise ValueError(f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")
+                if not precios:
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+
+                if len(precios) < 10:
+                    faltan = 10 - len(precios)
+                    precios_extra = db.query(Precio).filter(
+                        Precio.origen == pago.fuente_precio,
+                        Precio.fecha_precio < precios[-1].fecha_precio
+                    ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
+                    precios.extend(precios_extra)
+
+            case TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
+                precios = query_base.filter(
+                    extract("day", Precio.fecha_precio) >= 10,
+                    extract("day", Precio.fecha_precio) <= 15
+                ).order_by(Precio.fecha_precio).all()
+
+                if not precios:
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+
+            case TipoDiasPromedio.ULTIMO_MES:
+                precios = query_base.order_by(Precio.fecha_precio).all()
+
+                if not precios:
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+
+            case _:
+                raise ValueError(f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")
 
         precio_promedio = sum(p.precio_obtenido for p in precios) / len(precios)
 
@@ -192,7 +199,7 @@ class PagoService:
         
         precio_promedio, precios_en_rango = PagoService._obtener_precios_promedio(db, pago)
 
-        pago.precio_promedio = precio_promedio
+        pago.precio_promedio = precio_promedio / 10
         if pago.quintales is not None:
             pago.monto_a_pagar = precio_promedio * pago.quintales
 

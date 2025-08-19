@@ -13,7 +13,7 @@ class Precio(Base):
 
     id:  Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     fecha_precio:  Mapped[date] = mapped_column(Date, nullable=False)
-    precio_obtenido:  Mapped[float] = mapped_column(nullable=False)
+    precio_obtenido:  Mapped[float] = mapped_column(nullable=False) #Acá los precios que se guardan, independientemente del origen, son precios por TONELADA DE SOJA
     origen: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=False)
     
     

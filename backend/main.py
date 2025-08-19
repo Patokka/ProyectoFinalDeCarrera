@@ -20,6 +20,7 @@ from .model.Facturacion import Facturacion
 from .model.Retencion import Retencion
 from .model.ParticipacionArrendador import ParticipacionArrendador
 from .model.pago_precio_association import pago_precio_association
+from .util.Configuracion import Configuracion
 
 # Importación de elementos necesarios para consultar los precios automaticamente a las 08:00 y 17:00 todos los días
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -81,7 +82,7 @@ def job_actualizar_precio():
 
 # Agregar los dos horarios
 scheduler.add_job(job_actualizar_precio, CronTrigger(hour=8, minute=0))
-scheduler.add_job(job_actualizar_precio, CronTrigger(hour=13, minute=38))
+scheduler.add_job(job_actualizar_precio, CronTrigger(hour=14, minute=57))
 scheduler.start()
 
 

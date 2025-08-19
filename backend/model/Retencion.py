@@ -10,7 +10,7 @@ class Retencion(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     fecha_retencion:  Mapped[date] = mapped_column(Date, nullable=False)
-    minimo_imponible: Mapped[float] = mapped_column(nullable=False)
+    monto_imponible: Mapped[float] = mapped_column(nullable=False)
     total_retencion: Mapped[float] = mapped_column(nullable=False)
     arrendador_id: Mapped[int] = mapped_column(ForeignKey("arrendador.id"), nullable=False)
     facturacion_id: Mapped[int] = mapped_column(ForeignKey("facturacion.id"), nullable=False)

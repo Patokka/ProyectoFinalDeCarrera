@@ -1,11 +1,13 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr, field_validator
+from backend.enums.TipoCondicion import TipoCondicion
 from backend.util.cuilValidator import validar_cuil_cuit
 from backend.dtos.LocalidadDto import LocalidadDtoOut
 
 class ArrendatarioDto(BaseModel):
     razon_social: str
     cuit: str
+    condicion_fiscal: TipoCondicion
     mail: Optional[EmailStr]
     localidad_id: int
     
@@ -20,6 +22,7 @@ class ArrendatarioDtoOut(BaseModel):
     id: int
     razon_social: str
     cuit: str
+    condicion_fiscal: TipoCondicion
     mail: Optional[EmailStr]
     localidad: LocalidadDtoOut
     
@@ -31,6 +34,7 @@ class ArrendatarioDtoOut(BaseModel):
 class ArrendatarioDtoModificacion(BaseModel):
     mail: Optional[str]
     razon_social: Optional[str]
+    condicion_fiscal: Optional[TipoCondicion]
     telefono: Optional[str]
     localidad_id: Optional[int]
     

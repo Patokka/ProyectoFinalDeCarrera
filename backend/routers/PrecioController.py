@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from ..util.database import get_db
 from ..dtos.PrecioDto import PrecioDto, PrecioDtoOut, PrecioDtoModificacion
@@ -33,7 +33,8 @@ def obtener_precio(db: Session = Depends(get_db)):
     return  {"mensaje": "LLego sin error, ver base de datos."}
 
 @router.post("/consultarAGD", description="Es el receptor del mensaje diario de AGD para obtener el precio de la soja.")
-def recibir_precio_agd(payload: dict, db: Session = Depends(get_db)):
+async def recibir_precio_agd(request: Request, db: Session = Depends(get_db)):
+    payload = await request.json()
     print("Payload recibido:", payload)
     respuesta = PrecioService.actualizar_precio_agd(db, payload)
     return respuesta

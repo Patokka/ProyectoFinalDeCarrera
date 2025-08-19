@@ -6,7 +6,7 @@ from backend.dtos.FacturacionDto import FacturacionDtoOut
 
 class RetencionDto(BaseModel):
     fecha_retencion: date
-    minimo_imponible: float
+    monto_imponible: float
     total_retencion: float
     arrendador_id: int
     facturacion_id: int
@@ -19,7 +19,7 @@ class RetencionDto(BaseModel):
 class RetencionDtoOut(BaseModel):
     id: int
     fecha_retencion: date
-    minimo_imponible: float
+    monto_imponible: float
     total_retencion: float
     arrendador: ArrendadorDtoOut
     facturacion: FacturacionDtoOut
@@ -31,7 +31,7 @@ class RetencionDtoOut(BaseModel):
 
 class RetencionDtoModificacion(BaseModel):
     fecha_retencion: Optional[date]
-    minimo_imponible: Optional[float]
+    monto_imponible: Optional[float]
     total_retencion: Optional[float]
     arrendador_id: Optional[int]
     facturacion_id: Optional[int]

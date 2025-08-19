@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
+from backend.dtos.ConfiguracionDto import ConfiguracionDtoModificacion
 from ..util.database import get_db
 from ..dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
 from ..services.RetencionService import RetencionService
+
 
 router = APIRouter()
 
@@ -30,3 +33,15 @@ def eliminar_retencion(retencion_id: int, db: Session = Depends(get_db)):
 @router.get("/arrendador/{arrendador_id}", response_model=list[RetencionDtoOut], description="Obtención de todas las retencinoes de un arrendador.")
 def obtener_retenciones_arrendador(arrendador_id: int, db: Session = Depends(get_db)):
     return RetencionService.obtener_retenciones_arrendador(db, arrendador_id)
+
+
+@router.get("/configuracion/{clave}")
+def obtener_configuracion(clave: str, db: Session = Depends(get_db)):
+    valor = RetencionService.obtener_configuracion(db, clave)
+    if valor is None:
+        return {"status": "Configuracion no encontrada", "clave": clave}
+    return {"clave": clave, "valor": valor}
+
+@router.post("/configuracion")
+def actualizar_configuracion(config_update: ConfiguracionDtoModificacion, db: Session = Depends(get_db)):
+    return RetencionService.actualizar_configuracion(db, config_update.clave, config_update.valor)
