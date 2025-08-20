@@ -47,3 +47,12 @@ class UsuarioDtoModificacion(BaseModel):
         "from_attributes": True,     
         "use_enum_values": True   
     }
+    
+class UsuarioLogin(BaseModel):
+    cuil: str
+    contrasena: str    
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }

@@ -2,6 +2,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from ..model.Usuario import Usuario
 from ..dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
+from backend.util.jwtYPasswordHandler import hash_password, verify_password
 
 class UsuarioService:
 
@@ -18,12 +19,23 @@ class UsuarioService:
 
     @staticmethod
     def crear(db: Session, dto: UsuarioDto):
-        nuevo = Usuario(**dto.model_dump())
-        db.add(nuevo)
-        db.commit()
-        db.refresh(nuevo)
-        return nuevo
+        usuario_existente = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
+        if usuario_existente:
+            raise HTTPException(status_code=400, detail="El usuario ya existe.")
 
+        usuario = Usuario(
+            nombre = dto.nombre,
+            apellido = dto.apellido,
+            contrasena = hash_password(dto.contrasena),
+            mail = dto.mail,
+            cuil = dto.cuil,
+            rol = dto.rol
+        )
+        db.add(usuario)
+        db.commit()
+        db.refresh(usuario)
+        return usuario
+    
     @staticmethod
     def actualizar(db: Session, usuario_id: int, dto: UsuarioDtoModificacion):
         usuario = db.query(Usuario).get(usuario_id)

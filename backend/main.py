@@ -1,11 +1,14 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, APIRouter
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from backend.dtos.UsuarioDto import UsuarioLogin
 from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, RetencionController, UsuarioController
+from backend.util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
+from backend.util.permisosUser import get_current_user
 
 # Importar la configuración de base de datos
-from .util.database import create_tables
+from .util.database import create_tables, get_db
 
 # Importar todos los modelos para que SQLAlchemy los reconozca
 from .model.Usuario import Usuario
@@ -25,7 +28,7 @@ from .util.Configuracion import Configuracion
 # Importación de elementos necesarios para consultar los precios automaticamente a las 08:00 y 17:00 todos los días
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from backend.services.PrecioService import PrecioService
 from backend.util.database import SessionLocal  
@@ -93,16 +96,33 @@ async def root():
     return {"message": "¡API de Arrendamientos funcionando! 🚀"}
 
 
+#Ruta de login para usuarios
+@app.post("/login", response_model = dict, description=" 20443072684 , clave123")
+def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
+    
+    usuario = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
+    
+    if not usuario or not verify_password(dto.contrasena, usuario.contrasena):
+        raise HTTPException(status_code=401, detail="Cuil o clave inválidas.")
+    
+    #Duración del token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    #Creación del token
+    access_token = create_access_token(data={"sub": usuario.nombre}, expires_delta=access_token_expires)
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
 # Registro de las diferentes rutas
-app.include_router(ArrendadorController.router, prefix="/arrendadores", tags=["Arrendadores"])
-app.include_router(ArrendatarioController.router, prefix="/arrendatarios", tags=["Arrendatarios"])
-app.include_router(ArrendamientoController.router, prefix="/arrendamientos", tags=["Arrendamientos"])
-app.include_router(PagoController.router, prefix="/pagos", tags=["Pagos"])
-app.include_router(UsuarioController.router, prefix="/usuarios", tags=["Usuarios"])
-app.include_router(FacturacionController.router, prefix="/facturacion", tags=["Facturacion"])
-app.include_router(RetencionController.router, prefix="/retencion", tags=["Retencion"])
-app.include_router(LocalidadController.router, prefix="/localidad", tags=["Localidad"])
-app.include_router(ProvinciaController.router, prefix="/provincia", tags=["Provincia"])
-app.include_router(PrecioController.router, prefix="/precio", tags=["Precio"])
-app.include_router(ParticipacionArrendadorController.router, prefix="/participaciones", tags=["Participacioines de Arrendadores en Arrendamientos"])
+app.include_router(ArrendadorController.router, prefix="/arrendadores", tags=["Arrendadores"], dependencies=[Depends(get_current_user)])
+app.include_router(ArrendatarioController.router, prefix="/arrendatarios", tags=["Arrendatarios"], dependencies=[Depends(get_current_user)])
+app.include_router(ArrendamientoController.router, prefix="/arrendamientos", tags=["Arrendamientos"], dependencies=[Depends(get_current_user)])
+app.include_router(PagoController.router, prefix="/pagos", tags=["Pagos"], dependencies=[Depends(get_current_user)])
+app.include_router(UsuarioController.router, prefix="/usuarios", tags=["Usuarios"], dependencies=[Depends(get_current_user)])
+app.include_router(FacturacionController.router, prefix="/facturacion", tags=["Facturacion"], dependencies=[Depends(get_current_user)])
+app.include_router(RetencionController.router, prefix="/retencion", tags=["Retencion"], dependencies=[Depends(get_current_user)])
+app.include_router(LocalidadController.router, prefix="/localidad", tags=["Localidad"], dependencies=[Depends(get_current_user)])
+app.include_router(ProvinciaController.router, prefix="/provincia", tags=["Provincia"], dependencies=[Depends(get_current_user)])
+app.include_router(PrecioController.router, prefix="/precio", tags=["Precio"], dependencies=[Depends(get_current_user)]) #SI ENCONTRAS FORMA DE HACER QUE LLEGUE LA DE AGD PONER INDIVIDUALMENTE LOS LOCKS EN ESTAS RUTAS
+app.include_router(ParticipacionArrendadorController.router, prefix="/participaciones", tags=["Participacioines de Arrendadores en Arrendamientos"], dependencies=[Depends(get_current_user)])
 

@@ -1,5 +1,6 @@
 from datetime import date
-from sqlalchemy import Date, ForeignKey
+from decimal import Decimal
+from sqlalchemy import Date, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from backend.model.Arrendador import Arrendador
 from backend.model.Facturacion import Facturacion
@@ -10,8 +11,8 @@ class Retencion(Base):
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     fecha_retencion:  Mapped[date] = mapped_column(Date, nullable=False)
-    monto_imponible: Mapped[float] = mapped_column(nullable=False)
-    total_retencion: Mapped[float] = mapped_column(nullable=False)
+    monto_imponible: Mapped[Decimal] = mapped_column(Numeric(12,2),nullable=False)
+    total_retencion: Mapped[Decimal] = mapped_column(Numeric(12,2),nullable=False)
     arrendador_id: Mapped[int] = mapped_column(ForeignKey("arrendador.id"), nullable=False)
     facturacion_id: Mapped[int] = mapped_column(ForeignKey("facturacion.id"), nullable=False)
 

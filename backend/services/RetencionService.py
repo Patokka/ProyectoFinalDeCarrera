@@ -102,19 +102,13 @@ class RetencionService:
             PlazoPago.ANUAL: 12
         }
         meses_por_cuota = periodos.get(arrendamiento.plazo_pago)
-        print("meses: ", meses_por_cuota)
+
         #Calcular base de la retención
         base_retencion = monto_imponible_actual * meses_por_cuota
-        print("base: ", base_retencion)
 
-        #Calcular monto de la retención
-        monto_base = pago.monto_a_pagar - base_retencion
-        print("####################monto_base: ", monto_base)
+        monto_retencion = (pago.monto_a_pagar -Decimal(base_retencion))* Decimal(0.06)
 
-        monto_retencion = (pago.monto_a_pagar -base_retencion)* 0.06
-        print("####################monto retencion: ", monto_retencion)
-
-        # 4. Crear objeto retención
+        #Crear objeto retención
         retencion = Retencion(
             fecha_retencion=fecha or date.today(),
             monto_imponible=monto_imponible_actual,
@@ -123,6 +117,6 @@ class RetencionService:
             facturacion_id=None
         )
         db.add(retencion)
-        db.flush()  # para generar id antes del commit
+        db.flush()
 
         return retencion

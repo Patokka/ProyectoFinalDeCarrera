@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
+from backend.model.Usuario import Usuario
+from backend.util.permisosUser import admin_required
 from ..util.database import get_db
 from ..dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
 from ..services.UsuarioService import UsuarioService
@@ -23,6 +26,6 @@ def actualizar_usuario(usuario_id: int, dto: UsuarioDtoModificacion, db: Session
     return UsuarioService.actualizar(db, usuario_id, dto)
 
 @router.delete("/{usuario_id}", description="Eliminación de un usuario por id.")
-def eliminar_usuario(usuario_id: int, db: Session = Depends(get_db)):
+def eliminar_usuario(usuario_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(admin_required)):
     UsuarioService.eliminar(db, usuario_id)
     return {"mensaje": "Usuario eliminado correctamente."}

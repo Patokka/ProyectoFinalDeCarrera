@@ -194,14 +194,14 @@ class PagoService:
         if not pago:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
         
-        if pago.precio_promedio or pago.monto_a_pagar:
+        if pago.precio_promedio > 0 or pago.monto_a_pagar > 0:
             raise HTTPException(status_code=500, detail="El pago ya tiene un monto y precio calculado.")
         
         precio_promedio, precios_en_rango = PagoService._obtener_precios_promedio(db, pago)
 
         pago.precio_promedio = precio_promedio / 10
         if pago.quintales is not None:
-            pago.monto_a_pagar = precio_promedio * pago.quintales
+            pago.monto_a_pagar = pago.precio_promedio * pago.quintales
 
         #Asignar precios a la relación many-to-many
         pago.precios.extend(precios_en_rango)
