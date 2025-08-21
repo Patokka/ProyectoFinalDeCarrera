@@ -16,7 +16,7 @@ class ArrendamientoService:
     def obtener_por_id(db: Session, arrendamiento_id: int):
         obj = db.query(Arrendamiento).get(arrendamiento_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado")
+            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
         return obj
 
     @staticmethod
@@ -32,7 +32,7 @@ class ArrendamientoService:
     def actualizar(db: Session, arrendamiento_id: int, dto: ArrendamientoDtoModificacion):
         obj = db.query(Arrendamiento).get(arrendamiento_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado")
+            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
         for campo, valor in dto.model_dump(exclude_unset=True).items():
             setattr(obj, campo, valor)
         db.commit()
@@ -43,7 +43,7 @@ class ArrendamientoService:
     def eliminar(db: Session, arrendamiento_id: int):
         obj = db.query(Arrendamiento).get(arrendamiento_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado")
+            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
         db.delete(obj)
         db.commit()
         
@@ -58,7 +58,7 @@ class ArrendamientoService:
     def obtener_participacion_por_id(db: Session, participacion_id: int):
         obj = db.query(ParticipacionArrendador).get(participacion_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Participación no encontrada")
+            raise HTTPException(status_code=404, detail="Participación no encontrada.")
         return obj
 
     @staticmethod
@@ -74,7 +74,7 @@ class ArrendamientoService:
     def actualizar_participacion(db: Session, participacion_id: int, dto: ParticipacionArrendadorDtoModificacion):
         obj = db.query(ParticipacionArrendadorDto).get(participacion_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Participación no encontrada")
+            raise HTTPException(status_code=404, detail="Participación no encontrada.")
         for campo, valor in dto.model_dump(exclude_unset=True).items():
             setattr(obj, campo, valor)
         db.commit()
@@ -85,6 +85,6 @@ class ArrendamientoService:
     def eliminar_participacion(db: Session, participacion_id: int):
         obj = db.query(ParticipacionArrendador).get(participacion_id)
         if not obj:
-            raise HTTPException(status_code=404, detail="Participación no encontrada")
+            raise HTTPException(status_code=404, detail="Participación no encontrada.")
         db.delete(obj)
         db.commit()

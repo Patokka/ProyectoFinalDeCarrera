@@ -13,7 +13,7 @@ class ArrendadorService:
     def obtener_por_id(db: Session, arrendador_id: int):
         arrendador = db.query(Arrendador).get(arrendador_id)
         if not arrendador:
-            raise HTTPException(status_code=404, detail="Arrendador no encontrado")
+            raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
         return arrendador
 
     @staticmethod
@@ -28,7 +28,7 @@ class ArrendadorService:
     def actualizar(db: Session, arrendador_id: int, dto: ArrendadorDtoModificacion):
         arrendador = db.query(Arrendador).get(arrendador_id)
         if not arrendador:
-            raise HTTPException(status_code=404, detail="Arrendador no encontrado")
+            raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
         for campo, valor in dto.model_dump(exclude_unset=True).items():
             setattr(arrendador, campo, valor)
         db.commit()
@@ -39,6 +39,6 @@ class ArrendadorService:
     def eliminar(db: Session, arrendador_id: int):
         arrendador = db.query(Arrendador).get(arrendador_id)
         if not arrendador:
-            raise HTTPException(status_code=404, detail="Arrendador no encontrado")
+            raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
         db.delete(arrendador)
         db.commit()

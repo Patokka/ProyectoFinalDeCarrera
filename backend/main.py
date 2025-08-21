@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend.dtos.UsuarioDto import UsuarioLogin
-from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, RetencionController, UsuarioController
+from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
 from backend.util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
 from backend.util.permisosUser import get_current_user
 
@@ -97,7 +97,7 @@ async def root():
 
 
 #Ruta de login para usuarios
-@app.post("/login", response_model = dict, description=" 20443072684 , clave123")
+@app.post("/login", response_model = dict, description=" 20443072684,clave123")
 def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
     
     usuario = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
@@ -109,11 +109,12 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     #Creación del token
-    access_token = create_access_token(data={"sub": usuario.nombre}, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"cuil": usuario.cuil, "nombre": usuario.nombre, "apellido": usuario.apellido, "rol": usuario.rol.name }, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 # Registro de las diferentes rutas
+app.include_router(ReporteController.router, prefix="/reportes", tags=["Reportes"], dependencies=[Depends(get_current_user)])
 app.include_router(ArrendadorController.router, prefix="/arrendadores", tags=["Arrendadores"], dependencies=[Depends(get_current_user)])
 app.include_router(ArrendatarioController.router, prefix="/arrendatarios", tags=["Arrendatarios"], dependencies=[Depends(get_current_user)])
 app.include_router(ArrendamientoController.router, prefix="/arrendamientos", tags=["Arrendamientos"], dependencies=[Depends(get_current_user)])

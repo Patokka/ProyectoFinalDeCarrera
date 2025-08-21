@@ -140,7 +140,7 @@ class PagoService:
                 precios = query_base.order_by(Precio.fecha_precio.desc()).limit(5).all()
 
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
 
                 if len(precios) < 5:
                     faltan = 5 - len(precios)
@@ -154,7 +154,7 @@ class PagoService:
                 precios = query_base.order_by(Precio.fecha_precio.desc()).limit(10).all()
 
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
 
                 if len(precios) < 10:
                     faltan = 10 - len(precios)
@@ -171,13 +171,13 @@ class PagoService:
                 ).order_by(Precio.fecha_precio).all()
 
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
 
             case TipoDiasPromedio.ULTIMO_MES:
                 precios = query_base.order_by(Precio.fecha_precio).all()
 
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio}")
+                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
 
             case _:
                 raise ValueError(f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")
@@ -194,7 +194,7 @@ class PagoService:
         if not pago:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
         
-        if pago.precio_promedio > 0 or pago.monto_a_pagar > 0:
+        if (pago.precio_promedio is not None and pago.precio_promedio > 0) or (pago.monto_a_pagar is not None and pago.monto_a_pagar > 0):
             raise HTTPException(status_code=500, detail="El pago ya tiene un monto y precio calculado.")
         
         precio_promedio, precios_en_rango = PagoService._obtener_precios_promedio(db, pago)

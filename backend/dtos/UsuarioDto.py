@@ -56,3 +56,13 @@ class UsuarioLogin(BaseModel):
         "from_attributes": True,     
         "use_enum_values": True   
     }
+    
+class UsuarioLogueado(BaseModel):
+    nombre: str
+    apellido: str
+    rol: TipoRol    
+    
+    model_config = {
+        "from_attributes": True,     
+        "use_enum_values": True   
+    }
