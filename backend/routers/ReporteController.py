@@ -9,7 +9,7 @@ router = APIRouter()
 @router.get("/reportes/mensual/pdf")
 def descargar_reporte(anio: int, mes: int, db: Session = Depends(get_db)):
     buffer = ReporteService.generar_reporte_mensual_pdf(db, anio, mes)
-    filename = f"reporte_{anio}_{mes}.pdf"
+    filename = f"reporte_pagos_{anio}_{mes}.pdf"
 
     return StreamingResponse(
         buffer,
@@ -17,4 +17,15 @@ def descargar_reporte(anio: int, mes: int, db: Session = Depends(get_db)):
         headers={
             "Content-Disposition": f"attachment; filename={filename}"
         }
+    )
+
+@router.get("/reportes/facturacion/excel")
+def descargar_reporte_fiscal(anio_inicio: int, mes_inicio: int, db: Session = Depends(get_db)):
+    buffer = ReporteService.generar_reporte_facturacion_anual(db, anio_inicio, mes_inicio)
+
+    filename = f"reporte_facturacion_{anio_inicio}_{mes_inicio:02d}.xlsx"
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
