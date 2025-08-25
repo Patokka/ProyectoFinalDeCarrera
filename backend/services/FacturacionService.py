@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from backend.enums.EstadoPago import EstadoPago
 from backend.enums.TipoCondicion import TipoCondicion
 from backend.enums.TipoFactura import TipoFactura
 from backend.services.ArrendadorService import ArrendadorService
@@ -59,7 +60,7 @@ class FacturacionService:
 
             # relacionamos la retención con la factura creada
             retencion.facturacion_id = nuevo.id
-
+        pago.estado = EstadoPago.REALIZADO
         db.commit()
         db.refresh(nuevo)
         return nuevo

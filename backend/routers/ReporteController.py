@@ -29,3 +29,20 @@ def descargar_reporte_fiscal(anio_inicio: int, mes_inicio: int, db: Session = De
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+    
+@router.get("/reportes/pagos-pendientes/pdf")
+def descargar_reporte_pagos_pendientes(anio: int, mes: int, db: Session = Depends(get_db)):
+    """
+    Endpoint para descargar el reporte de pagos pendientes en PDF.
+    Solo se permiten reportes del mes actual o futuro.
+    """
+    buffer = ReporteService.generar_reporte_pagos_pendientes_pdf(db, anio, mes)
+    filename = f"reporte_pagos_pendientes_{anio}_{mes}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )

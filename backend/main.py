@@ -85,15 +85,8 @@ def job_actualizar_precio():
 
 # Agregar los dos horarios
 scheduler.add_job(job_actualizar_precio, CronTrigger(hour=8, minute=0))
-scheduler.add_job(job_actualizar_precio, CronTrigger(hour=16, minute=2))
+scheduler.add_job(job_actualizar_precio, CronTrigger(hour=14, minute=25))
 scheduler.start()
-
-
-# Ruta de prueba
-@app.get("/")
-async def root():
-    """Endpoint de prueba"""
-    return {"message": "¡API de Arrendamientos funcionando! 🚀"}
 
 
 #Ruta de login para usuarios
