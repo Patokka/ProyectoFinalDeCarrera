@@ -26,3 +26,7 @@ def actualizar_arrendamiento(arrendamiento_id: int, dto: ArrendamientoDtoModific
 def eliminar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
     ArrendamientoService.eliminar(db, arrendamiento_id)
     return {"mensaje": "Arrendamiento eliminado correctamente."}
+
+@router.post("/cancelar/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Cancelación de un arrendamiento por id.")
+def cancelar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
+    return ArrendamientoService.cancelar_arrendamiento(db, arrendamiento_id)

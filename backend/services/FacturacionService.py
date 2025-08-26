@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -25,20 +26,23 @@ class FacturacionService:
 
     @staticmethod
     def crear(db: Session, dto: FacturacionDto):
-        #verifica si existe el arrendador y si no existe retorna un 404
-        arrendador = ArrendadorService.obtener_por_id(db, dto.arrendador_id)
-        
         #verifica si existe el pago y si no existe retorna un 404
         pago = PagoService.obtener_por_id(db, dto.pago_id)
         
+        if pago.estado == EstadoPago.REALIZADO or pago.estado == EstadoPago.CANCELADO:
+            raise HTTPException(status_code=500, detail= "El pago ya fue facturado o está cancelado.")
+        
+        #verifica si existe el arrendador y si no existe retorna un 404
+        arrendador = pago.participacion_arrendador.arrendador
+        hoy = date.today()
         
         if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA:
             tipo = TipoFactura.C
             nuevo = Facturacion(
                 tipo_factura = tipo,
-                fecha_facturacion = dto.fecha_facturacion,
+                fecha_facturacion = hoy,
                 monto_facturacion = pago.monto_a_pagar,
-                arrendador_id = dto.arrendador_id,
+                arrendador_id = arrendador.id,
                 pago_id = dto.pago_id
             )
             db.add(nuevo)
@@ -46,13 +50,13 @@ class FacturacionService:
         else:
             tipo = TipoFactura.A
             # delegamos la creación de la retención al service
-            retencion = RetencionService.crear_para_factura(db, dto.arrendador_id, pago, dto.fecha_facturacion)
+            retencion = RetencionService.crear_para_factura(db, arrendador.id, pago, hoy)
 
             nuevo = Facturacion(
                 tipo_factura=tipo,
-                fecha_facturacion=dto.fecha_facturacion,
+                fecha_facturacion=hoy,
                 monto_facturacion=pago.monto_a_pagar - retencion.total_retencion,
-                arrendador_id=dto.arrendador_id,
+                arrendador_id=arrendador.id,
                 pago_id=dto.pago_id
             )
             db.add(nuevo)
@@ -60,6 +64,7 @@ class FacturacionService:
 
             # relacionamos la retención con la factura creada
             retencion.facturacion_id = nuevo.id
+            
         pago.estado = EstadoPago.REALIZADO
         db.commit()
         db.refresh(nuevo)

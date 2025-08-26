@@ -164,11 +164,15 @@ class PagoService:
                     ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
                     precios.extend(precios_extra)
 
-            case TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
-                precios = query_base.filter(
-                    extract("day", Precio.fecha_precio) >= 10,
-                    extract("day", Precio.fecha_precio) <= 15
-                ).order_by(Precio.fecha_precio).all()
+            case TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:  ##Se ajusta la query porque es el unico caso que se toman los dias del mes corriente
+                precios = db.query(Precio).filter(
+                                Precio.origen == pago.fuente_precio,
+                                extract("month", Precio.fecha_precio) == vencimiento.month,
+                                extract("year", Precio.fecha_precio) == vencimiento.year
+                            ).filter(
+                                extract("day", Precio.fecha_precio) >= 10,
+                                extract("day", Precio.fecha_precio) <= 15
+                            ).order_by(Precio.fecha_precio).all()
 
                 if not precios:
                     raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")

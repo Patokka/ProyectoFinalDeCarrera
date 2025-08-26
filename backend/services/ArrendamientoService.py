@@ -2,6 +2,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from backend.dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoModificacion
+from backend.enums.EstadoArrendamiento import EstadoArrendamiento
+from backend.enums.EstadoPago import EstadoPago
+from backend.model.Pago import Pago
 from backend.model.ParticipacionArrendador import ParticipacionArrendador
 from ..model.Arrendamiento import Arrendamiento
 from ..dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
@@ -46,6 +49,21 @@ class ArrendamientoService:
             raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
         db.delete(obj)
         db.commit()
+        
+    @staticmethod
+    def cancelar_arrendamiento(db: Session, arrendamiento_id: int):
+        #Verificar si existe el arrendamiento
+        arrendamiento = ArrendamientoService.obtener_por_id(db, arrendamiento_id)
+        
+        pagos = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
+        
+        for pago in pagos:
+            pago.estado = EstadoPago.CANCELADO
+        
+        arrendamiento.estado = EstadoArrendamiento.CANCELADO
+        
+        db.commit()        
+        return arrendamiento
         
     ############################################
     #OPERACIONES DE PARTICIPACIÓN DE ARRENDADOR#

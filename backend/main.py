@@ -31,6 +31,7 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 import pytz
 from backend.services.PrecioService import PrecioService
+from backend.services.ReporteService import ReporteService
 from backend.util.database import SessionLocal  
 
 @asynccontextmanager
@@ -82,10 +83,21 @@ def job_actualizar_precio():
         print(f"Error en job BCR: {e}")
     finally:
         db.close()
+        
+def job_enviar_reporte_pagos():
+    db = SessionLocal()
+    try: 
+        print(f"[{datetime.now()}] Ejecutando job de envío de reporte mensual de pagos pendientes.")
+        ReporteService.enviar_reportes_pagos(db)
+    except Exception as e:
+        print(f"Error en el envío: {e}")
+    finally:
+        db.close()
 
 # Agregar los dos horarios
 scheduler.add_job(job_actualizar_precio, CronTrigger(hour=8, minute=0))
-scheduler.add_job(job_actualizar_precio, CronTrigger(hour=14, minute=25))
+scheduler.add_job(job_actualizar_precio, CronTrigger(hour=15, minute=17))
+scheduler.add_job(job_enviar_reporte_pagos, CronTrigger(day=1, hour=7, minute=0))
 scheduler.start()
 
 

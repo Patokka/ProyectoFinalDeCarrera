@@ -1,7 +1,12 @@
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import io
 import os
 from datetime import date
 from pathlib import Path
+import smtplib
+from dotenv import load_dotenv
 from fastapi import HTTPException
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import (
@@ -16,6 +21,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from sqlalchemy import func
+from backend.enums.TipoCondicion import TipoCondicion
 from backend.model.Arrendador import Arrendador
 from backend.model.Arrendatario import Arrendatario
 from backend.model.Arrendamiento import Arrendamiento
@@ -24,6 +30,8 @@ from backend.model.Facturacion import Facturacion
 from backend.model.ParticipacionArrendador import ParticipacionArrendador
 from backend.model.Retencion import Retencion
 
+# Cargar variables del .env
+load_dotenv()
 
 def formato_fecha(fecha):
     return fecha.strftime("%d-%m-%Y") if fecha else "-"
@@ -35,6 +43,49 @@ def formato_moneda(valor):
     return f"${valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 class ReporteService:
+    
+    SMTP_USER = os.getenv("SMTP_USER")
+    DESTINATARIOS = os.getenv("DESTINATARIOS", "").split(",")
+    SMTP_SERVER = os.getenv("SMTP_SERVER")
+    SMTP_PORT = os.getenv("SMTP_PORT")
+    SMTP_PASS = os.getenv("SMTP_PASS")
+    
+    @staticmethod
+    def enviar_reportes_pagos(db):
+        hoy = date.today()
+        
+        # Generar el reporte del mes actual
+        buffer = ReporteService.generar_reporte_pagos_pendientes_pdf(db, anio=hoy.year, mes=hoy.month)
+        
+        # Preparar email
+        msg = MIMEMultipart()
+        msg["From"] = ReporteService.SMTP_USER
+        msg["To"] = ", ".join(ReporteService.DESTINATARIOS)
+        msg["Subject"] = f"Reporte de pagos pendientes {hoy.month:02d}-{hoy.year}"
+
+        cuerpo = f"""
+        Estimados/as,
+
+        Se adjunta el reporte de pagos pendientes correspondiente a {hoy.month:02d}-{hoy.year}.
+
+        Saludos,
+        Sistema de Arrendamientos
+        """
+        msg.attach(MIMEText(cuerpo, "plain"))
+
+        # Adjuntar PDF
+        filename = f"reporte_pagos_pendientes_{hoy.year}_{hoy.month}.pdf"
+        adjunto = MIMEApplication(buffer.read(), _subtype="pdf")
+        adjunto.add_header("Content-Disposition", "attachment", filename=filename)
+        msg.attach(adjunto)
+
+        # Enviar correo
+        with smtplib.SMTP(ReporteService.SMTP_SERVER, ReporteService.SMTP_PORT) as server:
+            server.starttls()
+            server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
+            server.sendmail(ReporteService.SMTP_USER, ReporteService.DESTINATARIOS, msg.as_string())
+
+        print("✅ Reporte de pagos enviados por mail")
 
     @staticmethod
     def generar_reporte_mensual_pdf(db, anio: int, mes: int, logo_path: str = None):
@@ -87,7 +138,7 @@ class ReporteService:
             elements.append(titulo)
             elements.append(Spacer(1, 0.5 * cm))
 
-            data = [["Razón Social Arrendador", "Vencimiento", "Monto a Pagar", "Retención", "Monto Factura", "Tipo Factura"]]
+            data = [["Arrendador", "Vencimiento", "Monto a Pagar", "Retención", "Monto Factura", "Tipo Factura"]]
 
             # acumuladores de totales
             total_pagos = 0
@@ -379,12 +430,9 @@ class ReporteService:
             elements.append(titulo)
             elements.append(Spacer(1, 0.5 * cm))
 
-            data = [["Razón Social Arrendador", "Vencimiento", "Monto a Pagar", "Retención", "Monto Factura", "Estado"]]
+            data = [["Arrendador", "Vencimiento", "Monto a Pagar", "Consulta precio de", "Tiene Retención"]]
 
-            # acumuladores
             total_pagos = 0
-            total_retenciones = 0
-            total_facturas = 0
 
             arrendamientos = db.query(Arrendamiento).filter(
                 Arrendamiento.arrendatario_id == arr.id
@@ -395,7 +443,7 @@ class ReporteService:
                     Pago.arrendamiento_id == arrendamiento.id,
                     Pago.vencimiento >= fecha_inicio,
                     Pago.vencimiento < fecha_fin,
-                    Pago.estado == "Pendiente"   # 🔹 filtramos solo pendientes
+                    Pago.estado == "Pendiente"
                 ).all()
 
                 for pago in pagos:
@@ -404,63 +452,40 @@ class ReporteService:
                     ).all()
 
                     for participacion in participaciones:
-                        arrendador = db.query(Arrendador).filter(Arrendador.id == participacion.arrendador_id).first()
-                        nombre_arrendador = arrendador.nombre_o_razon_social if arrendador else "-"
+                        arrendador = db.query(Arrendador).filter(
+                            Arrendador.id == participacion.arrendador_id
+                        ).first()
 
-                        facturas = db.query(Facturacion).filter(Facturacion.pago_id == pago.id).all()
+                        nombre_arrendador = arrendador.nombre_o_razon_social if arrendador else "-"
+                        fuente_precio = pago.fuente_precio.name if hasattr(pago, "fuente_precio") else "-"
+                        
+                        # Condición fiscal → retención
+                        tiene_retencion = "NO" if arrendador and arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA else "SI"
 
                         total_pagos += pago.monto_a_pagar or 0
 
-                        if not facturas:
-                            data.append([
-                                nombre_arrendador,
-                                formato_fecha(pago.vencimiento),
-                                formato_moneda(pago.monto_a_pagar),
-                                "-",
-                                "-",
-                                pago.estado.name
-                            ])
-                        else:
-                            for fac in facturas:
-                                total_facturas += fac.monto_facturacion or 0
-
-                                retenciones = db.query(Retencion).filter(Retencion.facturacion_id == fac.id).all()
-                                if not retenciones:
-                                    data.append([
-                                        nombre_arrendador,
-                                        formato_fecha(pago.vencimiento),
-                                        formato_moneda(pago.monto_a_pagar),
-                                        "-",
-                                        formato_moneda(fac.monto_facturacion),
-                                        pago.estado.name
-                                    ])
-                                else:
-                                    for r in retenciones:
-                                        total_retenciones += r.total_retencion or 0
-                                        data.append([
-                                            nombre_arrendador,
-                                            formato_fecha(pago.vencimiento),
-                                            formato_moneda(pago.monto_a_pagar),
-                                            formato_moneda(r.total_retencion),
-                                            formato_moneda(fac.monto_facturacion),
-                                            pago.estado.name
-                                        ])
+                        data.append([
+                            nombre_arrendador,
+                            formato_fecha(pago.vencimiento),
+                            formato_moneda(pago.monto_a_pagar),
+                            fuente_precio,
+                            tiene_retencion
+                        ])
 
             if len(data) == 1:
-                data.append(["-", "-", "-", "-", "-", "-"])
+                data.append(["-", "-", "-", "-", "-"])
             else:
                 data.append([
                     "TOTAL",
                     "-",
                     formato_moneda(total_pagos),
-                    formato_moneda(total_retenciones) if total_retenciones else "-",
-                    formato_moneda(total_facturas) if total_facturas else "-",
+                    "-",
                     "-"
                 ])
 
             table = Table(
                 data,
-                colWidths=[7 * cm, 4 * cm, 4 * cm, 4 * cm, 4 * cm, 3 * cm]
+                colWidths=[7 * cm, 4 * cm, 6 * cm, 4 * cm, 4 * cm]
             )
 
             table.setStyle(TableStyle([

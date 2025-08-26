@@ -6,9 +6,6 @@ from backend.dtos.PagoDto import PagoDtoOut
 from backend.enums.TipoFactura import TipoFactura
 
 class FacturacionDto(BaseModel):
-    fecha_facturacion: date
-    monto_facturacion: float
-    arrendador_id: int
     pago_id: int
     
     model_config = {
