@@ -192,8 +192,10 @@ class PagoService:
 
 
     @staticmethod
-    def generarPrecioCuota(db: Session, pago_id: int):
-        pago = db.query(Pago).options(joinedload(Pago.arrendamiento)).get(pago_id)
+    def generarPrecioCuota(db: Session, pago):
+        
+        if isinstance(pago, int):
+            pago = db.query(Pago).options(joinedload(Pago.arrendamiento)).get(pago)
         
         if not pago:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
@@ -213,3 +215,65 @@ class PagoService:
         db.commit()
         db.refresh(pago)
         return pago
+    
+    
+    @staticmethod
+    def generarPreciosCuotasMensual(db: Session):
+        hoy = date.today()
+        anio, mes = hoy.year, hoy.month
+
+        # Rango del mes actual
+        fecha_inicio = date(anio, mes, 1)
+        fecha_fin = date(anio + (mes // 12), (mes % 12) + 1, 1)
+
+        # Traer pagos del mes
+        pagos = (
+            db.query(Pago)
+            .options(joinedload(Pago.arrendamiento))
+            .filter(
+                Pago.vencimiento >= fecha_inicio,
+                Pago.vencimiento < fecha_fin,
+                Pago.estado == EstadoPago.PENDIENTE
+            ).all()
+        )
+
+        for pago in pagos:
+            #Excluir cuotas especiales
+            if pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
+                continue
+            if pago.quintales is None:
+                continue
+            
+            print(f"----Calculando precio a pago de id: {pago.id}")
+            #Aplicar el cálculo de precio de la cuota
+            PagoService.generarPrecioCuota(db, pago.id)
+
+        db.commit()
+        print(f"✅[{hoy}] Job de actualización: precios de cuotas actualizados para mes {mes}-{anio}.")
+        
+    @staticmethod
+    def generarPrecioCuotas10a15(db: Session):
+        hoy = date.today()
+        anio, mes = hoy.year, hoy.month
+
+        # Rango del mes actual
+        fecha_inicio = date(anio, mes, 1)
+        fecha_fin = date(anio + (mes // 12), (mes % 12) + 1, 1)
+        pagos = (
+            db.query(Pago)
+            .options(joinedload(Pago.arrendamiento))
+            .filter(
+                Pago.vencimiento >= fecha_inicio,
+                Pago.vencimiento < fecha_fin,
+                Pago.estado == EstadoPago.PENDIENTE,
+                Pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL,
+                Pago.quintales.isnot(None)
+            )
+        )
+        for pago in pagos:
+            print(f"----Calculando precio a pago de id: {pago.id}")
+            #Aplicar el cálculo de precio de la cuota
+            PagoService.generarPrecioCuota(db, pago.id)
+
+        db.commit()
+        print(f"✅[{hoy}] Job de actualización: precios de cuotas actualizados para mes {mes}-{anio}.")

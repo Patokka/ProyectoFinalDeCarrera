@@ -4,8 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend.dtos.UsuarioDto import UsuarioLogin
 from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
+from backend.services.PagoService import PagoService
 from backend.util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
 from backend.util.permisosUser import get_current_user
+from backend.dtos.JobUpdateRequest import JobUpdateRequest 
 
 # Importar la configuración de base de datos
 from .util.database import create_tables, get_db
@@ -24,6 +26,7 @@ from .model.Retencion import Retencion
 from .model.ParticipacionArrendador import ParticipacionArrendador
 from .model.pago_precio_association import pago_precio_association
 from .util.Configuracion import Configuracion
+from .util.jobConfiguration import jobConfiguration
 
 # Importación de elementos necesarios para consultar los precios automaticamente a las 08:00 y 17:00 todos los días
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -33,6 +36,11 @@ import pytz
 from backend.services.PrecioService import PrecioService
 from backend.services.ReporteService import ReporteService
 from backend.util.database import SessionLocal  
+
+#Para sacar un poco de logs que son ruidosos y mas que nada son sentencias de la base de datos
+import logging
+logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,13 +75,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+#Definición de jobs asincrónicos
+def obtener_funcion_por_id(job_id):
+    funciones = {
+        "precio_diario_bcr": job_actualizar_precio,
+        "enviar_reportes_pagos_pendientes_mes": job_enviar_reporte_pagos,
+        "actualizar_precios_pagos_mensuales": job_actualizar_precios_pagos,
+        "actualizar_precios_pagos10a15": job_actualizar_precios_pagos_10a15,
+    }
+    return funciones.get(job_id)
 
-# Zona horaria de Argentina
-argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")
+#Inicializar los jobs cuando se arranca la aplicación
+def inicializar_jobs_desde_db():
+    db = SessionLocal()
+    configs = db.query(jobConfiguration).filter_by(active=True).all()
+    for config in configs:
+        trigger = CronTrigger(
+            day=config.day,
+            hour=config.hour,
+            minute=config.minute
+        )
+        scheduler.add_job(
+            func=obtener_funcion_por_id(config.job_id),
+            trigger=trigger,
+            id=config.job_id
+        )
+        print(f"job arrancado: {config.job_id}")
 
-# Scheduler
-scheduler = BackgroundScheduler(timezone=argentina_tz)
-
+#Definición de jobs particulares y delegación a servicios correspondientes
 def job_actualizar_precio():
     db = SessionLocal()
     try:
@@ -94,11 +123,37 @@ def job_enviar_reporte_pagos():
     finally:
         db.close()
 
-# Agregar los dos horarios
-scheduler.add_job(job_actualizar_precio, CronTrigger(hour=8, minute=0))
-scheduler.add_job(job_actualizar_precio, CronTrigger(hour=15, minute=17))
-scheduler.add_job(job_enviar_reporte_pagos, CronTrigger(day=1, hour=7, minute=0))
+def job_actualizar_precios_pagos():
+    db = SessionLocal()
+    try: 
+        print(f"[{datetime.now()}] Ejecutando job de actualización de precios mensual de pagos pendientes.")
+        PagoService.generarPreciosCuotasMensual(db)
+    except Exception as e:
+        print(f"Error en el envío: {e}")
+    finally:
+        db.close()
+        
+def job_actualizar_precios_pagos_10a15():
+    db = SessionLocal()
+    try: 
+        print(f"[{datetime.now()}] Ejecutando job de actualización de pagos pendientes cuyo precio se calcula los dias 16 y se toman los 5 dias anteriores.")
+        PagoService.generarPrecioCuotas10a15(db)
+    except Exception as e:
+        print(f"Error en el envío: {e}")
+    finally:
+        db.close()
+        
+        
+# Zona horaria de Argentina
+argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")
+
+# Scheduler
+scheduler = BackgroundScheduler(timezone=argentina_tz)
+
+# Crear jobs desde la base
+inicializar_jobs_desde_db()
 scheduler.start()
+
 
 
 #Ruta de login para usuarios
@@ -116,6 +171,30 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
     #Creación del token
     access_token = create_access_token(data={"cuil": usuario.cuil, "nombre": usuario.nombre, "apellido": usuario.apellido, "rol": usuario.rol.name }, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
+
+#Ruta para poder modificar la frecuencia con la que se realizan los diferentes trabajos
+@app.post("/actualizar-job")
+def actualizar_job(data: JobUpdateRequest, db: Session = Depends(get_db)):
+    job_config = db.query(jobConfiguration).filter_by(job_id = data.job_id).first()
+    if not job_config:
+        raise HTTPException(status_code=404, detail="Job no encontrado")
+
+    job_config.day = data.day
+    job_config.hour = data.hour
+    job_config.minute = data.minute
+    job_config.active = data.active
+    db.commit()
+
+    scheduler.remove_job(data.job_id)
+    if data.active:
+        trigger = CronTrigger(day=data.day, hour=data.hour, minute=data.minute)
+        scheduler.add_job(
+            func=obtener_funcion_por_id(data.job_id),
+            trigger=trigger,
+            id=data.job_id
+        )
+
+    return {"mensaje": f"Job '{data.job_id}' actualizado y en funcionamiento."}
 
 
 # Registro de las diferentes rutas

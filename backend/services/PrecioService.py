@@ -122,18 +122,18 @@ class PrecioService:
         )
 
         if r.status_code != 200:
-            raise ValueError(f"Error al consultar BCR: {r.status_code} - {r.text}")
+            raise ValueError(f"Error al consultar BCR: {r.status_code} - {r.text}.")
 
         response_json = r.json()
         data = response_json.get("data", [])
 
         if not data:
-            raise ValueError(f"No se encontró precio BCR para {fecha_str}")
+            raise ValueError(f"No se encontró precio BCR para {fecha_str}.")
 
         # Ajustar según el formato real de la respuesta
         precio = data[0].get("precio_Cotizacion")  # ejemplo de nombre de campo
         if precio is None:
-            raise ValueError(f"No se encontró campo 'precio_Cotizacion' en respuesta BCR")
+            raise ValueError(f"No se encontró campo 'precio_Cotizacion' en respuesta BCR.")
 
         return fecha_consulta, precio
 
@@ -148,7 +148,7 @@ class PrecioService:
         ).first()
 
         if existe:
-            print(f"Precio BCR ya cargado para {fecha_precio}")
+            print(f"Precio BCR ya cargado para {fecha_precio}.")
             return None
 
         nuevo_precio = Precio(
@@ -158,7 +158,7 @@ class PrecioService:
         )
         db.add(nuevo_precio)
         db.commit()
-        print(f"Precio BCR agregado: {valor} ({fecha_precio})")
+        print(f"✅Precio BCR agregado: {valor} ({fecha_precio}).")
 
         return None
 
@@ -171,7 +171,7 @@ class PrecioService:
         if not match:
             return JSONResponse(
                 status_code=404,
-                content={"status": "no encontrado", "mensaje": "No se encontró precio de soja en el texto"}
+                content={"status": "no encontrado", "mensaje": "No se encontró precio de soja en el texto."}
             )
 
         valor = float(match.group(1).replace(".", ""))

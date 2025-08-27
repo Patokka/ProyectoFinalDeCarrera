@@ -85,7 +85,7 @@ class ReporteService:
             server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
             server.sendmail(ReporteService.SMTP_USER, ReporteService.DESTINATARIOS, msg.as_string())
 
-        print("✅ Reporte de pagos enviados por mail")
+        print("✅ Reporte de pagos enviados por mail.")
 
     @staticmethod
     def generar_reporte_mensual_pdf(db, anio: int, mes: int, logo_path: str = None):
@@ -300,19 +300,19 @@ class ReporteService:
         for arr in arrendatarios:
             ws = wb.create_sheet(title=arr.razon_social[:25])
 
-            # --- Título ---
+            #Título
             ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(meses) + 2)
             titulo = ws.cell(row=1, column=1, value=f"Reporte de facturación anual - Arrendatario: {arr.razon_social}")
             titulo.font = Font(bold=True, size=14)
             titulo.alignment = Alignment(horizontal="center", vertical="center")
 
-            # --- Cabecera de la tabla ---
+            #Cabecera de la tabla
             ws.cell(row=3, column=1, value="Arrendador").font = bold_font
             for col_idx, (a, m) in enumerate(meses, start=2):
                 ws.cell(row=3, column=col_idx, value=f"{m:02d}-{a}").font = bold_font
             ws.cell(row=3, column=len(meses) + 2, value="TOTAL").font = bold_font
 
-            # Buscar arrendadores relacionados
+            #Buscar arrendadores relacionados
             arrendadores = (
                 db.query(Arrendador)
                 .join(ParticipacionArrendador, ParticipacionArrendador.arrendador_id == Arrendador.id)
@@ -356,7 +356,7 @@ class ReporteService:
                     total_cell.font = bold_font
                     total_cell.number_format = '#,##0.00'
 
-                # Fila de totales por mes
+                #Fila de totales por mes
                 total_row = len(arrendadores) + 4
                 ws.cell(row=total_row, column=1, value="TOTAL").font = bold_font
                 for col_idx in range(2, len(meses) + 3):
@@ -365,7 +365,7 @@ class ReporteService:
                     col_sum_cell.font = bold_font
                     col_sum_cell.number_format = '#,##0.00'
 
-            # --- Bordes y alineación ---
+            #Bordes y alineación
             max_row = ws.max_row
             max_col = ws.max_column
             for r in range(3, max_row + 1):
@@ -374,15 +374,15 @@ class ReporteService:
                     cell.border = thin_border
                     cell.alignment = Alignment(horizontal="center", vertical="center")
 
-            # --- Ajustar anchos de columnas ---
+            #Ajustar anchos de columnas
             for c in range(1, max_col + 1):
                 col_letter = get_column_letter(c)
                 if c == 1:
-                    ws.column_dimensions[col_letter].width = 30  # Arrendador más ancho
+                    ws.column_dimensions[col_letter].width = 30  #Arrendador más ancho
                 else:
                     ws.column_dimensions[col_letter].width = 15
 
-        # Guardar en memoria
+        #Guardar en memoria
         buffer = io.BytesIO()
         wb.save(buffer)
         buffer.seek(0)
@@ -423,7 +423,21 @@ class ReporteService:
         elements = []
         styles = getSampleStyleSheet()
 
+        # Traer arrendatarios
         arrendatarios = db.query(Arrendatario).all()
+
+        # ---- Estilo tabla centralizado ----
+        table_style = TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Times-Roman"),
+            ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+            ("FONTNAME", (0, -1), (-1, -1), "Times-Roman"),
+            ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
+        ])
 
         for idx, arr in enumerate(arrendatarios):
             titulo = Paragraph(f"<b>Arrendatario: {arr.razon_social}</b>", styles["Heading2"])
@@ -434,33 +448,40 @@ class ReporteService:
 
             total_pagos = 0
 
-            arrendamientos = db.query(Arrendamiento).filter(
-                Arrendamiento.arrendatario_id == arr.id
-            ).all()
+            # Traer arrendamientos y pagos de una vez
+            arrendamientos = (
+                db.query(Arrendamiento)
+                .filter(Arrendamiento.arrendatario_id == arr.id)
+                .all()
+            )
 
             for arrendamiento in arrendamientos:
-                pagos = db.query(Pago).filter(
-                    Pago.arrendamiento_id == arrendamiento.id,
-                    Pago.vencimiento >= fecha_inicio,
-                    Pago.vencimiento < fecha_fin,
-                    Pago.estado == "Pendiente"
-                ).all()
+                pagos = (
+                    db.query(Pago)
+                    .filter(
+                        Pago.arrendamiento_id == arrendamiento.id,
+                        Pago.vencimiento >= fecha_inicio,
+                        Pago.vencimiento < fecha_fin,
+                        Pago.estado == "Pendiente"
+                    ).all()
+                )
+
+                if not pagos:
+                    continue
+
+                # Participaciones + arrendadores (evita buscar 1x1)
+                participaciones = (
+                    db.query(ParticipacionArrendador, Arrendador)
+                    .join(Arrendador, Arrendador.id == ParticipacionArrendador.arrendador_id)
+                    .filter(ParticipacionArrendador.arrendamiento_id == arrendamiento.id)
+                    .all()
+                )
 
                 for pago in pagos:
-                    participaciones = db.query(ParticipacionArrendador).filter(
-                        ParticipacionArrendador.arrendamiento_id == arrendamiento.id
-                    ).all()
-
-                    for participacion in participaciones:
-                        arrendador = db.query(Arrendador).filter(
-                            Arrendador.id == participacion.arrendador_id
-                        ).first()
-
-                        nombre_arrendador = arrendador.nombre_o_razon_social if arrendador else "-"
-                        fuente_precio = pago.fuente_precio.name if hasattr(pago, "fuente_precio") else "-"
-                        
-                        # Condición fiscal → retención
-                        tiene_retencion = "NO" if arrendador and arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA else "SI"
+                    for participacion, arrendador in participaciones:
+                        nombre_arrendador = arrendador.nombre_o_razon_social
+                        fuente_precio = pago.fuente_precio.name if pago.fuente_precio else "-"
+                        tiene_retencion = "NO" if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA else "SI"
 
                         total_pagos += pago.monto_a_pagar or 0
 
@@ -476,35 +497,30 @@ class ReporteService:
                 data.append(["-", "-", "-", "-", "-"])
             else:
                 data.append([
-                    "TOTAL",
-                    "-",
-                    formato_moneda(total_pagos),
-                    "-",
-                    "-"
+                    "TOTAL", "-", formato_moneda(total_pagos), "-", "-"
                 ])
 
             table = Table(
                 data,
                 colWidths=[7 * cm, 4 * cm, 6 * cm, 4 * cm, 4 * cm]
             )
-
-            table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("FONTNAME", (0, 0), (-1, 0), "Times-Roman"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                ("FONTNAME", (0, -1), (-1, -1), "Times-Roman"),
-                ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
-            ]))
+            table.setStyle(table_style)
 
             elements.append(table)
+
+            # Nota aclaratoria al final de cada hoja
+            nota = Paragraph(
+                '<font size="9" color="grey"><i>Nota: Los pagos que no tienen monto corresponden a pagos a porcentaje '
+                'o pagos donde su precio se obtiene el día 16 de este mes.</i></font>',
+                styles["Normal"]
+            )
+            elements.append(Spacer(1, 0.4 * cm))
+            elements.append(nota)
 
             if idx < len(arrendatarios) - 1:
                 elements.append(PageBreak())
 
+        # ---- Encabezado con título + logo ----
         def encabezado(canvas, doc):
             canvas.saveState()
             titulo_texto = f"Reporte de pagos pendientes {mes:02d}-{anio}"
