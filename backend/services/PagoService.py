@@ -219,6 +219,11 @@ class PagoService:
     
     @staticmethod
     def generarPreciosCuotasMensual(db: Session):
+        """
+        Método para asignarle el precio a las cuotas del mes actual
+        y que toman precios del mes anterior, además son cuotas de pago
+        y no de entrega de producción por eso se sacan las que tienen quintales = None
+        """
         hoy = date.today()
         anio, mes = hoy.year, hoy.month
 
@@ -236,23 +241,28 @@ class PagoService:
                 Pago.estado == EstadoPago.PENDIENTE
             ).all()
         )
-
+        contador = 0
         for pago in pagos:
             #Excluir cuotas especiales
             if pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
                 continue
             if pago.quintales is None:
                 continue
-            
+            contador+=1
             print(f"----Calculando precio a pago de id: {pago.id}")
             #Aplicar el cálculo de precio de la cuota
             PagoService.generarPrecioCuota(db, pago.id)
 
         db.commit()
-        print(f"✅[{hoy}] Job de actualización: precios de cuotas actualizados para mes {mes}-{anio}.")
+        print(f"✅[{hoy}] Job de actualización: precios de cuotas actualizados para mes {mes}-{anio}: {contador}.")
         
     @staticmethod
     def generarPrecioCuotas10a15(db: Session):
+        """
+        Genera el precio de las cuotas que tienen como forma de calcular
+        el precio promedio los precios ubicados entre el 10 y el 15 de cada mes.
+        Se utilizará este método una vez por mes el día 16.
+        """
         hoy = date.today()
         anio, mes = hoy.year, hoy.month
 
@@ -276,4 +286,33 @@ class PagoService:
             PagoService.generarPrecioCuota(db, pago.id)
 
         db.commit()
-        print(f"✅[{hoy}] Job de actualización: precios de cuotas actualizados para mes {mes}-{anio}.")
+        print(f"✅[{hoy}] Job de actualización: precios de cuotas actualizados para mes {mes}-{anio}: {len(pagos)}.")
+
+
+    @staticmethod
+    def actualizarPagosVencidos(db: Session):
+        """
+        Marca como VENCIDO todos los pagos con vencimiento en el día de ayer
+        que aún estén en estado PENDIENTE.
+        """
+        hoy = date.today()
+        ayer = hoy - timedelta(days=1)
+
+        # Buscar pagos pendientes con vencimiento ayer
+        pagos = (
+            db.query(Pago)
+            .filter(
+                Pago.vencimiento == ayer,
+                Pago.estado == EstadoPago.PENDIENTE
+            ).all()
+        )
+
+        if not pagos:
+            print(f"✅ No se encontraron pagos VENCIDOS para {ayer}.")
+            return
+
+        for pago in pagos:
+            pago.estado = EstadoPago.VENCIDO
+
+        db.commit()
+        print(f"✅[{hoy}] Job de actualización: Se actualizaron {len(pagos)} pagos como VENCIDOS para la fecha {ayer}.")

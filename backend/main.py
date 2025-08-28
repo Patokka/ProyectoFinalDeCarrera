@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from backend.dtos.UsuarioDto import UsuarioLogin
 from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
-from backend.services.PagoService import PagoService
 from backend.util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
 from backend.util.permisosUser import get_current_user
 from backend.dtos.JobUpdateRequest import JobUpdateRequest 
@@ -28,13 +27,15 @@ from .model.pago_precio_association import pago_precio_association
 from .util.Configuracion import Configuracion
 from .util.jobConfiguration import jobConfiguration
 
-# Importación de elementos necesarios para consultar los precios automaticamente a las 08:00 y 17:00 todos los días
+# Importación de elementos necesarios para consultar los precios automaticamente a las 11 todos los días
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 import pytz
 from backend.services.PrecioService import PrecioService
 from backend.services.ReporteService import ReporteService
+from backend.services.PagoService import PagoService
+from backend.services.ArrendamientoService import ArrendamientoService
 from backend.util.database import SessionLocal  
 
 #Para sacar un poco de logs que son ruidosos y mas que nada son sentencias de la base de datos
@@ -82,6 +83,8 @@ def obtener_funcion_por_id(job_id):
         "enviar_reportes_pagos_pendientes_mes": job_enviar_reporte_pagos,
         "actualizar_precios_pagos_mensuales": job_actualizar_precios_pagos,
         "actualizar_precios_pagos10a15": job_actualizar_precios_pagos_10a15,
+        "actualizar_pagos_vencidos": job_actualizar_pagos_vencidos,
+        "actualizar_arrendamientos_vencidos": job_actualizar_arrendamientos_vencidos,
     }
     return funciones.get(job_id)
 
@@ -142,7 +145,26 @@ def job_actualizar_precios_pagos_10a15():
         print(f"Error en el envío: {e}")
     finally:
         db.close()
-        
+
+def job_actualizar_pagos_vencidos():
+    db = SessionLocal()
+    try: 
+        print(f"[{datetime.now()}] Ejecutando job de actualización de pagos que su vencimiento ya pasó.")
+        PagoService.actualizarPagosVencidos(db)
+    except Exception as e:
+        print(f"Error en el envío: {e}")
+    finally:
+        db.close()
+
+def job_actualizar_arrendamientos_vencidos():
+    db = SessionLocal()
+    try: 
+        print(f"[{datetime.now()}] Ejecutando job de actualización de arrendamientos que su vencimiento ya pasó.")
+        ArrendamientoService.actualizarArrendamientosVencidos(db)
+    except Exception as e:
+        print(f"Error en el envío: {e}")
+    finally:
+        db.close()
         
 # Zona horaria de Argentina
 argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")

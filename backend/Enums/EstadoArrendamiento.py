@@ -4,3 +4,4 @@ class EstadoArrendamiento(Enum):
     ACTIVO = "ACTIVO"
     FINALIZADO = "FINALIZADO"
     CANCELADO = "CANCELADO"
+    VENCIDO = "VENCIDO"

@@ -30,3 +30,7 @@ def eliminar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db))
 @router.post("/cancelar/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Cancelación de un arrendamiento por id.")
 def cancelar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
     return ArrendamientoService.cancelar_arrendamiento(db, arrendamiento_id)
+
+@router.post("/finalizar/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Finalizar un arrendamiento por id.")
+def finalizar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
+    return ArrendamientoService.finalizar_arrendamiento(db, arrendamiento_id)

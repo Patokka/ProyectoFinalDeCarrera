@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -64,6 +65,73 @@ class ArrendamientoService:
         
         db.commit()        
         return arrendamiento
+    
+    @staticmethod
+    def finalizar_arrendamiento(db: Session, arrendamiento_id: int):
+        arrendamiento = ArrendamientoService.obtener_por_id(db,arrendamiento_id)
+        
+        if arrendamiento.estado == EstadoArrendamiento.CANCELADO:
+            raise HTTPException(status_code=500, detail=f"No se puede finalizar el arrendamiento de id {arrendamiento.id} ya que el mismo ha sido CANCELADO.")
+        
+        if ArrendamientoService.tieneCuotasPagadas(db, arrendamiento.id):
+            arrendamiento.estado = EstadoArrendamiento.FINALIZADO
+            db.commit()
+            return arrendamiento
+        else:
+            raise HTTPException(status_code=500, detail= f"No se puede finalizar el arrendamiento de id {arrendamiento.id} ya que posee cuotas sin facturar.")
+    
+    @staticmethod
+    def tieneCuotasPagadas(db: Session, arrendamiento_id):
+        """
+        Devuelve True si el arrendamiento tiene TODAS sus cuotas pagadas (estado REALIZADO).
+        Si existe al menos un pago en otro estado entonces devuelve False.
+        """
+
+        # Consultamos si existe algún pago que NO esté realizado
+        existe_pendiente = (
+            db.query(Pago.id)
+            .filter(
+                Pago.arrendamiento_id == arrendamiento_id,
+                Pago.estado != EstadoPago.REALIZADO
+            )
+            .first()
+        )
+
+        return existe_pendiente is None
+        
+    @staticmethod
+    def actualizarArrendamientosVencidos(db: Session):
+        """
+        Marca como FINALIZADO todos los arrendamientos con vencimiento en el día de ayer
+        que aún estén en estado PENDIENTE.
+        """
+        hoy = date.today()
+        ayer = hoy - timedelta(days=1)
+
+        # Buscar arrendamientos pendientes con vencimiento ayer
+        arrendamientos = (
+            db.query(Arrendamiento)
+            .filter(
+                Arrendamiento.fecha_fin == ayer,
+                Arrendamiento.estado == EstadoArrendamiento.ACTIVO
+            ).all()
+        )
+
+        if not arrendamientos:
+            print(f"✅ No se encontraron arrendamientos VENCIDOS para {ayer}.")
+            return
+
+        vencidos = 0
+        
+        for arrendamiento in arrendamientos:
+            if(ArrendamientoService.tieneCuotasPagadas(db, arrendamiento.id)):
+                arrendamiento.estado = EstadoArrendamiento.FINALIZADO
+            else:
+                arrendamiento.estado = EstadoArrendamiento.VENCIDO
+                vencidos+=1
+
+        db.commit()
+        print(f"✅[{hoy}] Job de actualización: Se actualizaron {len(arrendamientos)-vencidos} arrendamientos como FINALIZADOS  y {vencidos} arrendamientos como VENCIDOS para la fecha {ayer}.")
         
     ############################################
     #OPERACIONES DE PARTICIPACIÓN DE ARRENDADOR#
