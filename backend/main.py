@@ -85,6 +85,7 @@ def obtener_funcion_por_id(job_id):
         "actualizar_precios_pagos10a15": job_actualizar_precios_pagos_10a15,
         "actualizar_pagos_vencidos": job_actualizar_pagos_vencidos,
         "actualizar_arrendamientos_vencidos": job_actualizar_arrendamientos_vencidos,
+        "enviar_reporte_pagos_mes_anterior": job_enviar_reporte_pagos_mes_anterior,
     }
     return funciones.get(job_id)
 
@@ -123,6 +124,16 @@ def job_enviar_reporte_pagos():
         ReporteService.enviar_reportes_pagos(db)
     except Exception as e:
         print(f"Error en el envío: {e}")
+    finally:
+        db.close()
+
+def job_enviar_reporte_pagos_mes_anterior():
+    db = SessionLocal()
+    try:
+        print(f"[{datetime.now()}] Ejecutando job de envío de reporte mensual de pagos realizados de precio BCR.")
+        ReporteService.enviar_reporte_pagos_mes_anterior(db)
+    except Exception as e:
+        print(f"Error en job BCR: {e}")
     finally:
         db.close()
 
@@ -230,6 +241,6 @@ app.include_router(FacturacionController.router, prefix="/facturacion", tags=["F
 app.include_router(RetencionController.router, prefix="/retencion", tags=["Retencion"], dependencies=[Depends(get_current_user)])
 app.include_router(LocalidadController.router, prefix="/localidad", tags=["Localidad"], dependencies=[Depends(get_current_user)])
 app.include_router(ProvinciaController.router, prefix="/provincia", tags=["Provincia"], dependencies=[Depends(get_current_user)])
-app.include_router(PrecioController.router, prefix="/precio", tags=["Precio"], dependencies=[Depends(get_current_user)]) #SI ENCONTRAS FORMA DE HACER QUE LLEGUE LA DE AGD PONER INDIVIDUALMENTE LOS LOCKS EN ESTAS RUTAS
+app.include_router(PrecioController.router, prefix="/precio", tags=["Precio"])##, dependencies=[Depends(get_current_user)]) #SI ENCONTRAS FORMA DE HACER QUE LLEGUE LA DE AGD PONER INDIVIDUALMENTE LOS LOCKS EN ESTAS RUTAS
 app.include_router(ParticipacionArrendadorController.router, prefix="/participaciones", tags=["Participacioines de Arrendadores en Arrendamientos"], dependencies=[Depends(get_current_user)])
 

@@ -50,6 +50,51 @@ class ReporteService:
     SMTP_PORT = os.getenv("SMTP_PORT")
     SMTP_PASS = os.getenv("SMTP_PASS")
     
+    
+    @staticmethod
+    def enviar_reporte_pagos_mes_anterior(db):
+        hoy = date.today()
+        
+        if hoy.month == 1:
+            ultimo_anio = hoy.year - 1
+            ultimo_mes = 12
+        else:
+            ultimo_anio = hoy.year
+            ultimo_mes = hoy.month - 1
+        # Generar el reporte del mes actual
+        buffer = ReporteService.generar_reporte_mensual_pdf(db, anio=ultimo_anio, mes=ultimo_mes)
+        
+        # Preparar email
+        msg = MIMEMultipart()
+        msg["From"] = ReporteService.SMTP_USER
+        msg["To"] = ", ".join(ReporteService.DESTINATARIOS)
+        msg["Subject"] = f"Reporte de pagos pendientes {ultimo_mes:02d}-{ultimo_anio}"
+
+        cuerpo = f"""
+        Estimados/as,
+
+        Se adjunta el reporte de pagos correspondientes a {ultimo_mes:02d}-{ultimo_anio}.
+
+        Saludos,
+        Sistema de Arrendamientos
+        """
+        msg.attach(MIMEText(cuerpo, "plain"))
+
+        # Adjuntar PDF
+        filename = f"reporte_pagos_pendientes_{ultimo_anio}_{ultimo_mes}.pdf"
+        adjunto = MIMEApplication(buffer.read(), _subtype="pdf")
+        adjunto.add_header("Content-Disposition", "attachment", filename=filename)
+        msg.attach(adjunto)
+
+        # Enviar correo
+        with smtplib.SMTP(ReporteService.SMTP_SERVER, ReporteService.SMTP_PORT) as server:
+            server.starttls()
+            server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
+            server.sendmail(ReporteService.SMTP_USER, ReporteService.DESTINATARIOS, msg.as_string())
+
+        print("✅ Reporte de pagos enviados por mail.")
+
+    
     @staticmethod
     def enviar_reportes_pagos(db):
         hoy = date.today()

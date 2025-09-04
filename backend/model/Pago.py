@@ -17,7 +17,7 @@ class Pago(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     estado: Mapped[EstadoPago] = mapped_column(Enum(EstadoPago), nullable=False, default=EstadoPago.PENDIENTE)
     quintales: Mapped[float] = mapped_column(nullable=True)
-    precio_promedio: Mapped[float] = mapped_column(nullable=True)
+    precio_promedio:  Mapped[Decimal] = mapped_column(Numeric(12,2),nullable=True)
     vencimiento: Mapped[date] = mapped_column(Date, nullable=False)
     fuente_precio: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=True)
     monto_a_pagar: Mapped[Decimal] = mapped_column(Numeric(12,2),nullable=True)
