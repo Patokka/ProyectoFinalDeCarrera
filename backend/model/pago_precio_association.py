@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, ForeignKey
-from backend.util.database import Base
+from util.database import Base
 from sqlalchemy.orm import registry
 
 pago_precio_association = Table(

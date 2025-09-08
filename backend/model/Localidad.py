@@ -1,7 +1,7 @@
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.model.Provincia import Provincia
-from backend.util.database import Base
+from model.Provincia import Provincia
+from util.database import Base
 
 class Localidad(Base):
     __tablename__ = "localidad"

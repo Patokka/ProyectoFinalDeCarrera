@@ -1,6 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel
-from backend.dtos.ProvinciaDto import ProvinciaDtoOut
+from dtos.ProvinciaDto import ProvinciaDtoOut
 
 class LocalidadDto(BaseModel):
     nombre_localidad: str

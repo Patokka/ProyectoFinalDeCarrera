@@ -1,15 +1,15 @@
 from datetime import date
 from sqlalchemy import Date, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.enums.EstadoArrendamiento import EstadoArrendamiento
-from backend.enums.TipoArrendamiento import TipoArrendamiento
-from backend.enums.PlazoPago import PlazoPago
-from backend.enums.TipoDiasPromedio import TipoDiasPromedio
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
-from backend.model.Arrendatario import Arrendatario
-from backend.model.Localidad import Localidad
-from backend.model.Usuario import Usuario
-from backend.util.database import Base
+from enums.EstadoArrendamiento import EstadoArrendamiento
+from enums.TipoArrendamiento import TipoArrendamiento
+from enums.PlazoPago import PlazoPago
+from enums.TipoDiasPromedio import TipoDiasPromedio
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from model.Arrendatario import Arrendatario
+from model.Localidad import Localidad
+from model.Usuario import Usuario
+from util.database import Base
 
 class Arrendamiento(Base):
     __tablename__ = "arrendamiento"

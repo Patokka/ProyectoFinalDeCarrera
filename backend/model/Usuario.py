@@ -1,7 +1,7 @@
 from sqlalchemy import Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
-from backend.enums.TipoRol import TipoRol
-from backend.util.database import Base
+from enums.TipoRol import TipoRol
+from util.database import Base
 
 class Usuario(Base):
     __tablename__ = "usuario"

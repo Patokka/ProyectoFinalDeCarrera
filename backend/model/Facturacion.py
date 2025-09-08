@@ -2,10 +2,10 @@ from datetime import date
 from decimal import Decimal
 from sqlalchemy import Date, Enum, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.enums.TipoFactura import TipoFactura
-from backend.model.Arrendador import Arrendador
-from backend.model.Pago import Pago
-from backend.util.database import Base
+from enums.TipoFactura import TipoFactura
+from model.Arrendador import Arrendador
+from model.Pago import Pago
+from util.database import Base
 
 class Facturacion(Base):
     __tablename__ = "facturacion"

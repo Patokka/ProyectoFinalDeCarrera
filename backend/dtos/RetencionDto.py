@@ -1,8 +1,8 @@
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel
-from backend.dtos.ArrendadorDto import ArrendadorDtoOut
-from backend.dtos.FacturacionDto import FacturacionDtoOut
+from dtos.ArrendadorDto import ArrendadorDtoOut
+from dtos.FacturacionDto import FacturacionDtoOut
 
 class RetencionDto(BaseModel):
     fecha_retencion: date

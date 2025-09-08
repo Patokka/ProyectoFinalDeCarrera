@@ -3,13 +3,13 @@ from decimal import Decimal
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.enums.PlazoPago import PlazoPago
-from backend.enums.TipoCondicion import TipoCondicion
-from backend.services.ArrendadorService import ArrendadorService
-from backend.services.ArrendamientoService import ArrendamientoService
-from ..model.Retencion import Retencion
-from backend.dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
-from backend.util.Configuracion import Configuracion
+from enums.PlazoPago import PlazoPago
+from enums.TipoCondicion import TipoCondicion
+from services.ArrendadorService import ArrendadorService
+from services.ArrendamientoService import ArrendamientoService
+from model.Retencion import Retencion
+from dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
+from util.Configuracion import Configuracion
 class RetencionService:
 
     @staticmethod

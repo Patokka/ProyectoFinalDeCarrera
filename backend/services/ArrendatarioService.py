@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from ..model.Arrendatario import Arrendatario
-from ..dtos.ArrendatarioDto import ArrendatarioDto, ArrendatarioDtoOut, ArrendatarioDtoModificacion
+from model.Arrendatario import Arrendatario
+from dtos.ArrendatarioDto import ArrendatarioDto, ArrendatarioDtoOut, ArrendatarioDtoModificacion
 
 class ArrendatarioService:
 

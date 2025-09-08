@@ -1,8 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr, field_validator
-from backend.enums.TipoCondicion import TipoCondicion
-from backend.util.cuilValidator import validar_cuil_cuit
-from backend.dtos.LocalidadDto import LocalidadDtoOut
+from enums.TipoCondicion import TipoCondicion
+from util.cuilValidator import validar_cuil_cuit
+from dtos.LocalidadDto import LocalidadDtoOut
 
 class ArrendatarioDto(BaseModel):
     razon_social: str

@@ -2,13 +2,13 @@ from datetime import date
 from decimal import Decimal
 from sqlalchemy import Date, Enum, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.model.pago_precio_association import pago_precio_association
-from backend.model.ParticipacionArrendador import ParticipacionArrendador
-from backend.model.Precio import Precio
-from backend.util.database import Base
-from backend.enums.EstadoPago import EstadoPago
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
-from backend.model.Arrendamiento import Arrendamiento
+from model.pago_precio_association import pago_precio_association
+from model.ParticipacionArrendador import ParticipacionArrendador
+from model.Precio import Precio
+from util.database import Base
+from enums.EstadoPago import EstadoPago
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from model.Arrendamiento import Arrendamiento
 
 
 class Pago(Base):

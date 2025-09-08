@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
-from backend.dtos.ArrendadorDto import ArrendadorDtoOut
-from backend.dtos.ArrendamientoDto import ArrendamientoDtoOut
+from dtos.ArrendadorDto import ArrendadorDtoOut
+from dtos.ArrendamientoDto import ArrendamientoDtoOut
 
 class ParticipacionArrendadorDto(BaseModel):
     hectareas_asignadas: float

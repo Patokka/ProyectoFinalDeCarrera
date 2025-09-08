@@ -1,18 +1,18 @@
 from fastapi import HTTPException
 from sqlalchemy import extract
 from sqlalchemy.orm import Session, joinedload
-from backend.enums.EstadoPago import EstadoPago
-from backend.enums.PlazoPago import PlazoPago
-from backend.enums.TipoArrendamiento import TipoArrendamiento
-from backend.enums.TipoDiasPromedio import TipoDiasPromedio
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
-from backend.model.Precio import Precio
-from backend.model.pago_precio_association import pago_precio_association
-from backend.model.ParticipacionArrendador import ParticipacionArrendador
-from ..model.Pago import Pago
-from backend.services import PrecioService
-from ..services.ArrendamientoService import ArrendamientoService
-from ..dtos.PagoDto import PagoDto, PagoDtoModificacion
+from enums.EstadoPago import EstadoPago
+from enums.PlazoPago import PlazoPago
+from enums.TipoArrendamiento import TipoArrendamiento
+from enums.TipoDiasPromedio import TipoDiasPromedio
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from model.Precio import Precio
+from model.pago_precio_association import pago_precio_association
+from model.ParticipacionArrendador import ParticipacionArrendador
+from model.Pago import Pago
+from services import PrecioService
+from services.ArrendamientoService import ArrendamientoService
+from dtos.PagoDto import PagoDto, PagoDtoModificacion
 from datetime import date, timedelta
 
 

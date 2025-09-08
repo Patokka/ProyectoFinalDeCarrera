@@ -2,9 +2,9 @@ from datetime import date
 from decimal import Decimal
 from sqlalchemy import Date, ForeignKey, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.model.Arrendador import Arrendador
-from backend.model.Facturacion import Facturacion
-from backend.util.database import Base
+from model.Arrendador import Arrendador
+from model.Facturacion import Facturacion
+from util.database import Base
 
 class Retencion(Base):
     __tablename__ = "retencion"

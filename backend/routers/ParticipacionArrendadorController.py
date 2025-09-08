@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from ..util.database import get_db
-from ..dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoOut, ParticipacionArrendadorDtoModificacion
-from ..services.ArrendamientoService import ArrendamientoService
+from util.database import get_db
+from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoOut, ParticipacionArrendadorDtoModificacion
+from services.ArrendamientoService import ArrendamientoService
 
 router = APIRouter()
 

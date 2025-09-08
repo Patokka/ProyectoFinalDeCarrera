@@ -1,6 +1,6 @@
 
 from sqlalchemy import Boolean, Integer, String
-from backend.util.database import Base
+from util.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
 class jobConfiguration(Base):

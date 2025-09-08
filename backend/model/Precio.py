@@ -1,9 +1,9 @@
 from datetime import date
 from sqlalchemy import Date, Enum, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.model.pago_precio_association import pago_precio_association
-from backend.util.database import Base
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
+from model.pago_precio_association import pago_precio_association
+from util.database import Base
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
 
 class Precio(Base):
     __tablename__ = "precio"

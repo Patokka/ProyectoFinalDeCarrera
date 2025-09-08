@@ -1,14 +1,14 @@
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel
-from backend.enums.EstadoArrendamiento import EstadoArrendamiento
-from backend.enums.PlazoPago import PlazoPago
-from backend.enums.TipoArrendamiento import TipoArrendamiento
-from backend.enums.TipoDiasPromedio import TipoDiasPromedio
-from backend.dtos.LocalidadDto import LocalidadDtoOut
-from backend.dtos.UsuarioDto import UsuarioDtoOut
-from backend.dtos.ArrendatarioDto import ArrendatarioDtoOut
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
+from enums.EstadoArrendamiento import EstadoArrendamiento
+from enums.PlazoPago import PlazoPago
+from enums.TipoArrendamiento import TipoArrendamiento
+from enums.TipoDiasPromedio import TipoDiasPromedio
+from dtos.LocalidadDto import LocalidadDtoOut
+from dtos.UsuarioDto import UsuarioDtoOut
+from dtos.ArrendatarioDto import ArrendatarioDtoOut
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
 
 class ArrendamientoDto(BaseModel):
     tipo: TipoArrendamiento

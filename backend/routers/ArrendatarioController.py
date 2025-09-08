@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from ..util.database import get_db
-from ..dtos.ArrendatarioDto import ArrendatarioDto, ArrendatarioDtoOut, ArrendatarioDtoModificacion
-from ..services.ArrendatarioService import ArrendatarioService
+from util.database import get_db
+from dtos.ArrendatarioDto import ArrendatarioDto, ArrendatarioDtoOut, ArrendatarioDtoModificacion
+from services.ArrendatarioService import ArrendatarioService
 
 router = APIRouter()
 

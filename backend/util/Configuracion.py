@@ -1,6 +1,6 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
-from backend.util.database import Base
+from util.database import Base
 
 class Configuracion(Base):
     __tablename__ = "configuracion"

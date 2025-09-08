@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr, field_validator
-from backend.enums.TipoRol import TipoRol
-from backend.util.cuilValidator import validar_cuil_cuit
+from enums.TipoRol import TipoRol
+from util.cuilValidator import validar_cuil_cuit
 
 class UsuarioDto(BaseModel):
     nombre: str

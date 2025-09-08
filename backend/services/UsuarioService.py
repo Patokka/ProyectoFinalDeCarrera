@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from ..model.Usuario import Usuario
-from ..dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
-from backend.util.jwtYPasswordHandler import hash_password, verify_password
+from model.Usuario import Usuario
+from dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
+from util.jwtYPasswordHandler import hash_password, verify_password
 
 class UsuarioService:
 

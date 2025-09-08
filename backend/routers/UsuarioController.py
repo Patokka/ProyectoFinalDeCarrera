@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.model.Usuario import Usuario
-from backend.util.permisosUser import admin_required
-from ..util.database import get_db
-from ..dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
-from ..services.UsuarioService import UsuarioService
+from model.Usuario import Usuario
+from util.permisosUser import admin_required
+from util.database import get_db
+from dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
+from services.UsuarioService import UsuarioService
 
 router = APIRouter()
 

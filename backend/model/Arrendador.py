@@ -1,8 +1,8 @@
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.enums.TipoCondicion import TipoCondicion 
-from backend.model.Localidad import Localidad
-from backend.util.database import Base
+from enums.TipoCondicion import TipoCondicion 
+from model.Localidad import Localidad
+from util.database import Base
 
 class Arrendador(Base):
     __tablename__ = "arrendador"

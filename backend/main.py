@@ -2,50 +2,50 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from backend.dtos.UsuarioDto import UsuarioLogin
-from backend.routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
-from backend.util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
-from backend.util.permisosUser import get_current_user
-from backend.dtos.JobUpdateRequest import JobUpdateRequest 
+from dtos.UsuarioDto import UsuarioLogin
+from routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
+from util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
+from util.permisosUser import get_current_user
+from dtos.JobUpdateRequest import JobUpdateRequest 
 
 # Importar la configuración de base de datos
-from .util.database import create_tables, get_db
+from util.database import create_tables, get_db
 
 # Importar todos los modelos para que SQLAlchemy los reconozca
-from .model.Usuario import Usuario
-from .model.Provincia import Provincia
-from .model.Localidad import Localidad
-from .model.Arrendador import Arrendador
-from .model.Arrendatario import Arrendatario
-from .model.Arrendamiento import Arrendamiento
-from .model.Pago import Pago
-from .model.Precio import Precio
-from .model.Facturacion import Facturacion
-from .model.Retencion import Retencion
-from .model.ParticipacionArrendador import ParticipacionArrendador
-from .model.pago_precio_association import pago_precio_association
-from .util.Configuracion import Configuracion
-from .util.jobConfiguration import jobConfiguration
+from model.Usuario import Usuario
+from model.Provincia import Provincia
+from model.Localidad import Localidad
+from model.Arrendador import Arrendador
+from model.Arrendatario import Arrendatario
+from model.Arrendamiento import Arrendamiento
+from model.Pago import Pago
+from model.Precio import Precio
+from model.Facturacion import Facturacion
+from model.Retencion import Retencion
+from model.ParticipacionArrendador import ParticipacionArrendador
+from model.pago_precio_association import pago_precio_association
+from util.Configuracion import Configuracion
+from util.jobConfiguration import jobConfiguration
 
 # Importación de elementos necesarios para consultar los precios automaticamente a las 11 todos los días
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 import pytz
-from backend.services.PrecioService import PrecioService
-from backend.services.ReporteService import ReporteService
-from backend.services.PagoService import PagoService
-from backend.services.ArrendamientoService import ArrendamientoService
-from backend.util.database import SessionLocal  
+from services.PrecioService import PrecioService
+from services.ReporteService import ReporteService
+from services.PagoService import PagoService
+from services.ArrendamientoService import ArrendamientoService
+from util.database import SessionLocal  
 
 #Para sacar un poco de logs que son ruidosos y mas que nada son sentencias de la base de datos
 import logging
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
 #Importación del bot de escucha de mensajes para actualizar precios de AGD
-from backend.util.botPrecioAGD import BotPrecioAGD
+from util.botPrecioAGD import BotPrecioAGD
 
-bot = BotPrecioAGD()
+#####################################################################bot = BotPrecioAGD()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,14 +59,14 @@ async def lifespan(app: FastAPI):
         print(f"❌ Error al crear las tablas: {e}")
     
     print("🤖 Iniciando BotPrecioAGD...")
-    bot.start()
+    #####################################################################bot.start()
     
     yield
     
     # Shutdown: limpiar recursos si es necesario
     print("🔄 Cerrando aplicación...")
     print("🛑 Deteniendo BotPrecioAGD...")
-    bot.stop()
+    ####################################################################bot.stop()
 
 # Crear la aplicación FastAPI con lifespan
 app = FastAPI(

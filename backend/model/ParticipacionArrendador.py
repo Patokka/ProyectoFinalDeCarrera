@@ -1,8 +1,8 @@
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.model.Arrendador import Arrendador
-from backend.model.Arrendamiento import Arrendamiento
-from backend.util.database import Base
+from model.Arrendador import Arrendador
+from model.Arrendamiento import Arrendamiento
+from util.database import Base
 
 
 class ParticipacionArrendador(Base):

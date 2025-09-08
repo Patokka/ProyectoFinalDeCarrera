@@ -1,8 +1,8 @@
 from fastapi import Depends, APIRouter
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from backend.util.database import get_db
-from backend.services.ReporteService import ReporteService
+from util.database import get_db
+from services.ReporteService import ReporteService
 
 router = APIRouter()
 

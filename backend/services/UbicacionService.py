@@ -1,9 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from ..model.Localidad import Localidad
-from ..model.Provincia import Provincia
-from backend.dtos.LocalidadDto import LocalidadDto, LocalidadDtoModificacion
-from backend.dtos.ProvinciaDto import ProvinciaDto, ProvinciaDtoModificacion
+from model.Localidad import Localidad
+from model.Provincia import Provincia
+from dtos.LocalidadDto import LocalidadDto, LocalidadDtoModificacion
+from dtos.ProvinciaDto import ProvinciaDto, ProvinciaDtoModificacion
 
 #Esta clase se encargará tanto de las operaciones de las entidades localidad como de provincia.
 class UbicacionService:

@@ -2,14 +2,14 @@ from datetime import date
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.enums.EstadoPago import EstadoPago
-from backend.enums.TipoCondicion import TipoCondicion
-from backend.enums.TipoFactura import TipoFactura
-from backend.services.ArrendadorService import ArrendadorService
-from backend.services.PagoService import PagoService
-from backend.services.RetencionService import RetencionService
-from ..model.Facturacion import Facturacion
-from backend.dtos.FacturacionDto import FacturacionDto, FacturacionDtoModificacion
+from enums.EstadoPago import EstadoPago
+from enums.TipoCondicion import TipoCondicion
+from enums.TipoFactura import TipoFactura
+from services.ArrendadorService import ArrendadorService
+from services.PagoService import PagoService
+from services.RetencionService import RetencionService
+from model.Facturacion import Facturacion
+from dtos.FacturacionDto import FacturacionDto, FacturacionDtoModificacion
 
 class FacturacionService:
 

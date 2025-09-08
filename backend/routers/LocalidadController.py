@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from ..util.database import get_db
-from ..dtos.LocalidadDto import LocalidadDto, LocalidadDtoOut, LocalidadDtoModificacion
-from ..services.UbicacionService import UbicacionService
+from util.database import get_db
+from dtos.LocalidadDto import LocalidadDto, LocalidadDtoOut, LocalidadDtoModificacion
+from services.UbicacionService import UbicacionService
 
 router = APIRouter()
 

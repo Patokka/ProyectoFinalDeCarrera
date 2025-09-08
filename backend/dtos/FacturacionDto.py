@@ -1,9 +1,9 @@
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel
-from backend.dtos.ArrendadorDto import ArrendadorDtoOut
-from backend.dtos.PagoDto import PagoDtoOut
-from backend.enums.TipoFactura import TipoFactura
+from dtos.ArrendadorDto import ArrendadorDtoOut
+from dtos.PagoDto import PagoDtoOut
+from enums.TipoFactura import TipoFactura
 
 class FacturacionDto(BaseModel):
     pago_id: int

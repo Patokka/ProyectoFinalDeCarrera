@@ -21,14 +21,14 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from sqlalchemy import func
-from backend.enums.TipoCondicion import TipoCondicion
-from backend.model.Arrendador import Arrendador
-from backend.model.Arrendatario import Arrendatario
-from backend.model.Arrendamiento import Arrendamiento
-from backend.model.Pago import Pago
-from backend.model.Facturacion import Facturacion
-from backend.model.ParticipacionArrendador import ParticipacionArrendador
-from backend.model.Retencion import Retencion
+from enums.TipoCondicion import TipoCondicion
+from model.Arrendador import Arrendador
+from model.Arrendatario import Arrendatario
+from model.Arrendamiento import Arrendamiento
+from model.Pago import Pago
+from model.Facturacion import Facturacion
+from model.ParticipacionArrendador import ParticipacionArrendador
+from model.Retencion import Retencion
 
 # Cargar variables del .env
 load_dotenv()

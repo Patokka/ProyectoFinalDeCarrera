@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from backend.dtos.ConfiguracionDto import ConfiguracionDtoModificacion
-from ..util.database import get_db
-from ..dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
-from ..services.RetencionService import RetencionService
+from dtos.ConfiguracionDto import ConfiguracionDtoModificacion
+from util.database import get_db
+from dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
+from services.RetencionService import RetencionService
 
 
 router = APIRouter()

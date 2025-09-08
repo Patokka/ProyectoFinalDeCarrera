@@ -1,10 +1,10 @@
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel
-from backend.dtos.ArrendamientoDto import ArrendamientoDtoOut
-from backend.dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDtoOut
-from backend.enums.EstadoPago import EstadoPago
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
+from dtos.ArrendamientoDto import ArrendamientoDtoOut
+from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDtoOut
+from enums.EstadoPago import EstadoPago
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
 
 class PagoDto(BaseModel):
     quintales: float

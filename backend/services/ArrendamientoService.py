@@ -2,13 +2,13 @@ from datetime import date, timedelta
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoModificacion
-from backend.enums.EstadoArrendamiento import EstadoArrendamiento
-from backend.enums.EstadoPago import EstadoPago
-from backend.model.Pago import Pago
-from backend.model.ParticipacionArrendador import ParticipacionArrendador
-from ..model.Arrendamiento import Arrendamiento
-from ..dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
+from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoModificacion
+from enums.EstadoArrendamiento import EstadoArrendamiento
+from enums.EstadoPago import EstadoPago
+from model.Pago import Pago
+from model.ParticipacionArrendador import ParticipacionArrendador
+from model.Arrendamiento import Arrendamiento
+from dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 
 class ArrendamientoService:
 

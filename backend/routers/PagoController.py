@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..util.database import get_db
-from ..dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion
-from ..services.PagoService import PagoService
+from util.database import get_db
+from dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion
+from services.PagoService import PagoService
 
 router = APIRouter()
 

@@ -1,0 +1,75 @@
+'use client'
+
+import Link from 'next/link'
+import { 
+  FileText, 
+  Users, 
+  Building2, 
+  Receipt 
+} from 'lucide-react'
+
+const quickActions = [
+  {
+    title: 'Arrendamientos',
+    description: 'Gestionar contratos de arrendamiento',
+    href: '/arrendamientos',
+    icon: FileText,
+    color: 'bg-blue-500 hover:bg-blue-600'
+  },
+  {
+    title: 'Arrendadores',
+    description: 'Administrar propietarios',
+    href: '/arrendadores',
+    icon: Users,
+    color: 'bg-green-500 hover:bg-green-600'
+  },
+  {
+    title: 'Arrendatarios',
+    description: 'Gestionar inquilinos',
+    href: '/arrendatarios',
+    icon: Building2,
+    color: 'bg-purple-500 hover:bg-purple-600'
+  },
+  {
+    title: 'Facturaciones',
+    description: 'Procesar facturas y pagos',
+    href: '/facturaciones',
+    icon: Receipt,
+    color: 'bg-orange-500 hover:bg-orange-600'
+  }
+]
+
+export default function QuickActions() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+      {quickActions.map((action) => {
+        const Icon = action.icon
+        
+        return (
+          <Link
+            key={action.title}
+            href={action.href}
+            className="group"
+          >
+            <div className="card p-6 hover:shadow-lg transition-all duration-200 group-hover:scale-105">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className={`w-16 h-16 rounded-lg ${action.color} flex items-center justify-center transition-colors duration-200`}>
+                  <Icon className="w-8 h-8 text-white" />
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {action.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {action.description}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}

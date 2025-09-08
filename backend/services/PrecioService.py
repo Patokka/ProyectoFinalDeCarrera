@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from backend.enums.TipoOrigenPrecio import TipoOrigenPrecio
-from ..model.Precio import Precio
-from backend.dtos.PrecioDto import PrecioDto, PrecioDtoModificacion
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from model.Precio import Precio
+from dtos.PrecioDto import PrecioDto, PrecioDtoModificacion
 
 # Cargar variables del .env
 load_dotenv()

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
-from ..util.database import get_db
-from ..dtos.PrecioDto import PrecioDto, PrecioDtoOut, PrecioDtoModificacion
-from ..services.PrecioService import PrecioService
+from util.database import get_db
+from dtos.PrecioDto import PrecioDto, PrecioDtoOut, PrecioDtoModificacion
+from services.PrecioService import PrecioService
 
 router = APIRouter()
 

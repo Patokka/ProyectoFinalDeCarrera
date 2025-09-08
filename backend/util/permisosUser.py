@@ -3,11 +3,11 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt
 from jose.exceptions import JWTError, ExpiredSignatureError
-from backend.dtos.UsuarioDto import UsuarioLogueado
-from backend.enums.TipoRol import TipoRol
-from backend.model.Usuario import Usuario
-from backend.util.jwtYPasswordHandler import ALGORITHM, SECRET_KEY
-from backend.util.database import get_db
+from dtos.UsuarioDto import UsuarioLogueado
+from enums.TipoRol import TipoRol
+from model.Usuario import Usuario
+from util.jwtYPasswordHandler import ALGORITHM, SECRET_KEY
+from util.database import get_db
 from sqlalchemy.orm import Session
 
 
