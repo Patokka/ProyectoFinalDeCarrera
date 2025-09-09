@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar as CalendarIcon } from 'lucide-react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -36,38 +36,51 @@ export default function Calendar({ paymentDates = [] }: CalendarProps) {
   const weekDays = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
 
   return (
-    <div className="card p-4 w-full max-w-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Calendario Mensual</h3>
+    <div className="card w-full max-w-sm mx-auto">
+      {/* Header expandible */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center space-x-2">
+          <CalendarIcon className="w-5 h-5 text-primary-600" />
+          <h3 className="text-lg font-semibold text-gray-900">Calendario Mensual</h3>
+        </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
+          aria-label={isExpanded ? 'Contraer calendario' : 'Expandir calendario'}
         >
-          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {isExpanded ? (
+            <ChevronUp className="w-5 h-5 text-gray-600" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-600" />
+          )}
         </button>
       </div>
 
-      {isExpanded && (
-        <>
+      {/* Contenido expandible */}
+      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+        isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+      }`}>
+        <div className="p-4">
           {/* Month Navigation */}
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={previousMonth}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              aria-label="Mes anterior"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 text-gray-600" />
             </button>
             
-            <h4 className="text-base font-medium text-gray-900">
+            <h4 className="text-base font-medium text-gray-900 capitalize">
               {format(currentDate, 'MMMM yyyy', { locale: es })}
             </h4>
             
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              aria-label="Mes siguiente"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 text-gray-600" />
             </button>
           </div>
 
@@ -96,10 +109,13 @@ export default function Calendar({ paymentDates = [] }: CalendarProps) {
                 <div
                   key={day.toISOString()}
                   className={`
-                    h-8 flex flex-col items-center justify-center text-sm relative
-                    ${isCurrentDay ? 'bg-primary-100 text-primary-700 font-semibold rounded' : 'text-gray-700'}
+                    h-8 flex flex-col items-center justify-center text-sm relative cursor-pointer
+                    transition-colors duration-200 rounded
+                    ${isCurrentDay 
+                      ? 'bg-primary-100 text-primary-700 font-semibold' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                    }
                     ${!isSameMonth(day, currentDate) ? 'text-gray-300' : ''}
-                    hover:bg-gray-100 cursor-pointer rounded
                   `}
                 >
                   <span>{day.getDate()}</span>
@@ -110,7 +126,21 @@ export default function Calendar({ paymentDates = [] }: CalendarProps) {
               )
             })}
           </div>
-        </>
+        </div>
+      </div>
+
+      {/* Vista contraída - solo muestra el mes actual */}
+      {!isExpanded && (
+        <div className="p-4">
+          <div className="text-center">
+            <p className="text-sm text-gray-600 capitalize">
+              {format(currentDate, 'MMMM yyyy', { locale: es })}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {paymentDates.length > 0 ? `${paymentDates.length} pagos este mes` : 'Sin pagos'}
+            </p>
+          </div>
+        </div>
       )}
     </div>
   )

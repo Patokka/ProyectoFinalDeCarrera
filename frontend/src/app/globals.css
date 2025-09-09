@@ -14,11 +14,11 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
   }
   
   .btn-secondary {
-    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
   }
   
   .card {
@@ -26,10 +26,27 @@
   }
   
   .nav-link {
-    @apply text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+    @apply text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md font-medium transition-colors duration-200;
   }
   
   .nav-link-active {
     @apply bg-primary-100 text-primary-700;
+  }
+
+  /* Animaciones suaves para elementos expandibles */
+  .expandable-content {
+    transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  }
+
+  /* Mejoras para el menú móvil */
+  .mobile-menu-enter {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  
+  .mobile-menu-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
   }
 }

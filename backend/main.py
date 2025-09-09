@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from dtos.UsuarioDto import UsuarioLogin
 from routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
@@ -79,7 +80,7 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  #CAMBIAR PERMISOS DE QUIEN PUEDE ACCEDER EN PRODUCCION
+    allow_origin_regex=r"http://(192.168.0.\d{1,3}|localhost|127.0.0.1):3000", #de acá tocar la subred para producción
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -201,18 +202,45 @@ scheduler.start()
 #Ruta de login para usuarios
 @app.post("/login", response_model = dict, description=" 20443072684,clave123")
 def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
-    
     usuario = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
-    
+
     if not usuario or not verify_password(dto.contrasena, usuario.contrasena):
         raise HTTPException(status_code=401, detail="Cuil o clave inválidas.")
-    
-    #Duración del token
+
+    # Duración del token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    #Creación del token
-    access_token = create_access_token(data={"cuil": usuario.cuil, "nombre": usuario.nombre, "apellido": usuario.apellido, "rol": usuario.rol.name }, expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    # Creación del token
+    access_token = create_access_token(
+        data={
+            "cuil": usuario.cuil,
+            "nombre": usuario.nombre,
+            "apellido": usuario.apellido,
+            "rol": usuario.rol.name,
+        },
+        expires_delta=access_token_expires,
+    )
+
+    #Respuesta con cookie HttpOnly para front y JSON
+    response = JSONResponse(
+            content={
+                "access_token": access_token,
+                "token_type": "bearer",
+                "cuil": usuario.cuil,
+                "nombre": usuario.nombre,
+                "apellido": usuario.apellido,
+                "rol": usuario.rol.name
+            }
+    )
+    return response
+
+
+@app.post("/logout", response_model=dict)
+def logout(response: Response):
+    #Elimina la cookie que contiene el token
+    response = JSONResponse(content={"message": "Sesión cerrada correctamente"})
+    response.delete_cookie(key="token")
+    return response
 
 #Ruta para poder modificar la frecuencia con la que se realizan los diferentes trabajos
 @app.post("/actualizar-job")
