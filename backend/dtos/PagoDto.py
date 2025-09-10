@@ -47,3 +47,8 @@ class PagoDtoModificacion(BaseModel):
         "from_attributes": True,
         "use_enum_values": True
     }
+    
+class PagoResumenDto(BaseModel):
+    arrendatario: str
+    cantidad: int
+    monto: float

@@ -1,6 +1,8 @@
 from fastapi import HTTPException
-from sqlalchemy import extract
+from sqlalchemy import extract, func
 from sqlalchemy.orm import Session, joinedload
+from model.Arrendamiento import Arrendamiento
+from model.Arrendatario import Arrendatario
 from enums.EstadoPago import EstadoPago
 from enums.PlazoPago import PlazoPago
 from enums.TipoArrendamiento import TipoArrendamiento
@@ -316,3 +318,44 @@ class PagoService:
 
         db.commit()
         print(f"✅[{hoy}] Job de actualización: Se actualizaron {len(pagos)} pagos como VENCIDOS para la fecha {ayer}.")
+        
+    @staticmethod
+    def obtener_pagos_agrupados_mes(db: Session):
+        today = date.today()
+
+        results = (
+            db.query(
+                Arrendatario.razon_social.label("arrendatario"),
+                func.count(Pago.id).label("cantidad"),
+                func.sum(Pago.monto_a_pagar).label("monto")
+            )
+            .join(Arrendamiento, Pago.arrendamiento_id == Arrendamiento.id)
+            .join(Arrendatario, Arrendamiento.arrendatario_id == Arrendatario.id)
+            .filter(extract("year", Pago.vencimiento) == today.year)
+            .filter(extract("month", Pago.vencimiento) == today.month)
+            .filter(Pago.estado.in_(["PENDIENTE", "VENCIDO"]))
+            .group_by(Arrendatario.razon_social)
+            .all()
+        )
+        
+        response = [
+            {
+                "arrendatario": r.arrendatario,
+                "cantidad": int(r.cantidad) if r.cantidad is not None else 0,
+                "monto": float(r.monto) if r.monto is not None else 0
+            }
+            for r in results
+        ]
+
+        return response
+    
+    @staticmethod
+    def obtener_vencimientos_mes(db: Session, mes: int, anio: int):
+        results = (
+            db.query(Pago.vencimiento)
+            .filter(extract("month", Pago.vencimiento) == mes)
+            .filter(extract("year", Pago.vencimiento) == anio)
+            .filter(Pago.estado.in_(["PENDIENTE", "VENCIDO", "REALIZADO"]))
+            .all()
+            )
+        return [r.vencimiento.isoformat() for r in results]

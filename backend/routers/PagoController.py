@@ -2,10 +2,24 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from util.database import get_db
-from dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion
+from dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion, PagoResumenDto
 from services.PagoService import PagoService
 
 router = APIRouter()
+
+@router.get("/resumen-mes", response_model= list[PagoResumenDto] ,description="Obtención de resumen mensual de pagos, con la cantidad por arrendatario y el precio total.")
+def obtener_pagos_agrupados_mes(db:Session = Depends(get_db)):
+    try:
+        return PagoService.obtener_pagos_agrupados_mes(db)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/vencimientos-mes", response_model=List[str], description="Se obtienen todas las fechas de vencimiento de los pagos de un mes determinado.")
+def obtener_vencimientos_mes(mes: int, anio: int, db: Session = Depends(get_db)):
+    try:
+        return PagoService.obtener_vencimientos_mes(db, mes, anio)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/", response_model=list[PagoDtoOut], description="Obtención de todos los pagos.")
 def listar_pagos(db: Session = Depends(get_db)):

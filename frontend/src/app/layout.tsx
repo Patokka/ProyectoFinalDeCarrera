@@ -8,6 +8,9 @@ import { AuthProvider } from "@/components/context/AuthContext";
 export const metadata: Metadata = {
   title: "Sistema de Gestión de Arrendamientos",
   description: "Sistema para gestionar arrendamientos rurales",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

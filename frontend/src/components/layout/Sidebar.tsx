@@ -6,6 +6,7 @@ import PaymentSummary from '../home/PaymentSummary'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { useAuth } from '@/components/context/AuthContext'
+import Link from 'next/link'
 
 export default function SideBar({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
@@ -28,8 +29,15 @@ export default function SideBar({ children }: { children: React.ReactNode }) {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
         {sidebarVisible && (
           <div className="lg:col-span-1 space-y-4 p-4 bg-slate-200 border-r border-gray-400 transition-all duration-300">
-            <Calendar paymentDates={[new Date(2024,0,15), new Date(2024,0,22), new Date(2024,0,28)]} />
-            <PaymentSummary currentMonth={format(new Date(), 'MMMM yyyy', { locale: es })} />
+            <Calendar/>
+            <PaymentSummary/>
+            <div className="card p-4">
+              <Link href="/facturaciones" passHref>
+                <button className="w-full btn-primary text-sm">
+                  Ir a pestaña de facturación
+                </button>
+              </Link>
+            </div>
           </div>
         )}
 

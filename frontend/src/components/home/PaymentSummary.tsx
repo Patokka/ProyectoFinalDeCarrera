@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Calendar, DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
+import { fetchPaymentSummary } from '@/lib/pagos/auth'
 
 interface PaymentSummaryItem {
   arrendatario: string
@@ -9,26 +10,26 @@ interface PaymentSummaryItem {
   monto: number
 }
 
-interface PaymentSummaryProps {
-  currentMonth?: string
-}
 
-export default function PaymentSummary({ currentMonth }: PaymentSummaryProps) {
+export default function PaymentSummary() {
   const [payments, setPayments] = useState<PaymentSummaryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(true)
 
   // Datos de ejemplo - en producción vendrían de la API
   useEffect(() => {
-    // Simular carga de datos
-    setTimeout(() => {
-      setPayments([
-        { arrendatario: 'Arrendatario1', cantidad: 3, monto: 150000 },
-        { arrendatario: 'Arrendatario2', cantidad: 2, monto: 85000 },
-        { arrendatario: 'Arrendatario3', cantidad: 1, monto: 45000 },
-      ])
-      setLoading(false)
-    }, 1000)
+    async function loadPayments() {
+      try {
+        const data = await fetchPaymentSummary()
+        setPayments(data)
+      } catch (error) {
+        console.error(error)
+        setPayments([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadPayments()
   }, [])
 
   const totalPagos = payments.reduce((sum, item) => sum + item.cantidad, 0)
@@ -96,7 +97,7 @@ export default function PaymentSummary({ currentMonth }: PaymentSummaryProps) {
               <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-gray-900">
-                    • {payment.cantidad} pagos con {payment.arrendatario}
+                    • {payment.cantidad} pago/s con {payment.arrendatario}
                   </span>
                 </div>
                 <span className="text-sm font-semibold text-green-600">
@@ -131,7 +132,7 @@ export default function PaymentSummary({ currentMonth }: PaymentSummaryProps) {
         <div className="p-4">
           <div className="text-center">
             <p className="text-sm font-semibold text-gray-900">
-              {totalPagos} pagos pendientes
+              {totalPagos} pago/s pendientes
             </p>
             <p className="text-lg font-bold text-primary-600">
               {formatCurrency(totalMonto)}
