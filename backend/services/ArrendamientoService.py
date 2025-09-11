@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoModificacion
 from enums.EstadoArrendamiento import EstadoArrendamiento
@@ -14,7 +14,23 @@ class ArrendamientoService:
 
     @staticmethod
     def listar_todos(db: Session):
-        return db.query(Arrendamiento).all()
+        arrendamientos = (
+            db.query(Arrendamiento)
+            .options(
+                joinedload(Arrendamiento.participaciones)
+                .joinedload(ParticipacionArrendador.arrendador)
+            )
+            .all()
+        )
+
+        result = []
+        for arr in arrendamientos:
+            arr_dto = ArrendamientoDtoOut.model_validate(arr)
+            # mapear solo arrendadores, no participaciones
+            arr_dto.arrendadores = [p.arrendador for p in arr.participaciones]
+            result.append(arr_dto)
+
+        return result
 
     @staticmethod
     def obtener_por_id(db: Session, arrendamiento_id: int):

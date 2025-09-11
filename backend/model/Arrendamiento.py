@@ -7,6 +7,7 @@ from enums.PlazoPago import PlazoPago
 from enums.TipoDiasPromedio import TipoDiasPromedio
 from enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Arrendatario import Arrendatario
+from model.ParticipacionArrendador import ParticipacionArrendador
 from model.Localidad import Localidad
 from model.Usuario import Usuario
 from util.database import Base
@@ -34,3 +35,6 @@ class Arrendamiento(Base):
     localidad: Mapped["Localidad"] = relationship()
     usuario: Mapped["Usuario"] = relationship()
     arrendatario: Mapped["Arrendatario"] = relationship()
+    participaciones: Mapped[list["ParticipacionArrendador"]] = relationship(
+        back_populates="arrendamiento"
+    )

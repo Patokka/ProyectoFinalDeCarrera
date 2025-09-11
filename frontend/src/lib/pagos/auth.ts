@@ -1,10 +1,7 @@
+import { PaymentSummaryResponse } from "../type";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export interface PaymentSummaryResponse {
-  arrendatario: string
-  cantidad: number
-  monto: number
-}
 
 export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
     const token = localStorage.getItem("token")
@@ -15,6 +12,12 @@ export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
         Authorization: `Bearer ${token}`, 
         }
     })
+    if (res.status === 401) {
+    // limpiar sesión y redirigir
+      localStorage.removeItem("token")
+      window.location.href = "/login"
+      throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
     if (!res.ok) {
         throw new Error("Error al obtener resumen de pagos")
     }
@@ -29,7 +32,15 @@ export async function fetchPaymentDates(month: number, year: number): Promise<Da
       Authorization: `Bearer ${token}`,
     },
   })
-  if (!res.ok) throw new Error("Error al obtener fechas de pago")
+  if (res.status === 401) {
+    // limpiar sesión y redirigir
+    localStorage.removeItem("token")
+    window.location.href = "/login"
+    throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+  }
+  if (!res.ok) {
+        throw new Error("Error al obtener resumen de pagos")
+  }
   const data: string[] = await res.json()
   return data.map(d => new Date(d))
 }

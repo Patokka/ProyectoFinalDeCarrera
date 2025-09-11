@@ -5,7 +5,9 @@ import {
   FileText, 
   Users, 
   Building2, 
-  Receipt 
+  Receipt, 
+  Percent,
+  CreditCard
 } from 'lucide-react'
 
 const quickActions = [
@@ -25,23 +27,37 @@ const quickActions = [
   },
   {
     title: 'Arrendatarios',
-    description: 'Gestionar inquilinos',
+    description: 'Gestionar empresas productoras',
     href: '/arrendatarios',
     icon: Building2,
     color: 'bg-purple-500 hover:bg-purple-600'
   },
   {
     title: 'Facturaciones',
-    description: 'Procesar facturas y pagos',
+    description: 'Procesar facturas',
     href: '/facturaciones',
     icon: Receipt,
     color: 'bg-orange-500 hover:bg-orange-600'
+  },
+    {
+    title: 'Pagos',
+    description: 'Administrar pagos',
+    href: '/pagos',
+    icon: CreditCard,
+    color: 'bg-yellow-500 hover:bg-yellow-600'
+  },
+    {
+    title: 'Retenciones',
+    description: 'Gestionar Retenciones',
+    href: '/retenciones',
+    icon: Percent,
+    color: 'bg-red-500 hover:bg-red-600'
   }
 ]
 
 export default function QuickActions() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
       {quickActions.map((action) => {
         const Icon = action.icon
         

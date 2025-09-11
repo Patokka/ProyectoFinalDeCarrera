@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Optional
 from pydantic import BaseModel
+from dtos.ArrendadorDto import ArrendadorDtoOut
 from enums.EstadoArrendamiento import EstadoArrendamiento
 from enums.PlazoPago import PlazoPago
 from enums.TipoArrendamiento import TipoArrendamiento
@@ -46,6 +47,7 @@ class ArrendamientoDtoOut(BaseModel):
     origen_precio: TipoOrigenPrecio
     porcentaje_aparceria: Optional[float]
     descripcion: Optional[str]
+    arrendadores: list[ArrendadorDtoOut] = []
 
     model_config = {
         "from_attributes": True,     

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 
 interface User {
   cuil: string
@@ -57,6 +57,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user')
     localStorage.removeItem('token')
   }
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedUser = localStorage.getItem('user')
+      const token = localStorage.getItem('token')
+      if (!storedUser || !token) {
+        setUser(null)
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+
+    // También verificamos al montar el componente
+    handleStorageChange()
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+    }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

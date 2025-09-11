@@ -1,7 +1,5 @@
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from model.Arrendador import Arrendador
-from model.Arrendamiento import Arrendamiento
 from util.database import Base
 
 
@@ -20,6 +18,6 @@ class ParticipacionArrendador(Base):
     arrendador_id: Mapped[int] = mapped_column(ForeignKey("arrendador.id"), nullable=False)
     arrendamiento_id:  Mapped[int] = mapped_column(ForeignKey("arrendamiento.id"), nullable=False)
     
-    #Relaciones
-    arrendador: Mapped["Arrendador"] = relationship()  # noqa: F821
-    arrendamiento: Mapped["Arrendamiento"] = relationship()
+    #Relaciones, ESTÁ BIEN QUE NO TENGAN EL IMPORT DEL MODELO, SI LOS PONES SE HACE IMPORT CIRCULAR Y NO ANDA. TEMA DE SQLALCHEMY
+    arrendador: Mapped["Arrendador"] = relationship("Arrendador",back_populates="participaciones") # type: ignore
+    arrendamiento: Mapped["Arrendamiento"] = relationship("Arrendamiento",back_populates="participaciones") # type: ignore

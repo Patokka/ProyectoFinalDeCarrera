@@ -30,11 +30,6 @@ export default function Navbar() {
 
   if (!mounted || !user) return null // No renderiza si no hay sesión
 
-  {/*            <img
-              src="/logo2.png"
-              alt="Avatar"
-              className="w-10 h-10 rounded-lg object-cover"
-            />/*/}
   return (
     <nav className="bg-slate-50 shadow-lg border-b border-gray-200 fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

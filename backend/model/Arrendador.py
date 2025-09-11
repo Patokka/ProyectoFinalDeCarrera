@@ -1,5 +1,6 @@
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from model.ParticipacionArrendador import ParticipacionArrendador
 from enums.TipoCondicion import TipoCondicion 
 from model.Localidad import Localidad
 from util.database import Base
@@ -18,3 +19,6 @@ class Arrendador(Base):
 
     #Relaciones
     localidad: Mapped["Localidad"] = relationship()
+    participaciones: Mapped[list["ParticipacionArrendador"]] = relationship(
+        "ParticipacionArrendador",back_populates="arrendador"
+    )

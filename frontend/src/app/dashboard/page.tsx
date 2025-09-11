@@ -1,4 +1,4 @@
-import QuickActions from '@/components/home/QuickActions'
+import QuickActions from '@/components/ui/QuickActions'
 import ProtectedRoute from '@/components/layout/ProtectedRoute'
 
 
@@ -11,18 +11,16 @@ export default function HomePage() {
           {/* Header */}
           <div className="text-center mb-8 lg:mb-12">
             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              ¡Bienvenido al Sistema
+              ¡Bienvenido al Sistema de
               <br />
-              de Gestión de
-              <br />
-              Arrendamientos!
+              Gestión de Arrendamientos!
             </h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
 
             {/* Contenido principal */}
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-4">
               <div className="flex items-center justify-center min-h-[400px] lg:min-h-[500px]">
                 <QuickActions />
               </div>

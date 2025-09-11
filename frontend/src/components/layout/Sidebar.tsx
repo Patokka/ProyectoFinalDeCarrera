@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Calendar from '../home/Calendar'
-import PaymentSummary from '../home/PaymentSummary'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import Calendar from '../ui/Calendar'
+import PaymentSummary from '../ui/PaymentSummary'
 import { useAuth } from '@/components/context/AuthContext'
 import Link from 'next/link'
 
