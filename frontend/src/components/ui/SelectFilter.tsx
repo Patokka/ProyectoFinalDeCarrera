@@ -39,7 +39,7 @@ export default function SelectFilter({ options, value, onChange, placeholder = "
   return (
     
     <div className={`relative ${className}`} ref={dropdownRef}>
-      <h6 className="text-sm font-medium text-gray-700 mb-3">{label}:</h6>
+      <h6 className="text-sm font-medium text-gray-700 mb-1">{label}:</h6>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}

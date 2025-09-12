@@ -97,10 +97,12 @@ export default function ArrendamientosPage() {
               <div className="flex items-center space-x-4">
                 <h1 className="text-2xl font-bold text-gray-900">Arrendamientos</h1>
               </div>
-              <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
-                <Plus className="h-4 w-4" />
-                <span>Nuevo Arrendamiento</span>
-              </button>
+              <Link href = "/arrendamientos/post" passHref> 
+                <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                  <Plus className="h-4 w-4" />
+                  <span>Nuevo Arrendamiento</span>
+                </button>
+              </Link>
             </div>
           </div>
 

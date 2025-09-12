@@ -64,6 +64,11 @@ async def lifespan(app: FastAPI):
     
     yield
     
+    try:
+        engine.dispose()
+        print("✅ Conexiones de base de datos cerradas correctamente")
+    except Exception as e:
+        print(f"❌ Error al cerrar conexiones: {e}")
     # Shutdown: limpiar recursos si es necesario
     print("🔄 Cerrando aplicación...")
     print("🛑 Deteniendo BotPrecioAGD...")

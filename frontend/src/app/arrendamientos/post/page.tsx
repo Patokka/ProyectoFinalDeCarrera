@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Calendar, Trash2, Plus } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import SearchInput from '@/components/ui/SearchInput';
 import SelectFilter from '@/components/ui/SelectFilter';
+import { toast } from 'sonner'
+import DateInput from '@/components/ui/DateInput';
+import Input from '@/components/ui/Input';
+import { NumberInput } from '@/components/ui/NumberInput';
+import { ArrendadorSelect } from '@/components/ui/ArrendadorSelect';
 
 // Tipos
 interface Arrendador {
@@ -31,13 +36,13 @@ const plazoOptions = [
 const promedioOptions = [
   { value: 'ULTIMOS_5_DIAS', label: 'Últimos 5 días hábiles del mes anterior al pago' },
   { value: 'ULTIMOS_10_DIAS', label: 'Últimos 10 días hábiles del mes anterior al pago' },
-  { value: 'MES_ANTERIOR', label: 'Mes anterior al pago' }
+  { value: 'MES_ANTERIOR', label: 'Mes anterior al pago' },
+  { value: 'DEL_10_AL_15_MES_ACTUAL', label: 'Precios del día 10 al día 15 del mes actual al pago' }
 ];
 
 const fuenteOptions = [
   { value: 'BCR', label: 'BCR' },
-  { value: 'MATBA', label: 'MATBA' },
-  { value: 'OTRO', label: 'OTRO' }
+  { value: 'AGD', label: 'AGD' }
 ];
 
 const provinciaOptions = [
@@ -57,6 +62,13 @@ const arrendatarioOptions = [
   { value: 'AGRICOLA_SA', label: 'AGRICOLA SA' },
   { value: 'CAMPO_NUEVO', label: 'CAMPO NUEVO' }
 ];
+
+const arrendadoresDisponibles: Arrendador[] = [
+  { id: '1', nombre: 'NORDESAN', hectareas: 0, quintales: 0 },
+  { id: '2', nombre: 'AGRICOLA SA', hectareas: 0, quintales: 0 },
+  { id: '3', nombre: 'CAMPO NUEVO', hectareas: 0, quintales: 0 }
+];
+
 
 export default function CrearArrendamientoPage() {
   const [formData, setFormData] = useState({
@@ -94,18 +106,28 @@ export default function CrearArrendamientoPage() {
     }));
   };
 
-  const agregarArrendador = () => {
-    if (nuevoArrendador.nombre && nuevoArrendador.hectareas) {
-      const newArrendador: Arrendador = {
-        id: Date.now().toString(),
-        nombre: nuevoArrendador.nombre,
-        hectareas: parseFloat(nuevoArrendador.hectareas) || 0,
-        quintales: parseFloat(nuevoArrendador.quintales) || 0
-      };
-      setArrendadores([...arrendadores, newArrendador]);
-      setNuevoArrendador({ nombre: '', hectareas: '', quintales: '' });
-    }
+  const handleNumberChange = (field: string, value: number|undefined) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
+
+
+  const agregarArrendador = () => {
+    if (!nuevoArrendador.nombre) return;
+
+    const newArrendador: Arrendador = {
+      id: Date.now().toString(),
+      nombre: nuevoArrendador.nombre,
+      hectareas: formData.tipo === 'FIJO' ? parseFloat(nuevoArrendador.hectareas) || 0 : 0,
+      quintales: formData.tipo === 'FIJO' ? parseFloat(nuevoArrendador.quintales) || 0 : 0
+    };
+
+    setArrendadores([...arrendadores, newArrendador]);
+    setNuevoArrendador({ nombre: '', hectareas: '', quintales: '' });
+  };
+
 
   const eliminarArrendador = (id: string) => {
     setArrendadores(arrendadores.filter(a => a.id !== id));
@@ -116,20 +138,37 @@ export default function CrearArrendamientoPage() {
     if (formData.tipo === 'FIJO') {
       const hectareasArrendamiento = parseFloat(formData.hectareas) || 0;
       if (Math.abs(totalHectareas - hectareasArrendamiento) > 0.01) {
-        alert(`La suma de hectáreas de los arrendadores (${totalHectareas}) debe ser igual a las hectáreas del arrendamiento (${hectareasArrendamiento})`);
+        toast.error(`La suma de hectáreas de los arrendadores (${totalHectareas}) debe ser igual a las hectáreas del arrendamiento (${hectareasArrendamiento})`)
         return;
       }
     }
 
     if (arrendadores.length === 0) {
-      alert('El arrendamiento debe contar con al menos un arrendador.');
+      toast.error("Error al guardar el arrendamiento")      
       return;
     }
 
     // Aquí iría la lógica para guardar en el backend
     console.log('Guardando arrendamiento:', { formData, arrendadores });
     alert('Arrendamiento guardado exitosamente');
+    toast.success("Arrendamiento guardado con éxito")
   };
+
+
+  const [nombreUsuario, setNombreUsuario] = useState('');
+
+  useEffect(() => {
+
+    const usuarioString = localStorage.getItem('user');
+    if (usuarioString) {
+      try {
+        const usuario = JSON.parse(usuarioString);
+        setNombreUsuario(`${usuario.nombre} ${usuario.apellido}`);
+      } catch (error) {
+        console.error('Error al parsear usuario desde localStorage', error);
+      }
+    }
+  }, []);
 
   return (
     <ProtectedRoute>
@@ -153,154 +192,113 @@ export default function CrearArrendamientoPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Usuario:</label>
                 <input
                   type="text"
-                  value={formData.usuario}
-                  onChange={(e) => handleInputChange('usuario', e.target.value)}
-                  placeholder="Ejemplo"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  value={nombreUsuario}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-500
+                            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm hover:cursor-not-allowed"
+                  disabled
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Arrendatario:</label>
-                <select
+                <SelectFilter
+                  options={arrendatarioOptions}
                   value={formData.arrendatario}
-                  onChange={(e) => handleInputChange('arrendatario', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="">Ej: NORDESAN</option>
-                  {arrendatarioOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleInputChange('arrendatario', val)}
+                  label="Arrendatario"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Provincia:</label>
-                <select
+                <SelectFilter
+                  options={provinciaOptions}
                   value={formData.provincia}
-                  onChange={(e) => handleInputChange('provincia', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  {provinciaOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleInputChange('provincia', val)}
+                  label="Provincia"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Localidad:</label>
-                <select
+                <SelectFilter
+                  options={localidadOptions}
                   value={formData.localidad}
-                  onChange={(e) => handleInputChange('localidad', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  {localidadOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleInputChange('localidad', val)}
+                  label="Localidad"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio:</label>
-                <div className="relative">
-                  <input
-                    type="date"
+                  <DateInput
+                    label="Fecha Inicio"
                     value={formData.fechaInicio}
-                    onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
-                    placeholder="DD MM AAAA"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    onChange={(val) => handleInputChange('fechaInicio', val)}
                   />
-                  <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
-                </div>
               </div>
-
+              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Fin:</label>
-                <div className="relative">
-                  <input
-                    type="date"
+                  <DateInput
+                    label="Fecha Fin"
                     value={formData.fechaFin}
-                    onChange={(e) => handleInputChange('fechaFin', e.target.value)}
-                    placeholder="DD MM AAAA"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    onChange={(val) => handleInputChange('fechaFin', val)}
                   />
-                  <Calendar className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
-                </div>
               </div>
             </div>
 
             {/* Segunda fila de campos */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Hectáreas:</label>
-                <input
-                  type="text"
+                <Input
                   value={formData.hectareas}
-                  onChange={(e) => handleInputChange('hectareas', e.target.value)}
-                  placeholder="Ej: 99.9"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  onChange={(e) => handleInputChange('hectareas', e)}
+                  placeholder='Ej: 99.9'
+                  label="Hectáreas del Campo"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Quintales por Hectárea:</label>
-                <input
-                  type="text"
+                <Input
                   value={formData.quintalesPorHectarea}
-                  onChange={(e) => handleInputChange('quintalesPorHectarea', e.target.value)}
-                  placeholder="Ej: 99.9"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  onChange={(e) => handleInputChange('quintalesPorHectarea', e)}
+                  placeholder='Ej: 99.9'
+                  label="Quintales por Hectárea"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Plazo de Pago:</label>
-                <select
+                <SelectFilter
+                  options={plazoOptions}
                   value={formData.plazoPago}
-                  onChange={(e) => handleInputChange('plazoPago', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  {plazoOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleInputChange('plazoPago', val)}
+                  label="Plazo de Pago"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Promedio Precio:</label>
-                <select
+                <SelectFilter
+                  options={promedioOptions}
                   value={formData.promedioPrecio}
-                  onChange={(e) => handleInputChange('promedioPrecio', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500  text-xs"
-                >
-                  {promedioOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleInputChange('promedioPrecio', val)}
+                  label="Promedio Precio"
+                />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fuente Precio:</label>
-                <select
+                <SelectFilter
+                  options={fuenteOptions}
                   value={formData.fuentePrecio}
-                  onChange={(e) => handleInputChange('fuentePrecio', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  {fuenteOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleInputChange('fuentePrecio', val)}
+                  label="Fuente de Precio"
+                />
               </div>
             </div>
 
             {/* Tercera fila - Descripción y Tipo */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción:</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional):</label>
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => handleInputChange('descripcion', e.target.value)}
-                  placeholder="Ej: Lorem ipsum dolor sit amet, consectetur adipiscing elit..."
+                  placeholder="Ej: El arrendamiento pertenece a (dueño), y el campo está ubicado en la ruta (número)"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 />
@@ -308,45 +306,25 @@ export default function CrearArrendamientoPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo:</label>
-                  <select
+                  <SelectFilter
+                    options={tipoOptions}
                     value={formData.tipo}
-                    onChange={(e) => handleInputChange('tipo', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                  >
-                    {tipoOptions.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => handleInputChange('tipo', val)}
+                    label="Tipo de Arrendamiento"
+                  />
                 </div>
 
                 {formData.tipo === 'APARCERIA' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Porcentaje Producción:</label>
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleInputChange('porcentajeProduccion', Math.max(0, formData.porcentajeProduccion - 0.5))}
-                        className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
-                      >
-                        −
-                      </button>
-                      <input
-                        type="text"
+                      <NumberInput
+                        label="Porcentaje Producción"
                         value={formData.porcentajeProduccion}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(',', '.');
-                          if (!isNaN(parseFloat(val))) {
-                            handleInputChange('porcentajeProduccion', parseFloat(val));
-                          }
-                        }}
-                        className="w-20 text-center px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        min = {0}
+                        max = {100}
+                        onChange={(value) => handleNumberChange('porcentajeProduccion', value)}                     
                       />
-                      <button
-                        onClick={() => handleInputChange('porcentajeProduccion', formData.porcentajeProduccion + 0.5)}
-                        className="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50"
-                      >
-                        +
-                      </button>
+                     
                     </div>
                   </div>
                 )}
@@ -361,37 +339,37 @@ export default function CrearArrendamientoPage() {
             {/* Formulario para agregar arrendador */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre o Razón Social:</label>
-                <input
-                  type="text"
-                  value={nuevoArrendador.nombre}
-                  onChange={(e) => setNuevoArrendador({...nuevoArrendador, nombre: e.target.value})}
-                  placeholder="Ej: Patricio"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                <ArrendadorSelect
+                  arrendadores={arrendadoresDisponibles}
+                  value={arrendadoresDisponibles.find(a => a.nombre === nuevoArrendador.nombre)}
+                  onSelect={(arrendador) =>
+                    setNuevoArrendador({
+                      ...nuevoArrendador,
+                      nombre: arrendador.nombre
+                    })
+                  }
+                  label="Nombre o Razón Social"
+                  placeholder="ej: Nordesan"
                 />
               </div>
 
               {formData.tipo === 'FIJO' && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Hectáreas del arrendamiento:</label>
-                    <input
-                      type="text"
+                    <Input
                       value={nuevoArrendador.hectareas}
-                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, hectareas: e.target.value})}
-                      placeholder="Ej: 99.9"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, hectareas: e})}
+                      placeholder='Ej: 99.9'
+                      label="Hectáreas para Arrendador"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Quintales por Hectárea:</label>
-                    <input
-                      type="text"
+                    <Input
                       value={nuevoArrendador.quintales}
-                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, quintales: e.target.value})}
-                      placeholder="Ej: 99.9"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, quintales: e})}
+                      placeholder='Ej: 99.9'
+                      label="Quintales por Hectárea para arrendador"
                     />
                   </div>
                 </>
@@ -463,7 +441,7 @@ export default function CrearArrendamientoPage() {
                           Total:
                         </td>
                         <td className="px-6 py-3 text-sm text-gray-900 text-center">
-                          {totalHectareas.toFixed(1)}
+                          {totalHectareas.toFixed(2)}
                         </td>
                         <td className="px-6 py-3 text-sm text-gray-900 text-center">
                           {totalQuintales.toFixed(1)}

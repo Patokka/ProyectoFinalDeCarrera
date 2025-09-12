@@ -30,7 +30,7 @@ export default function SearchInput({ placeholder = "Buscar...", value, onChange
 
   return (
     <div className={`relative ${className}`}>
-    <h6 className="text-sm font-medium text-gray-700 mb-3">{label}:</h6>
+    <h6 className="text-sm font-medium text-gray-700 mb-1">{label}:</h6>
       <div className="absolute py-3 left-0 pl-4 flex items-center pointer-events-none">
         <Search className="h-4 w-4 text-gray-400" />
       </div>

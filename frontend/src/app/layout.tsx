@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import SideBar from "@/components/layout/Sidebar";
 import { AuthProvider } from "@/components/context/AuthContext";
+import { Toaster } from 'sonner'
 
 export const metadata: Metadata = {
   title: "Sistema de Gestión de Arrendamientos",
@@ -27,6 +28,7 @@ export default function RootLayout({
             <main className="pt-16">
               <SideBar>
                 {children}
+                <Toaster richColors position="top-center" />
               </SideBar>
             </main>
           </div>
