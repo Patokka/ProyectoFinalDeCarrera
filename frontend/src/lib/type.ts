@@ -4,13 +4,20 @@ export interface PaymentSummaryResponse {
   monto: number
 }
 
+export interface Option{
+  label:string;
+  value: string;
+}
+
+export interface ProvinciaDtoOut{
+  id: number;
+  nombre_provincia: string;
+}
+
 export interface LocalidadDtoOut {
   id: number;
-  nombre: string;
-  provincia: {
-    id: number;
-    nombre: string;
-  };
+  nombre_localidad: string;
+  provincia: ProvinciaDtoOut
 }
 
 export interface UsuarioDtoOut {
@@ -66,4 +73,13 @@ export interface ArrendamientoDtoOut {
   porcentaje_aparceria?: number;
   descripcion?: string;
   arrendadores: ArrendadorDtoOut[];
+}
+
+export interface ParticipacionArrendador {
+  arrendador_id: number;
+  hectareas_asignadas: number;
+  quintales_asignados: number;
+  porcentaje: number;
+  observacion?: string;
+  arrendamiento_id?: number;
 }

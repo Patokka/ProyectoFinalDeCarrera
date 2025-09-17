@@ -11,6 +11,10 @@ import DateInput from '@/components/ui/DateInput';
 import Input from '@/components/ui/Input';
 import { NumberInput } from '@/components/ui/NumberInput';
 import { ArrendadorSelect } from '@/components/ui/ArrendadorSelect';
+import { Option, ParticipacionArrendador } from '@/lib/type';
+import { fetchArrendatarios } from '@/lib/arrendatarios/auth';
+import { fetchLocalidades, fetchProvincias } from '@/lib/ubicaciones/auth';
+import { fetchArrendadores } from '@/lib/arrendadores/auth';
 
 // Tipos
 interface Arrendador {
@@ -45,37 +49,19 @@ const fuenteOptions = [
   { value: 'AGD', label: 'AGD' }
 ];
 
-const provinciaOptions = [
-  { value: 'Santa Fe', label: 'Santa Fe' },
-  { value: 'Buenos Aires', label: 'Buenos Aires' },
-  { value: 'Córdoba', label: 'Córdoba' }
-];
-
-const localidadOptions = [
-  { value: 'Ceres', label: 'Ceres' },
-  { value: 'Rosario', label: 'Rosario' },
-  { value: 'Santa Fe', label: 'Santa Fe' }
-];
-
-const arrendatarioOptions = [
-  { value: 'NORDESAN', label: 'NORDESAN' },
-  { value: 'AGRICOLA_SA', label: 'AGRICOLA SA' },
-  { value: 'CAMPO_NUEVO', label: 'CAMPO NUEVO' }
-];
-
 const arrendadoresDisponibles: Arrendador[] = [
   { id: '1', nombre: 'NORDESAN', hectareas: 0, quintales: 0 },
   { id: '2', nombre: 'AGRICOLA SA', hectareas: 0, quintales: 0 },
   { id: '3', nombre: 'CAMPO NUEVO', hectareas: 0, quintales: 0 }
 ];
 
-
+//#####################################################
 export default function CrearArrendamientoPage() {
   const [formData, setFormData] = useState({
     usuario: '',
     arrendatario: '',
-    provincia: 'Santa Fe',
-    localidad: 'Ceres',
+    provincia: '',
+    localidad: '',
     fechaInicio: '',
     fechaFin: '',
     hectareas: '',
@@ -85,24 +71,34 @@ export default function CrearArrendamientoPage() {
     fuentePrecio: 'BCR',
     descripcion: '',
     tipo: 'FIJO',
-    porcentajeProduccion: 5
+    porcentajeProduccion: 0
   });
 
-  const [arrendadores, setArrendadores] = useState<Arrendador[]>([]);
-  const [nuevoArrendador, setNuevoArrendador] = useState({
-    nombre: '',
-    hectareas: '',
-    quintales: ''
+  const [participaciones, setParticipaciones] = useState<ParticipacionArrendador[]>([]);
+  const [nuevoArrendador, setNuevoArrendador] = useState<ParticipacionArrendador>({
+    arrendador_id: 0,
+    hectareas_asignadas: 0,
+    quintales_asignados: 0,
+    porcentaje: 0,
+    observacion: '',
   });
-
+  const [arrendadores, setArrendadores] = useState<Option[]>([]);
+  const [nombreUsuario, setNombreUsuario] = useState('');
+  const [arrendatarios, setArrendatarios] = useState<Option[]>([]);
+  const [provincias, setProvincias] = useState<Option[]>([]);
+  const [localidades, setLocalidades] = useState<Option[]>([]);
   // Calcular totales
-  const totalHectareas = arrendadores.reduce((sum, a) => sum + a.hectareas, 0);
-  const totalQuintales = arrendadores.reduce((sum, a) => sum + a.quintales, 0);
+  const totalHectareas = participaciones.reduce((sum, p) => sum + (p.hectareas_asignadas || 0), 0);
+  const totalQuintales = participaciones.reduce((sum, p) => sum + (p.quintales_asignados || 0), 0);
+
+
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: ["provincia", "localidad", "arrendatario", ].includes(field)
+            ? Number(value)
+            : value
     }));
   };
 
@@ -115,26 +111,41 @@ export default function CrearArrendamientoPage() {
 
 
   const agregarArrendador = () => {
-    if (!nuevoArrendador.nombre) return;
+    if (!nuevoArrendador.arrendador_id) return;
 
-    const newArrendador: Arrendador = {
-      id: Date.now().toString(),
-      nombre: nuevoArrendador.nombre,
-      hectareas: formData.tipo === 'FIJO' ? parseFloat(nuevoArrendador.hectareas) || 0 : 0,
-      quintales: formData.tipo === 'FIJO' ? parseFloat(nuevoArrendador.quintales) || 0 : 0
-    };
-
-    setArrendadores([...arrendadores, newArrendador]);
-    setNuevoArrendador({ nombre: '', hectareas: '', quintales: '' });
+    setParticipaciones((prev) => [...prev, nuevoArrendador]);
+    setNuevoArrendador({
+      arrendador_id: 0,
+      hectareas_asignadas: 0,
+      quintales_asignados: 0,
+      porcentaje: 0,
+      observacion: '',
+    });
   };
 
 
-  const eliminarArrendador = (id: string) => {
-    setArrendadores(arrendadores.filter(a => a.id !== id));
+  const eliminarArrendador = (id: number) => {
+    setParticipaciones(participaciones.filter(p => p.arrendador_id !== Number(id)));
   };
-
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const guardarArrendamiento = () => {
     // Validaciones
+      const newErrors: { [key: string]: string } = {};
+
+      if (!formData.arrendatario) newErrors.arrendatario = "Campo obligatorio";
+      if (!formData.provincia) newErrors.provincia = "Campo obligatorio";
+      if (!formData.localidad) newErrors.localidad = "Campo obligatorio";
+      if (!formData.fechaInicio) newErrors.fechaInicio = "Campo obligatorio";
+      if (!formData.fechaFin) newErrors.fechaFin = "Campo obligatorio";
+      if (!formData.hectareas) newErrors.hectareas = "Campo obligatorio";
+      if (!formData.quintalesPorHectarea) newErrors.quintalesPorHectarea = "Campo obligatorio";
+      if (!formData.porcentajeProduccion && formData.tipo == "APARCERIA") newErrors.porcentajeProduccion = "Campo obligatorio"
+      setErrors(newErrors);
+
+      if (Object.keys(newErrors).length > 0) {
+        toast.error("Por favor, completa todos los campos obligatorios");
+        return;
+      }
     if (formData.tipo === 'FIJO') {
       const hectareasArrendamiento = parseFloat(formData.hectareas) || 0;
       if (Math.abs(totalHectareas - hectareasArrendamiento) > 0.01) {
@@ -143,22 +154,19 @@ export default function CrearArrendamientoPage() {
       }
     }
 
-    if (arrendadores.length === 0) {
+    if (participaciones.length === 0) {
       toast.error("Error al guardar el arrendamiento")      
       return;
     }
 
     // Aquí iría la lógica para guardar en el backend
-    console.log('Guardando arrendamiento:', { formData, arrendadores });
+    console.log('Guardando arrendamiento:', { formData, participaciones });
     alert('Arrendamiento guardado exitosamente');
-    toast.success("Arrendamiento guardado con éxito")
+    toast.success("Arrendamiento guardado con éxit  o")
   };
 
-
-  const [nombreUsuario, setNombreUsuario] = useState('');
-
-  useEffect(() => {
-
+  useEffect(() => {   
+    //Sesión
     const usuarioString = localStorage.getItem('user');
     if (usuarioString) {
       try {
@@ -168,7 +176,78 @@ export default function CrearArrendamientoPage() {
         console.error('Error al parsear usuario desde localStorage', error);
       }
     }
+
+    //Carga arrendatarios
+    const dataArrendatarios = async() =>{
+      try {
+        const data = await fetchArrendatarios();
+        const options = data.map((a) => ({
+          value: String(a.id),
+          label: a.razon_social,
+      }));
+        setArrendatarios(options);
+      }catch(err){
+        console.error('Error al cargar los arrendatarios', err);
+      }
+    };
+
+    //Carga provincias
+    const dataProvincias = async() =>{
+      try {
+        const data = await fetchProvincias();
+        const options = data.map((a) => ({
+          value: String(a.id),
+          label: a.nombre_provincia,
+      }));
+        setProvincias(options);
+      }catch(err){
+        console.error('Error al cargar las provincias', err);
+      }
+    };
+
+    //Carga arrendadores
+    const dataArrendadores = async() =>{
+      try {
+        const data = await fetchArrendadores();
+        const options = data.map((a) => ({
+          value: String(a.id),
+          label: a.nombre_o_razon_social,
+      }));
+        setArrendadores(options);
+        console.log(options)
+      }catch(err){
+        console.error('Error al cargar los arrendadores', err);
+      }
+    };
+    //Llamada funciones
+    dataArrendatarios();
+    dataProvincias();
+    dataArrendadores();
   }, []);
+
+  useEffect(() =>{
+  const cargarLocalidades = async () => {
+    if (!formData.provincia) {
+      setLocalidades([]);
+      setFormData((prev) => ({ ...prev, localidad: "" }));
+      return;
+    }
+
+    try {
+      const data = await fetchLocalidades(Number(formData.provincia));
+      const options = data.map((l) => ({
+        value: String(l.id),
+        label: l.nombre_localidad,
+      }));
+      setLocalidades(options);
+    } catch (err) {
+      console.error("Error cargando localidades:", err);
+      setLocalidades([]);
+    }
+  };
+  //Se va a ejecutar cada vez que se cambie la provincia
+  cargarLocalidades();
+}, [formData.provincia]);
 
   return (
     <ProtectedRoute>
@@ -201,28 +280,31 @@ export default function CrearArrendamientoPage() {
 
               <div>
                 <SelectFilter
-                  options={arrendatarioOptions}
+                  options={arrendatarios}
                   value={formData.arrendatario}
                   onChange={(val) => handleInputChange('arrendatario', val)}
                   label="Arrendatario"
+                  error={errors.arrendatario}
                 />
               </div>
 
               <div>
                 <SelectFilter
-                  options={provinciaOptions}
+                  options={provincias}
                   value={formData.provincia}
                   onChange={(val) => handleInputChange('provincia', val)}
                   label="Provincia"
-                />
+                  error={errors.provincia}
+                  />
               </div>
 
               <div>
                 <SelectFilter
-                  options={localidadOptions}
+                  options={localidades}
                   value={formData.localidad}
                   onChange={(val) => handleInputChange('localidad', val)}
                   label="Localidad"
+                  error={errors.localidad}
                 />
               </div>
 
@@ -231,6 +313,7 @@ export default function CrearArrendamientoPage() {
                     label="Fecha Inicio"
                     value={formData.fechaInicio}
                     onChange={(val) => handleInputChange('fechaInicio', val)}
+                    error={errors.fechaInicio}
                   />
               </div>
               
@@ -239,6 +322,7 @@ export default function CrearArrendamientoPage() {
                     label="Fecha Fin"
                     value={formData.fechaFin}
                     onChange={(val) => handleInputChange('fechaFin', val)}
+                    error={errors.fechaFin}
                   />
               </div>
             </div>
@@ -251,6 +335,7 @@ export default function CrearArrendamientoPage() {
                   onChange={(e) => handleInputChange('hectareas', e)}
                   placeholder='Ej: 99.9'
                   label="Hectáreas del Campo"
+                  error={errors.hectareas}
                 />
               </div>
 
@@ -260,6 +345,7 @@ export default function CrearArrendamientoPage() {
                   onChange={(e) => handleInputChange('quintalesPorHectarea', e)}
                   placeholder='Ej: 99.9'
                   label="Quintales por Hectárea"
+                  error={errors.quintalesPorHectarea}
                 />
               </div>
 
@@ -322,9 +408,9 @@ export default function CrearArrendamientoPage() {
                         value={formData.porcentajeProduccion}
                         min = {0}
                         max = {100}
-                        onChange={(value) => handleNumberChange('porcentajeProduccion', value)}                     
+                        onChange={(value) => handleNumberChange('porcentajeProduccion', value)}
+                        error={errors.porcentajeProduccion}               
                       />
-                     
                     </div>
                   </div>
                 )}
@@ -340,12 +426,11 @@ export default function CrearArrendamientoPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
                 <ArrendadorSelect
-                  arrendadores={arrendadoresDisponibles}
-                  value={arrendadoresDisponibles.find(a => a.nombre === nuevoArrendador.nombre)}
+                  arrendadores={arrendadores}
                   onSelect={(arrendador) =>
                     setNuevoArrendador({
                       ...nuevoArrendador,
-                      nombre: arrendador.nombre
+                      arrendador_id: Number(arrendador)
                     })
                   }
                   label="Nombre o Razón Social"
@@ -355,10 +440,10 @@ export default function CrearArrendamientoPage() {
 
               {formData.tipo === 'FIJO' && (
                 <>
-                  <div>
+                  <div> 
                     <Input
-                      value={nuevoArrendador.hectareas}
-                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, hectareas: e})}
+                      value={String(nuevoArrendador.hectareas_asignadas)}
+                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, hectareas_asignadas: Number(e)})}
                       placeholder='Ej: 99.9'
                       label="Hectáreas para Arrendador"
                     />
@@ -366,8 +451,8 @@ export default function CrearArrendamientoPage() {
 
                   <div>
                     <Input
-                      value={nuevoArrendador.quintales}
-                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, quintales: e})}
+                      value={String(nuevoArrendador.quintales_asignados)}
+                      onChange={(e) => setNuevoArrendador({...nuevoArrendador, quintales_asignados: Number(e)})}
                       placeholder='Ej: 99.9'
                       label="Quintales por Hectárea para arrendador"
                     />
@@ -386,7 +471,7 @@ export default function CrearArrendamientoPage() {
             </div>
 
             {/* Tabla de arrendadores */}
-            {arrendadores.length > 0 && (
+            {participaciones.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-300">
                   <thead className="bg-gray-100">
@@ -410,24 +495,24 @@ export default function CrearArrendamientoPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {arrendadores.map((arrendador) => (
-                      <tr key={arrendador.id}>
+                    {participaciones.map((participacion) => (
+                      <tr key={participacion.arrendador_id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendador.nombre}
+                          {participacion.arrendador_id}
                         </td>
                         {formData.tipo === 'FIJO' && (
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                              {arrendador.hectareas}
+                              {participacion.hectareas_asignadas}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                              {arrendador.quintales}
+                              {participacion.quintales_asignados}
                             </td>
                           </>
                         )}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                           <button
-                            onClick={() => eliminarArrendador(arrendador.id)}
+                            onClick={() => eliminarArrendador(participacion.arrendador_id)}
                             className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors inline-flex"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -454,7 +539,7 @@ export default function CrearArrendamientoPage() {
               </div>
             )}
 
-            {arrendadores.length === 0 && (
+            {participaciones.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 <p>*El arrendamiento debe contar con al menos un arrendador.</p>
               </div>

@@ -1,29 +1,17 @@
+import { Option } from "@/lib/type";
 import { useEffect, useState, useRef } from "react";
 
-interface Arrendador {
-  id: string;
-  nombre: string;
-  hectareas: number;
-  quintales: number;
-}
-
 interface ArrendadorSelectProps {
-  arrendadores: Arrendador[];
-  value?: Arrendador;
-  onSelect: (arrendador: Arrendador) => void;
+  arrendadores: Option[];
+  value?: string | number;
+  onSelect: (arrendador: string) => void;
   label: string;
   placeholder?: string;
 }
 
-export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({
-  arrendadores,
-  value,
-  onSelect,
-  label,
-  placeholder = "Buscar arrendador..."
-}) => {
+export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({ arrendadores, value, onSelect, label, placeholder = "Buscar arrendador..."}) => {
   const [query, setQuery] = useState("");
-  const [filtered, setFiltered] = useState<Arrendador[]>([]);
+  const [filtered, setFiltered] = useState<Option[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -31,7 +19,7 @@ export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({
   useEffect(() => {
     setFiltered(
       arrendadores.filter(a =>
-        a.nombre.toLowerCase().includes(query.toLowerCase())
+        a.label.toLowerCase().includes(query.toLowerCase())
       )
     );
     setShowDropdown(query.length > 0);
@@ -68,17 +56,17 @@ export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({
         <ul className="absolute z-10 bg-white border rounded-md mt-1 max-h-60 overflow-y-auto w-full">
           {filtered.map((a) => (
             <li
-              key={a.id}
+              key={a.label}
               onMouseDown={(e) => {
                 e.preventDefault(); // Evita que el input reciba foco de nuevo
-                onSelect(a);
-                setQuery(a.nombre);
+                onSelect(a.value);
+                setQuery(a.label);
                 setShowDropdown(false);
                 inputRef.current?.blur(); // Quita el foco del input
               }}
               className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
             >
-              {a.nombre}
+              {a.label}
             </li>
           ))}
         </ul>

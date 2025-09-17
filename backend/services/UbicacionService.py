@@ -88,3 +88,8 @@ class UbicacionService:
             raise HTTPException(status_code=404, detail="Provincia no encontrada.")
         db.delete(obj)
         db.commit()
+        
+    @staticmethod
+    def obtener_localidades_provincia(db:Session, provincia_id: int):
+        localidades = db.query(Localidad).filter(Localidad.provincia_id == provincia_id).all()
+        return localidades
