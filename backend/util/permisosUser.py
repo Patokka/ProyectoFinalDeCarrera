@@ -19,8 +19,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        cuil = payload.get("cuil")
-        if cuil is None:
+        id = payload.get("id")
+        usuario = db.query(Usuario).get(id)
+        if usuario is None:
             raise HTTPException(status_code=401, detail="Token inválido.")
 
         return UsuarioLogueado.model_validate(payload)
@@ -32,8 +33,8 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 
 #Función para otorgar permisos a determinados roles de usuarios
-def admin_required(current_user: UsuarioLogueado = Depends(get_current_user)):
-    print(current_user)
-    if current_user.rol == TipoRol.CONSULTA.name:
+def admin_required(current_user: UsuarioLogueado = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.query(Usuario).get(current_user.id)
+    if usuario.rol == TipoRol.CONSULTA.name:
         raise HTTPException(status_code=403, detail="No tienes permisos de administrador u operador.")
     return current_user

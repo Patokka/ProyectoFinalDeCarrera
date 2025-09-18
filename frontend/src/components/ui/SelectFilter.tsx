@@ -75,7 +75,7 @@ export default function SelectFilter({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => {
-                    onChange(optValue);    // siempre devolvemos string
+                    onChange(optValue);
                     setIsOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 focus:outline-none focus:bg-gray-100 ${

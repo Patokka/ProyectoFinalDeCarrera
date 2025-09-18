@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Eye, Edit, Plus, ArrowLeft } from 'lucide-react';
+import { Eye, Edit, Plus } from 'lucide-react';
 import SearchInput from '@/components/ui/SearchInput';
 import SelectFilter from '@/components/ui/SelectFilter';
 import Pagination from '@/components/ui/Pagination';
@@ -10,6 +10,7 @@ import { ArrendadorDtoOut, ArrendamientoDtoOut } from '@/lib/type';
 import { fetchArrendamientos } from '@/lib/arrendamientos/auth';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
+import { toast } from 'sonner';
 
 
 // Opciones para los filtros
@@ -43,6 +44,7 @@ export default function ArrendamientosPage() {
         const data = await fetchArrendamientos();
         setArrendamientos(data);
       } catch (err) {
+        toast.error("Error al cargar los arrendamientos")
         console.error("Error:", err);
       }
     };

@@ -3,10 +3,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 
 interface User {
-  cuil: string
   nombre: string
   apellido: string
-  rol: string
+  id: number
 }
 
 interface AuthContextType {
@@ -41,10 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = await res.json()
 
     const loggedUser: User = {
-      cuil,
       nombre: data.nombre,
       apellido: data.apellido,
-      rol: data.rol,
+      id: data.id,
     }
 
     setUser(loggedUser)

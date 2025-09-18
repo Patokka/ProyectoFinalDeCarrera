@@ -218,10 +218,9 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
     # Creación del token
     access_token = create_access_token(
         data={
-            "cuil": usuario.cuil,
             "nombre": usuario.nombre,
             "apellido": usuario.apellido,
-            "rol": usuario.rol.name,
+            "id": usuario.id,
         },
         expires_delta=access_token_expires,
     )
@@ -231,10 +230,9 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
             content={
                 "access_token": access_token,
                 "token_type": "bearer",
-                "cuil": usuario.cuil,
                 "nombre": usuario.nombre,
                 "apellido": usuario.apellido,
-                "rol": usuario.rol.name
+                "id": usuario.id
             }
     )
     return response

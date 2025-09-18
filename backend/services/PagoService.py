@@ -64,9 +64,7 @@ class PagoService:
         mes = fecha.month - 1 + meses
         anio = fecha.year + mes // 12
         mes = mes % 12 + 1
-        dia = min(fecha.day, [31,
-                              29 if anio % 4 == 0 and (anio % 100 != 0 or anio % 400 == 0) else 28,
-                              31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mes-1])
+        dia = min(fecha.day, [31, 29 if anio % 4 == 0 and (anio % 100 != 0 or anio % 400 == 0) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mes-1])
         return date(anio, mes, dia)
 
     @staticmethod

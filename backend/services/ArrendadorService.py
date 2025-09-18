@@ -40,5 +40,11 @@ class ArrendadorService:
         arrendador = db.query(Arrendador).get(arrendador_id)
         if not arrendador:
             raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
+        
+        if arrendador.participaciones:  
+            raise HTTPException(
+                status_code=400,
+                detail="No se puede eliminar el arrendador porque tiene participaciones en arrendamientos."
+            )
         db.delete(arrendador)
         db.commit()

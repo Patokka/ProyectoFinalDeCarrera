@@ -19,12 +19,18 @@ export const NumberInput: React.FC<NumberInputProps> = ({ label, value, onChange
         value={value !== undefined ? value.toString() : ""}
         onChange={(e) =>
             onChange(e.target.value ? parseFloat(e.target.value) : undefined)
-        }
+        }        
+        onKeyDown={(e) => {
+          const invalidKeys = ["-", "+", "e", "E"];
+          if (invalidKeys.includes(e.key)) {
+            e.preventDefault();
+          }
+        }}
         placeholder={placeholder}
         min={min}
         max={max}
         step={step}
-        className={`border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${error ? "border-red-600 focus:ring-red-500 focus:border-red-500" : "focus:ring-blue-500"}`}
+        className={`w-full border h-10 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 ${error ? "border-red-600 focus:ring-red-500 focus:border-red-500" : "focus:ring-blue-500"}`}
       />
       {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
     </div>

@@ -60,7 +60,7 @@ class UsuarioLogin(BaseModel):
 class UsuarioLogueado(BaseModel):
     nombre: str
     apellido: str
-    rol: TipoRol    
+    id: int    
     
     model_config = {
         "from_attributes": True,     

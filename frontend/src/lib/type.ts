@@ -55,6 +55,7 @@ export type TipoArrendamiento = "FIJO" | "A_PORCENTAJE";
 export type PlazoPago = "ANUAL" | "SEMESTRAL" | "CUATRIMESTRAL" | "TRIMESTRAL" | "BIMESTRAL" | "MENSUAL"; 
 export type TipoDiasPromedio = "ULTIMOS_5_HABILES" | "ULTIMOS_10_HABILES" | "ULTIMO_MES" | "DEL_10_AL_15_MES_ACTUAL"; 
 export type TipoOrigenPrecio = "BCR" | "AGD";
+export type EstadoPago = "PENDIENTE" | "REALIZADO" | "VENCIDO" | "CANCELADO"
 
 export interface ArrendamientoDtoOut {
   id: number;
@@ -82,4 +83,32 @@ export interface ParticipacionArrendador {
   porcentaje: number;
   observacion?: string;
   arrendamiento_id?: number;
+}
+
+export type ArrendamientoForm = {
+  tipo: TipoArrendamiento;
+  localidad_id: number;
+  usuario_id: number;
+  arrendatario_id: number;
+  fecha_inicio: string;
+  fecha_fin: string;
+  quintales: number;
+  hectareas: number;
+  plazo_pago: PlazoPago
+  dias_promedio: TipoDiasPromedio;
+  origen_precio: TipoOrigenPrecio;
+  porcentaje_aparceria: number;
+  descripcion: string;
+};
+
+export interface PagoDtoOut {
+    id: number
+    estado: EstadoPago;
+    quintales?: number;
+    precio_promedio?: number;
+    vencimiento: string;
+    fuente_precio?: TipoOrigenPrecio;
+    monto_a_pagar?: number;
+    arrendamiento: ArrendamientoDtoOut;
+    participacion_arrendador: ParticipacionArrendador
 }

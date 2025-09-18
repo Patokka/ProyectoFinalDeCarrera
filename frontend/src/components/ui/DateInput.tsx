@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Calendar } from 'lucide-react';
+import { useRef } from 'react';
 
 interface DateInputProps {
   value: string;
