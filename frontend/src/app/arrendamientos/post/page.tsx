@@ -176,7 +176,6 @@ export default function CrearArrendamientoPage() {
       await generarCuotas(respuesta.id)
     }catch(e){
       toast.error("Error al guardar el arrendamiento")
-      console.log("Error al guardar el arrendamiento", e)
     }
     toast.success("Arrendamiento guardado con éxito")
     router.push("/arrendamientos")
@@ -194,7 +193,7 @@ export default function CrearArrendamientoPage() {
           usuario_id: usuario.id
         }));
       } catch (error) {
-        console.error('Error al parsear usuario desde localStorage', error);
+        toast.error("Error al obtener el usuario logueado")
       }
     }
 
@@ -208,7 +207,7 @@ export default function CrearArrendamientoPage() {
       }));
         setArrendatarios(options);
       }catch(err){
-        console.error('Error al cargar los arrendatarios', err);
+        toast.error('Error al cargar los arrendatarios');
       }
     };
 
@@ -222,7 +221,7 @@ export default function CrearArrendamientoPage() {
       }));
         setProvincias(options);
       }catch(err){
-        console.error('Error al cargar las provincias', err);
+        toast.error('Error al cargar las provincias');
       }
     };
 
@@ -235,9 +234,8 @@ export default function CrearArrendamientoPage() {
           label: a.nombre_o_razon_social,
       }));
         setArrendadores(options);
-        console.log(options)
       }catch(err){
-        console.error('Error al cargar los arrendadores', err);
+        toast.error('Error al cargar los arrendadores');
       }
     };
     //Llamada funciones
@@ -261,7 +259,7 @@ export default function CrearArrendamientoPage() {
       }));
       setLocalidades(options);
     } catch (err) {
-      console.error("Error cargando localidades:", err);
+      toast.error("Error cargando localidades");
       setLocalidades([]);
     }
   };

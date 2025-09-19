@@ -102,7 +102,7 @@ export type ArrendamientoForm = {
 };
 
 export interface PagoDtoOut {
-    id: number
+    id: number;
     estado: EstadoPago;
     quintales?: number;
     precio_promedio?: number;
@@ -111,4 +111,11 @@ export interface PagoDtoOut {
     monto_a_pagar?: number;
     arrendamiento: ArrendamientoDtoOut;
     participacion_arrendador: ParticipacionArrendador
+}
+
+export interface PrecioDtoOut{
+    id: number;
+    fecha_precio: string;
+    precio_obtenido: number;
+    origen: TipoOrigenPrecio;
 }

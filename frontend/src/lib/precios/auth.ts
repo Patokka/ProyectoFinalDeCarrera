@@ -1,11 +1,11 @@
-import { LocalidadDtoOut, ProvinciaDtoOut } from "../type";
+import { PrecioDtoOut } from "../type";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
+export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API_URL}/provincias`, {
+    const res = await fetch(`${API_URL}/precios/AGD`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -22,17 +22,16 @@ export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Error al obtener las provincias");
+        throw new Error(err.detail || "Error al obtener los precios de AGD");
     }
 
     return res.json();
 }
 
-
-export async function fetchLocalidades(provincia_id: number): Promise<LocalidadDtoOut[]> {
+export async function fetchPreciosBCR(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API_URL}/provincia/${provincia_id}/localidades`, {
+    const res = await fetch(`${API_URL}/precios/BCR`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -49,7 +48,7 @@ export async function fetchLocalidades(provincia_id: number): Promise<LocalidadD
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Error al obtener las localidades");
+        throw new Error(err.detail || "Error al obtener los precios de BCR");
     }
 
     return res.json();

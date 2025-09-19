@@ -45,7 +45,6 @@ export default function ArrendamientosPage() {
         setArrendamientos(data);
       } catch (err) {
         toast.error("Error al cargar los arrendamientos")
-        console.error("Error:", err);
       }
     };
     fetchData();

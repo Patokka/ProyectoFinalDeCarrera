@@ -13,9 +13,9 @@ import { toast } from 'sonner';
 
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
-  { value: 'MONOTRIBUTISTA', label: 'Monotributista' },
-  { value: 'RESPONSABLE_INSCRIPTO', label: 'Responsable Inscripto' },
-  { value: 'RESPONSABLE_NO_INSCRIPTO_O_EXENTO', label: 'Exento / Responsable NO Inscripto' }
+  { value: 'MONOTRIBUTISTA', label: 'MONOTRIBUTISTA' },
+  { value: 'RESPONSABLE_INSCRIPTO', label: 'RESPONSABLE INSCRIPTO' },
+  { value: 'RESPONSABLE_NO_INSCRIPTO_O_EXENTO', label: 'EXENTO / RESPONSABLE NO INSCRIPTO' }
 ];
 
 const ITEMS_PER_PAGE = 8;

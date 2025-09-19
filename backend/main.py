@@ -277,10 +277,10 @@ app.include_router(ArrendatarioController.router, prefix="/arrendatarios", tags=
 app.include_router(ArrendamientoController.router, prefix="/arrendamientos", tags=["Arrendamientos"], dependencies=[Depends(get_current_user)])
 app.include_router(PagoController.router, prefix="/pagos", tags=["Pagos"], dependencies=[Depends(get_current_user)])
 app.include_router(UsuarioController.router, prefix="/usuarios", tags=["Usuarios"], dependencies=[Depends(get_current_user)])
-app.include_router(FacturacionController.router, prefix="/facturacion", tags=["Facturacion"], dependencies=[Depends(get_current_user)])
-app.include_router(RetencionController.router, prefix="/retencion", tags=["Retencion"], dependencies=[Depends(get_current_user)])
-app.include_router(LocalidadController.router, prefix="/localidad", tags=["Localidad"], dependencies=[Depends(get_current_user)])
-app.include_router(ProvinciaController.router, prefix="/provincia", tags=["Provincia"], dependencies=[Depends(get_current_user)])
-app.include_router(PrecioController.router, prefix="/precio", tags=["Precio"])##, dependencies=[Depends(get_current_user)]) #SI ENCONTRAS FORMA DE HACER QUE LLEGUE LA DE AGD PONER INDIVIDUALMENTE LOS LOCKS EN ESTAS RUTAS
+app.include_router(FacturacionController.router, prefix="/facturaciones", tags=["Facturacion"], dependencies=[Depends(get_current_user)])
+app.include_router(RetencionController.router, prefix="/retenciones", tags=["Retencion"], dependencies=[Depends(get_current_user)])
+app.include_router(LocalidadController.router, prefix="/localidades", tags=["Localidad"], dependencies=[Depends(get_current_user)])
+app.include_router(ProvinciaController.router, prefix="/provincias", tags=["Provincia"], dependencies=[Depends(get_current_user)])
+app.include_router(PrecioController.router, prefix="/precios", tags=["Precio"])##, dependencies=[Depends(get_current_user)]) #SI ENCONTRAS FORMA DE HACER QUE LLEGUE LA DE AGD PONER INDIVIDUALMENTE LOS LOCKS EN ESTAS RUTAS
 app.include_router(ParticipacionArrendadorController.router, prefix="/participaciones", tags=["Participacioines de Arrendadores en Arrendamientos"], dependencies=[Depends(get_current_user)])
 

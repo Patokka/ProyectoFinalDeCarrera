@@ -9,7 +9,7 @@ from services.ArrendadorService import ArrendadorService
 from services.PagoService import PagoService
 from services.RetencionService import RetencionService
 from model.Facturacion import Facturacion
-from dtos.FacturacionDto import FacturacionDto, FacturacionDtoModificacion
+from dtos.FacturacionDto import FacturacionDtoModificacion
 
 class FacturacionService:
 
@@ -25,9 +25,9 @@ class FacturacionService:
         return obj
 
     @staticmethod
-    def crear(db: Session, dto: FacturacionDto):
+    def crear(db: Session, pago_id: int):
         #verifica si existe el pago y si no existe retorna un 404
-        pago = PagoService.obtener_por_id(db, dto.pago_id)
+        pago = PagoService.obtener_por_id(db, pago_id)
         
         if pago.estado == EstadoPago.REALIZADO or pago.estado == EstadoPago.CANCELADO:
             raise HTTPException(status_code=500, detail= "El pago ya fue facturado o está cancelado.")
@@ -36,6 +36,10 @@ class FacturacionService:
         arrendador = pago.participacion_arrendador.arrendador
         hoy = date.today()
         
+        #Verifica si el pago ya tiene asignado el precio promedio por quintal, sino devuelve error
+        if not (pago.precio_promedio or pago.monto_a_pagar or pago.precio_promedio == 0 or pago.monto_a_pagar == 0):
+            raise HTTPException(status_code=500, detail= "El pago no tiene un precio y/o monto asignado.")
+        
         if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA:
             tipo = TipoFactura.C
             nuevo = Facturacion(
@@ -43,7 +47,7 @@ class FacturacionService:
                 fecha_facturacion = hoy,
                 monto_facturacion = pago.monto_a_pagar,
                 arrendador_id = arrendador.id,
-                pago_id = dto.pago_id
+                pago_id = pago_id
             )
             db.add(nuevo)
 
@@ -57,7 +61,7 @@ class FacturacionService:
                 fecha_facturacion=hoy,
                 monto_facturacion=pago.monto_a_pagar - retencion.total_retencion,
                 arrendador_id=arrendador.id,
-                pago_id=dto.pago_id
+                pago_id= pago_id
             )
             db.add(nuevo)
             db.flush()

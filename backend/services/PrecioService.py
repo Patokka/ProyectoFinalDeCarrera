@@ -26,6 +26,14 @@ class PrecioService:
     @staticmethod
     def listar_precios(db: Session):
         return db.query(Precio).all()
+    
+    @staticmethod
+    def listar_precios_agd(db: Session):
+        return db.query(Precio).filter(Precio.origen == TipoOrigenPrecio.AGD).all()
+    
+    @staticmethod
+    def listar_precios_bcr(db: Session):
+        return db.query(Precio).filter(Precio.origen == TipoOrigenPrecio.BCR).all()
 
     @staticmethod
     def obtener_precio_por_id(db: Session, precio_id: int):

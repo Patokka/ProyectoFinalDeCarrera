@@ -14,9 +14,9 @@ def listar_facturaciones(db: Session = Depends(get_db)):
 def obtener_facturacion(facturacion_id: int, db: Session = Depends(get_db)):
     return FacturacionService.obtener_por_id(db, facturacion_id)
 
-@router.post("/", response_model=FacturacionDtoOut, description="Creación de una facturación.")
-def crear_facturacion(dto: FacturacionDto, db: Session = Depends(get_db)):
-    return FacturacionService.crear(db, dto)
+@router.post("/crear/{pago_id}", response_model=FacturacionDtoOut, description="Creación de una facturación.")
+def crear_facturacion(pago_id: int, db: Session = Depends(get_db)):
+    return FacturacionService.crear(db, pago_id)
 
 @router.put("/{facturacion_id}", response_model=FacturacionDtoOut, description="Actualización de una facturación por id.")
 def actualizar_facturacion(facturacion_id: int, dto: FacturacionDtoModificacion, db: Session = Depends(get_db)):

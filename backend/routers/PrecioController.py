@@ -10,6 +10,14 @@ router = APIRouter()
 def listar_precios(db: Session = Depends(get_db)):
     return PrecioService.listar_precios(db)
 
+@router.get("/AGD", response_model=list[PrecioDtoOut], description="Obtención de todos los precios de AGD.")
+def listar_preciosAGD(db: Session = Depends(get_db)):
+    return PrecioService.listar_precios_agd(db)
+
+@router.get("/BCR", response_model=list[PrecioDtoOut], description="Obtención de todos los precios de BCR.")
+def listar_preciosBCR(db: Session = Depends(get_db)):
+    return PrecioService.listar_precios_bcr(db)
+
 @router.get("/{precio_id}", response_model=PrecioDtoOut, description="Obtención de un precio por id.")
 def obtener_precio(precio_id: int, db: Session = Depends(get_db)):
     return PrecioService.obtener_precio_por_id(db, precio_id)
