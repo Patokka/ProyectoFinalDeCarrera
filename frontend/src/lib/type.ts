@@ -46,10 +46,12 @@ export interface ArrendadorDtoOut {
   cuil:string;
   condicion_fiscal: TipoCondicion;
   mail?: string;
+  telefono?: string;
   localidad: LocalidadDtoOut;
   descripcion?: string;
 }
 
+export type TipoFactura = "A" | "B" | "C";
 export type EstadoArrendamiento = "ACTIVO" | "FINALIZADO" | "CANCELADO" | "VENCIDO"; 
 export type TipoArrendamiento = "FIJO" | "A_PORCENTAJE"; 
 export type PlazoPago = "ANUAL" | "SEMESTRAL" | "CUATRIMESTRAL" | "TRIMESTRAL" | "BIMESTRAL" | "MENSUAL"; 
@@ -102,20 +104,38 @@ export type ArrendamientoForm = {
 };
 
 export interface PagoDtoOut {
-    id: number;
-    estado: EstadoPago;
-    quintales?: number;
-    precio_promedio?: number;
-    vencimiento: string;
-    fuente_precio?: TipoOrigenPrecio;
-    monto_a_pagar?: number;
-    arrendamiento: ArrendamientoDtoOut;
-    participacion_arrendador: ParticipacionArrendador
+  id: number;
+  estado: EstadoPago;
+  quintales?: number;
+  precio_promedio?: number;
+  vencimiento: string;
+  fuente_precio?: TipoOrigenPrecio;
+  monto_a_pagar?: number;
+  arrendamiento: ArrendamientoDtoOut;
+  participacion_arrendador: ParticipacionArrendador
 }
 
 export interface PrecioDtoOut{
+  id: number;
+  fecha_precio: string;
+  precio_obtenido: number;
+  origen: TipoOrigenPrecio;
+}
+
+export interface FacturacionDtoOut{
+  id: number;
+  fecha_facturacion: string;
+  tipo_factura: TipoFactura;
+  monto_facturacion: number;
+  arrendador: ArrendadorDtoOut;
+  pago: PagoDtoOut;
+}
+
+export interface RetencionDtoOut {
     id: number;
-    fecha_precio: string;
-    precio_obtenido: number;
-    origen: TipoOrigenPrecio;
+    fecha_retencion: string;
+    monto_imponible: number;
+    total_retencion: number;
+    arrendador: ArrendadorDtoOut;
+    facturacion: FacturacionDtoOut;
 }

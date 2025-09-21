@@ -32,6 +32,8 @@ export default function PagosPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPagos, setSelectedPagos] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
 
   // Filtrar datos
 const filteredData = useMemo(() => {
@@ -69,6 +71,7 @@ const filteredData = useMemo(() => {
         setPagos(data);
       } catch (e) {
         toast.error("Error al cargar los pagos");
+        setError("Error al cargar los pagos")
       } finally {
         setLoading(false);
       }
@@ -197,6 +200,8 @@ const filteredData = useMemo(() => {
               <div className="text-center py-12">
                 <p className="text-gray-500">Cargando pagos...</p>
               </div>
+            ) : error ? (
+              <div className="text-center py-12 text-red-500 font-semibold">{error}</div>
             ) : filteredData.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500">No se encontraron pagos que coincidan con los filtros.</p>

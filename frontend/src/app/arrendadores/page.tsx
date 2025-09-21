@@ -158,7 +158,7 @@ const handleDelete = (id: number) => {
             {loading ? (
               <div className="text-center py-12">Cargando...</div>
             ) : error ? (
-              <div className="text-center py-12 text-red-500">{error}</div>
+              <div className="text-center py-12 text-red-500 font-semibold">{error}</div>
             ) : filteredData.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 No se encontraron arrendadores que coincidan con los filtros.
@@ -179,6 +179,9 @@ const handleDelete = (id: number) => {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Mail
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Teléfono
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Localidad
@@ -204,6 +207,9 @@ const handleDelete = (id: number) => {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                           {arrendador.mail || "-"}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                          {arrendador.telefono || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {arrendador.localidad?.nombre_localidad}

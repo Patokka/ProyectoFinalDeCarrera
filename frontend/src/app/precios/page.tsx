@@ -21,6 +21,7 @@ export default function PreciosPage() {
   const [currentPageBCR, setCurrentPageBCR] = useState(1);
   const [currentPageAGD, setCurrentPageAGD] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Filtrar datos BCR
   const filteredBCRData = useMemo(() => {
@@ -67,6 +68,7 @@ export default function PreciosPage() {
         setPreciosBCR(dataBCR);
       }catch(e){
         toast.error("Error al cargar los precios")
+        setError("Error al cargar los precios")
       }
     }
     loadPrecios();
@@ -118,41 +120,53 @@ export default function PreciosPage() {
         <h3 className="text-lg font-medium text-gray-900">{title}:</h3>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Fecha
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Precio Tonelada Soja
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {data.map((precio) => (
-              <tr key={precio.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {formatDate(precio.fecha_precio)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                  {formatCurrency(precio.precio_obtenido)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button 
-                    onClick={() => handleEditPrecio(precio)}
-                    className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">Cargando pagos...</p>
+          </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-500 font-semibold">{error}</div>
+          ) : data.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No se encontraron pagos que coincidan con los filtros.</p>
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                    Fecha
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                    Precio Tonelada Soja
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {data.map((precio) => (
+                  <tr key={precio.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(precio.fecha_precio)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                      {formatCurrency(precio.precio_obtenido)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button 
+                        onClick={() => handleEditPrecio(precio)}
+                        className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
       </div>
 
       {totalPages > 1 && (

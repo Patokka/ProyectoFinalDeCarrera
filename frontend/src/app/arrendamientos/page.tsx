@@ -36,15 +36,23 @@ export default function ArrendamientosPage() {
   const [tipoFilter, setTipoFilter] = useState('');
   const [estadoFilter, setEstadoFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+
 
   // Traer los arrendamientos del backend
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const data = await fetchArrendamientos();
         setArrendamientos(data);
       } catch (err) {
-        toast.error("Error al cargar los arrendamientos")
+        toast.error("Error al cargar los arrendamientos");
+        setError("Error al cargar los arrendamientos")
+      } finally{
+        setLoading(false);
       }
     };
     fetchData();
@@ -138,82 +146,85 @@ export default function ArrendamientosPage() {
 
           {/* Tabla */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Tipo
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Arrendatario
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Arrendador(es)
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Hectáreas
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Quintales
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Fecha Finalización
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedData.map((arrendamiento) => (
-                    <tr key={arrendamiento.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {arrendamiento.tipo}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEstadoBadgeColor(arrendamiento.estado)}`}>
-                          {arrendamiento.estado}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {arrendamiento.arrendatario.razon_social}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                          {arrendamiento.arrendadores?.map((a: ArrendadorDtoOut) => a.nombre_o_razon_social).join(" - ")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {arrendamiento.hectareas}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {arrendamiento.quintales}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {format(parseISO(arrendamiento.fecha_fin),'dd/MM/yyyy')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
-                            <Eye className="h-4 w-4" />
-                          </button>
-                          <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
-                            <Edit className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
+            {loading ? (
+              <div className="text-center py-12">Cargando...</div>
+            ) : error ? (
+              <div className="text-center py-12 text-red-500 font-semibold">{error}</div>
+            ) : filteredData.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No se encontraron retenciones que coincidan con los filtros.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Arrendatario
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Arrendador(es)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Hectáreas
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Quintales
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Fecha Finalización
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Acciones
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mensaje cuando no hay datos */}
-            {filteredData.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No se encontraron arrendamientos que coincidan con los filtros.</p>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedData.map((arrendamiento) => (
+                      <tr key={arrendamiento.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {arrendamiento.tipo}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEstadoBadgeColor(arrendamiento.estado)}`}>
+                            {arrendamiento.estado}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {arrendamiento.arrendatario.razon_social}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                            {arrendamiento.arrendadores?.map((a: ArrendadorDtoOut) => a.nombre_o_razon_social).join(" - ")}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {arrendamiento.hectareas}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {arrendamiento.quintales}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {format(parseISO(arrendamiento.fecha_fin),'dd/MM/yyyy')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
+                              <Edit className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
