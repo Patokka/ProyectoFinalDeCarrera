@@ -136,7 +136,7 @@ export default function ArrendamientosPage() {
                 label="Estado de Arrendamiento"
               />
               <SearchInput
-                placeholder="ej: Nordesan"
+                placeholder="Buscar..."
                 value={searchTerm}
                 onChange={setSearchTerm}
                 label="Arrendatario"

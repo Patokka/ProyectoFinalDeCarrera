@@ -27,5 +27,5 @@ def actualizar_usuario(usuario_id: int, dto: UsuarioDtoModificacion, db: Session
 
 @router.delete("/{usuario_id}", description="Eliminación de un usuario por id.")
 def eliminar_usuario(usuario_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(admin_required)):
-    UsuarioService.eliminar(db, usuario_id)
+    UsuarioService.eliminar(db, usuario_id, current_user)
     return {"mensaje": "Usuario eliminado correctamente."}

@@ -22,7 +22,7 @@ const ITEMS_PER_PAGE = 8;
 
 export default function ArrendadoresPage() {
   const [arrendadores, setArrendadores] = useState<ArrendadorDtoOut[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [searchTermNombre, setSearchTermNombre] = useState('');
@@ -119,7 +119,7 @@ const handleDelete = (id: number) => {
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Arrendadores</h1>
-            <Link href="/arrendadores/nuevo" passHref>
+            <Link href="/arrendadores/post" passHref>
               <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
                 <Plus className="h-4 w-4" />
                 <span>Nuevo Arrendador</span>
@@ -132,7 +132,7 @@ const handleDelete = (id: number) => {
             <h2 className="text-sm font-medium text-gray-700 mb-3 underline">Filtrar:</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SearchInput
-                placeholder="ej: Patricio"
+                placeholder="Buscar..."
                 value={searchTermNombre}
                 onChange={setSearchTermNombre}
                 label="Nombre"
@@ -212,7 +212,7 @@ const handleDelete = (id: number) => {
                           {arrendador.telefono || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendador.localidad?.nombre_localidad}
+                          {arrendador.localidad?.nombre_localidad +' - ' + arrendador.localidad.provincia.nombre_provincia}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">

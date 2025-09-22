@@ -20,13 +20,16 @@ export interface LocalidadDtoOut {
   provincia: ProvinciaDtoOut
 }
 
+export type TipoRol = "ADMINISTRADOR" | "OPERADOR" | "CONSULTA";
+
+
 export interface UsuarioDtoOut {
   id: number;
   cuil: string;
   nombre: string;
   apellido: string;
   mail?: string;
-  rol: string;
+  rol: TipoRol;
 }
 
 export type TipoCondicion = "RESPONSABLE_INSCRIPTO" | "RESPONSABLE_NO_INSCRIPTO_O_EXENTO" | "MONOTRIBUTISTA"; 

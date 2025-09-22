@@ -1,7 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Usuario import Usuario
-from dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion
+from dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion, UsuarioLogueado
 from util.jwtYPasswordHandler import hash_password, verify_password
 
 class UsuarioService:
@@ -48,9 +48,12 @@ class UsuarioService:
         return usuario
 
     @staticmethod
-    def eliminar(db: Session, usuario_id: int):
+    def eliminar(db: Session, usuario_id: int, current_user: UsuarioLogueado):
         usuario = db.query(Usuario).get(usuario_id)
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+        if usuario.id == current_user.id:
+            raise HTTPException(status_code=400, detail="No se puede eliminar a sí mismo.")
+        
         db.delete(usuario)
         db.commit()

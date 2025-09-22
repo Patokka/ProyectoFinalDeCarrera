@@ -1,11 +1,11 @@
-import { ArrendatarioDtoOut } from "../type";
+import { UsuarioDtoOut } from "../type";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
+export async function fetchUsuarios(): Promise<UsuarioDtoOut[]> {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API_URL}/arrendatarios`, {
+    const res = await fetch(`${API_URL}/usuarios`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -22,15 +22,15 @@ export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Error al obtener los arrendatarios");
+        throw new Error(err.detail || "Error al obtener los usuarios");
     }
 
     return res.json();
 }
 
-export async function deleteArrendatario(id: number) {
+export async function deleteUsuario(id: number) {
     const token = localStorage.getItem("token");
-    const res = await fetch(`${API_URL}/arrendatarios/${id}`, {
+    const res = await fetch(`${API_URL}/usuarios/${id}`, {
     method: "DELETE",
     headers: {
         "Authorization": `Bearer ${token}`,
@@ -43,6 +43,10 @@ export async function deleteArrendatario(id: number) {
         localStorage.removeItem("token")
         window.location.href = "/login"
         throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
+
+    if (res.status === 400) {
+        throw new Error("No se puede eliminar a sí mismo")
     }
 
     if (!res.ok) {
