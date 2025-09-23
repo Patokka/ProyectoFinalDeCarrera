@@ -1,3 +1,4 @@
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Localidad import Localidad
@@ -45,6 +46,7 @@ class UbicacionService:
         obj = db.query(Localidad).get(localidad_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Localidad no encontrada.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         
@@ -86,6 +88,7 @@ class UbicacionService:
         obj = db.query(Provincia).get(provincia_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Provincia no encontrada.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         

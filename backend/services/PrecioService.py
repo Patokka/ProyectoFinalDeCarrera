@@ -1,12 +1,12 @@
 from datetime import date, timedelta
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi.responses import JSONResponse
 import os, requests
 import re
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-
-from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from Enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Precio import Precio
 from dtos.PrecioDto import PrecioDto, PrecioDtoModificacion
 
@@ -78,6 +78,7 @@ class PrecioService:
         obj = db.query(Precio).get(precio_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Precio no encontrado.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         

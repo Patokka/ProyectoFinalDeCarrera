@@ -53,3 +53,29 @@ export async function deleteArrendador(id: number) {
 
     return true;
 }
+
+export async function fetchArrendadorById(id: number): Promise<ArrendadorDtoOut> {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API_URL}/arrendadores/${id}`, {
+        method: "GET",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+    });
+
+    if (res.status === 401) {
+        // limpiar sesión y redirigir
+        localStorage.removeItem("token")
+        window.location.href = "/login"
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al obtener los arrendadores");
+    }
+
+    return res.json();
+}

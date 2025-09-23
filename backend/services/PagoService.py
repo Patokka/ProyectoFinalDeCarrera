@@ -1,13 +1,14 @@
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session, joinedload
 from model.Arrendamiento import Arrendamiento
 from model.Arrendatario import Arrendatario
-from enums.EstadoPago import EstadoPago
-from enums.PlazoPago import PlazoPago
-from enums.TipoArrendamiento import TipoArrendamiento
-from enums.TipoDiasPromedio import TipoDiasPromedio
-from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from Enums.EstadoPago import EstadoPago
+from Enums.PlazoPago import PlazoPago
+from Enums.TipoArrendamiento import TipoArrendamiento
+from Enums.TipoDiasPromedio import TipoDiasPromedio
+from Enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Precio import Precio
 from model.pago_precio_association import pago_precio_association
 from model.ParticipacionArrendador import ParticipacionArrendador
@@ -55,6 +56,7 @@ class PagoService:
         obj = db.query(Pago).get(pago_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         
@@ -357,3 +359,16 @@ class PagoService:
             .all()
             )
         return [r.vencimiento.isoformat() for r in results]
+    
+    @staticmethod
+    def obtener_pendientes_arrendador(db:Session, arrendador_id: int):
+        pagos = (
+            db.query(Pago)
+            .join(Pago.participacion_arrendador)
+            .filter(
+                (ParticipacionArrendador.arrendador_id == arrendador_id) &
+                (Pago.estado == EstadoPago.PENDIENTE)
+            )
+            .all()
+        )
+        return pagos

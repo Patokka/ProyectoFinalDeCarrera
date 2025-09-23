@@ -1,3 +1,4 @@
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Arrendatario import Arrendatario
@@ -40,5 +41,6 @@ class ArrendatarioService:
         obj = db.query(Arrendatario).get(arrendatario_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Arrendatario no encontrado.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()

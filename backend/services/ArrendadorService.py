@@ -1,3 +1,4 @@
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Arrendador import Arrendador
@@ -41,10 +42,7 @@ class ArrendadorService:
         if not arrendador:
             raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
         
-        if arrendador.participaciones:  
-            raise HTTPException(
-                status_code=400,
-                detail="No se puede eliminar el arrendador porque tiene participaciones en arrendamientos."
-            )
+        verificar_relaciones_existentes(arrendador)
+        
         db.delete(arrendador)
         db.commit()

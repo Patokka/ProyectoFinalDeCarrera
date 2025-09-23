@@ -17,7 +17,7 @@ export interface ProvinciaDtoOut{
 export interface LocalidadDtoOut {
   id: number;
   nombre_localidad: string;
-  provincia: ProvinciaDtoOut
+  provincia: ProvinciaDtoOut;
 }
 
 export type TipoRol = "ADMINISTRADOR" | "OPERADOR" | "CONSULTA";

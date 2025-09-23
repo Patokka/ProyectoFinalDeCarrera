@@ -1,3 +1,4 @@
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Usuario import Usuario
@@ -54,6 +55,6 @@ class UsuarioService:
             raise HTTPException(status_code=404, detail="Usuario no encontrado.")
         if usuario.id == current_user.id:
             raise HTTPException(status_code=400, detail="No se puede eliminar a sí mismo.")
-        
+        verificar_relaciones_existentes(usuario)
         db.delete(usuario)
         db.commit()

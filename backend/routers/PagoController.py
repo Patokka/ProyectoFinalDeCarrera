@@ -56,4 +56,8 @@ def actualizar_precio_pago(pago_id: int, db: Session = Depends(get_db)):
     try:
         return PagoService.generarPrecioCuota(db, pago_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) 
+
+@router.get("/arrendador/{arrendador_id}", response_model=list[PagoDtoOut], description="Obtención de los pagos PENDIENTES correspondientes a un arrendador.")
+def obtener_pago(arrendador_id: int, db: Session = Depends(get_db)):
+    return PagoService.obtener_pendientes_arrendador(db, arrendador_id)

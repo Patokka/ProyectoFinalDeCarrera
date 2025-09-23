@@ -1,10 +1,11 @@
 from datetime import date
 from decimal import Decimal
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from enums.PlazoPago import PlazoPago
-from enums.TipoCondicion import TipoCondicion
+from Enums.PlazoPago import PlazoPago
+from Enums.TipoCondicion import TipoCondicion
 from services.ArrendadorService import ArrendadorService
 from services.ArrendamientoService import ArrendamientoService
 from model.Retencion import Retencion
@@ -53,6 +54,7 @@ class RetencionService:
         obj = db.query(Retencion).get(retencion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Retención no encontrada.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         

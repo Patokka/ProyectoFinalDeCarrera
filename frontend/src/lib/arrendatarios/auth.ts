@@ -47,7 +47,7 @@ export async function deleteArrendatario(id: number) {
 
     if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || "No se pudo eliminar el arrendador");
+        throw new Error(data.detail || "No se pudo eliminar el arrendatario");
     }
 
     return true;

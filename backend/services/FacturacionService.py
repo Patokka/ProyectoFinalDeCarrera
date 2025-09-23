@@ -1,10 +1,11 @@
 from datetime import date
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from enums.EstadoPago import EstadoPago
-from enums.TipoCondicion import TipoCondicion
-from enums.TipoFactura import TipoFactura
+from Enums.EstadoPago import EstadoPago
+from Enums.TipoCondicion import TipoCondicion
+from Enums.TipoFactura import TipoFactura
 from services.ArrendadorService import ArrendadorService
 from services.PagoService import PagoService
 from services.RetencionService import RetencionService
@@ -90,6 +91,7 @@ class FacturacionService:
         obj = db.query(Facturacion).get(facturacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Facturación no encontrada.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         

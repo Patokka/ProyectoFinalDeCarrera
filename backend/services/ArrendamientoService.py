@@ -1,10 +1,11 @@
 from datetime import date, timedelta
+from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoModificacion
-from enums.EstadoArrendamiento import EstadoArrendamiento
-from enums.EstadoPago import EstadoPago
+from Enums.EstadoArrendamiento import EstadoArrendamiento
+from Enums.EstadoPago import EstadoPago
 from model.Pago import Pago
 from model.ParticipacionArrendador import ParticipacionArrendador
 from model.Arrendamiento import Arrendamiento
@@ -64,6 +65,7 @@ class ArrendamientoService:
         obj = db.query(Arrendamiento).get(arrendamiento_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         
@@ -188,5 +190,6 @@ class ArrendamientoService:
         obj = db.query(ParticipacionArrendador).get(participacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Participación no encontrada.")
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
