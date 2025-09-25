@@ -14,15 +14,7 @@ interface SelectFilterProps {
   error?: string;
 }
 
-export default function SelectFilter({
-  options,
-  value,
-  onChange,
-  placeholder = "Seleccionar...",
-  className = "",
-  label,
-  error,
-}: SelectFilterProps) {
+export default function SelectFilter({options, value, onChange, placeholder = "Seleccionar...", className = "", label, error,}: SelectFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

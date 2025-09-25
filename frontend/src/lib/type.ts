@@ -1,3 +1,37 @@
+export interface ReportConfig {
+  id: string;
+  endpoint: string;
+  fileType: "pdf" | "excel";
+  inputFields: Array<"month" | "year">;
+}
+
+export interface ReportCard {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  inputFields: Array<{
+    id: string;
+    label: string;
+    type: "number";
+    placeholder?: string;
+    min?: number;
+    max?: number;
+    required?: boolean;
+  }>;
+  endpoint: string;
+  fileType: "pdf" | "excel";
+}
+
+export interface ConfigCard {
+  id: string
+  title: string
+  description: string
+  icon: React.ComponentType<{ className?: string }>
+  type: "time" | "frequency" | "schedule"
+  jobId: string
+}
+
 export interface PaymentSummaryResponse {
   arrendatario: string
   cantidad: number

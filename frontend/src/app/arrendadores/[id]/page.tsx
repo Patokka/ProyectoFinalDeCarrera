@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Edit, FileText } from 'lucide-react';
-import { useParams } from 'next/navigation';
+import { Edit, FileText, Trash } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
 import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
@@ -12,9 +12,9 @@ import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurr
 import { facturarPagos, fetchPagosByArrendador } from '@/lib/pagos/auth';
 import Text from '@/components/ui/Text'
 import Link from 'next/link';
-import { fetchArrendadorById } from '@/lib/arrendadores/auth';
+import { deleteArrendador, fetchArrendadorById } from '@/lib/arrendadores/auth';
 
-const ITEMS_PER_PAGE = 7;
+const ITEMS_PER_PAGE = 5;
 
 export default function ArrendadorDetailPage() {
 const params = useParams();
@@ -27,8 +27,9 @@ const [currentPage, setCurrentPage] = useState(1);
 const [selectedPagos, setSelectedPagos] = useState<number[]>([]);
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState<string | null>(null);
+const router = useRouter();
 
-  // Cargar arrendador + pagos
+// Cargar arrendador + pagos
 useEffect(() => {
     const load = async () => {
     if (!idArrendador) {
@@ -53,7 +54,7 @@ useEffect(() => {
     load();
 }, [idArrendador]);
 
-  // Filtrado de pagos
+// Filtrado de pagos
 const filteredPagos = useMemo(() => {
     return pagos.filter(pago => {
         const venc = new Date(pago.vencimiento);
@@ -152,6 +153,26 @@ if (!arrendador) {
         </div>
         </ProtectedRoute>
     );
+}
+
+function handleDeleteArrendador(){
+    const toastId = toast.info(`¿Está seguro que desea eliminar el arrendador?`, {
+    action: {
+        label: 'Confirmar',
+        onClick: async () => {
+        toast.dismiss(toastId);
+        try {
+            await deleteArrendador(Number(idArrendador));
+            toast.success('Arrendador eliminado con éxito, volviendo a la página de arrendadores...');
+            setTimeout(() => router.push('/arrendadores'), 1000);
+        } catch (e: any) {
+            console.error(e);
+            toast.error('Error al eliminar el arrendador');
+        }
+        }
+    },
+    duration: 5000
+    });
 }
 
 return (
@@ -365,12 +386,18 @@ return (
                     />
                 </div>
             )}
-                <div className="mt-6">
-                    <Link href="/arrendadores" passHref>
-                        <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                            Volver
-                        </button>
-                    </Link>
+            </div>
+            <div className="flex justify-between mt-6">
+                <Link href="/arrendadores" passHref>
+                    <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
+                        Volver
+                    </button>
+                </Link>
+                <div className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                <button onClick={handleDeleteArrendador} className="flex items-center space-x-3 px-3 py-2 w-full text-left text-base font-medium">
+                    <Trash className="w-5 h-5" />
+                    <span>Eliminar Arrendador</span>
+                </button>
                 </div>
             </div>
         </div>

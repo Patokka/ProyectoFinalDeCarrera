@@ -29,7 +29,7 @@ def descargar_reporte_fiscal(anio_inicio: int, mes_inicio: int, db: Session = De
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
-    
+
 @router.get("/pagos-pendientes/pdf")
 def descargar_reporte_pagos_pendientes(anio: int, mes: int, db: Session = Depends(get_db)):
     """
