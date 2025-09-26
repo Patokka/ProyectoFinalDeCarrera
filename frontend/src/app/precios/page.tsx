@@ -10,6 +10,7 @@ import { PrecioDtoOut } from '@/lib/type';
 import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { fetchPreciosAGD, fetchPreciosBCR } from '@/lib/precios/auth';
+import PrecioModal from '@/components/ui/PriceModal';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -22,8 +23,9 @@ export default function PreciosPage() {
   const [currentPageAGD, setCurrentPageAGD] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Filtrar datos BCR
+  // Filtrado de datos BCR
   const filteredBCRData = useMemo(() => {
     return preciosBCR.filter(item => {
       const fecha = new Date(item.fecha_precio);
@@ -31,7 +33,7 @@ export default function PreciosPage() {
     });
   }, [preciosBCR, fechaDesde, fechaHasta]);
 
-  // Filtrar datos AGD
+  // Filtrado de datos AGD
   const filteredAGDData = useMemo(() => {
     return preciosAGD.filter(item => {
       const fecha = new Date(item.fecha_precio);
@@ -75,32 +77,7 @@ export default function PreciosPage() {
   },[]);
 
   const handleCargarPrecio = () => {
-    const confirmToastId = toast.info(
-      '¿Está seguro que desea cargar los precios actuales?',
-      {
-        action: {
-          label: "Confirmar",
-          onClick: () => {
-            toast.dismiss(confirmToastId);
-            toast.promise(
-              new Promise((resolve) => {
-                setLoading(true);
-                setTimeout(() => {
-                  setLoading(false);
-                  resolve('Precios cargados exitosamente');
-                }, 2000);
-              }),
-              {
-                loading: "Cargando precios...",
-                success: "Precios actualizados con éxito",
-                error: "Error al cargar los precios",
-              }
-            );
-          },
-        },
-        duration: 5000,
-      }
-    );
+    setIsModalOpen(true);
   };
 
   const handleEditPrecio = (precio: PrecioDtoOut) => {
@@ -190,7 +167,7 @@ export default function PreciosPage() {
               className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
             >
               <Plus className="h-4 w-4" />
-              <span>Cargar Precio</span>
+              <span>Nuevo Precio</span>
             </button>
           </div>
 
@@ -243,6 +220,21 @@ export default function PreciosPage() {
           </div>
         </div>
       </div>
+      <PrecioModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={async () => {
+          try {
+            const dataBCR = await fetchPreciosBCR();
+            const dataAGD = await fetchPreciosAGD();
+            setPreciosAGD(dataAGD);
+            setPreciosBCR(dataBCR);
+            setIsModalOpen(false);
+          } catch (e) {
+            toast.error("Error al actualizar la lista de precios");
+          }
+        }}
+      />
     </ProtectedRoute>
   );
 }

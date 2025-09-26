@@ -15,8 +15,8 @@ export default function Text({ label, value, disabled = true, readOnly=true, }: 
         type="text"
         value={value}
         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm
-                   hover:cursor-not-allowed"
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm
+                    hover:cursor-not-allowed"
         disabled={disabled}
         readOnly={readOnly}
       />

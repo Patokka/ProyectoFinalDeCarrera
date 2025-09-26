@@ -73,6 +73,7 @@ async def lifespan(app: FastAPI):
     print("🔄 Cerrando aplicación...")
     print("🛑 Deteniendo BotPrecioAGD...")
     ####################################################################bot.stop()
+    ####################################################################bot.esperar_hilo()
 
 # Crear la aplicación FastAPI con lifespan
 app = FastAPI(

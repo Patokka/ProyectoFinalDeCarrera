@@ -149,9 +149,7 @@ export const useConfigModal = () => {
             <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
             <button
                 onClick={onClose}
-                className={`btn-secondary px-4 py-2 rounded-md transition-colors ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                } `}
+                className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""} `}
                 disabled={isSubmitting}
             >
                 Cancelar

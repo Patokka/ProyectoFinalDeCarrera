@@ -159,6 +159,12 @@ export interface PrecioDtoOut{
   origen: TipoOrigenPrecio;
 }
 
+export type PrecioForm ={
+  fecha_precio: string;
+  precio_obtenido: number;
+  origen: TipoOrigenPrecio;
+}
+
 export interface FacturacionDtoOut{
   id: number;
   fecha_facturacion: string;

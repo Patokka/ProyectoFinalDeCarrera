@@ -48,32 +48,32 @@ export async function postArrendamiento(formData: ArrendamientoForm): Promise<Ar
   };
 
   const res = await fetch(`${API_URL}/arrendamientos`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (res.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-    throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
-  }
+    if (res.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+      throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
 
-  if (res.status === 422) {
-    const err = await res.json();
-    throw new Error(err.detail || "Form mal formado");
-  }
+    if (res.status === 422) {
+      const err = await res.json();
+      throw new Error(err.detail || "Form mal formado");
+    }
 
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.detail || "Error al crear arrendamiento");
-  }
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Error al crear arrendamiento");
+    }
 
-  return res.json();
+    return res.json();
 }
 
 //Guarda individualmente una participación
