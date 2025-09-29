@@ -4,8 +4,8 @@ from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from Enums.PlazoPago import PlazoPago
-from Enums.TipoCondicion import TipoCondicion
+from enums.PlazoPago import PlazoPago
+from enums.TipoCondicion import TipoCondicion
 from services.ArrendadorService import ArrendadorService
 from services.ArrendamientoService import ArrendamientoService
 from model.Retencion import Retencion

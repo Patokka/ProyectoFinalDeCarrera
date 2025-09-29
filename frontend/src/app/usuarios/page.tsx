@@ -10,6 +10,7 @@ import { UsuarioDtoOut } from '@/lib/type';
 import { toast } from 'sonner';
 import { deleteUsuario, fetchUsuarios } from '@/lib/usuarios/auth';
 import { useAuth } from '@/components/context/AuthContext';
+import { formatCuit, getRolBadgeColor } from '@/lib/helpers';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -61,19 +62,6 @@ export default function UsuariosPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit]);
-
-  const getRolBadgeColor = (rol: string) => {
-    switch (rol) {
-      case 'ADMINISTRADOR':
-        return 'bg-green-100 text-green-800';
-      case 'OPERADOR':
-        return 'bg-blue-100 text-blue-800';
-      case 'CONSULTA':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
 const handleDelete = (id: number) => {
   if (id === user?.id) {
@@ -186,7 +174,7 @@ const handleDelete = (id: number) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
-                            {usuario.cuil}
+                            {formatCuit(usuario.cuil)}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">

@@ -64,6 +64,7 @@ export default function PreciosPage() {
   useEffect(() => {
     const loadPrecios = async () => {
       try{
+        setLoading(true)
         const dataBCR = await fetchPreciosBCR();
         const dataAGD = await fetchPreciosAGD();
         setPreciosAGD(dataAGD);
@@ -71,6 +72,8 @@ export default function PreciosPage() {
       }catch(e){
         toast.error("Error al cargar los precios")
         setError("Error al cargar los precios")
+      }finally{
+        setLoading(false)
       }
     }
     loadPrecios();
@@ -85,13 +88,7 @@ export default function PreciosPage() {
   };
 
   // Tabla de precios reutilizable
-  const PreciosTable = ({data, title, currentPage, totalPages, onPageChange}: {
-    data: PrecioDtoOut[];
-    title: string;
-    currentPage: number;
-    totalPages: number;
-    onPageChange: (page: number) => void;
-  }) => (
+  const PreciosTable = ({data, title, currentPage, totalPages, onPageChange}: { data: PrecioDtoOut[]; title: string; currentPage: number; totalPages: number; onPageChange: (page: number) => void; }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
         <h3 className="text-lg font-medium text-gray-900">{title}:</h3>

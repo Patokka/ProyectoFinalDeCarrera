@@ -4,11 +4,11 @@ from sqlalchemy import extract, func
 from sqlalchemy.orm import Session, joinedload
 from model.Arrendamiento import Arrendamiento
 from model.Arrendatario import Arrendatario
-from Enums.EstadoPago import EstadoPago
-from Enums.PlazoPago import PlazoPago
-from Enums.TipoArrendamiento import TipoArrendamiento
-from Enums.TipoDiasPromedio import TipoDiasPromedio
-from Enums.TipoOrigenPrecio import TipoOrigenPrecio
+from enums.EstadoPago import EstadoPago
+from enums.PlazoPago import PlazoPago
+from enums.TipoArrendamiento import TipoArrendamiento
+from enums.TipoDiasPromedio import TipoDiasPromedio
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Precio import Precio
 from model.pago_precio_association import pago_precio_association
 from model.ParticipacionArrendador import ParticipacionArrendador

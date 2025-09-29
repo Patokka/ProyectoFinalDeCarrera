@@ -4,8 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoModificacion
-from Enums.EstadoArrendamiento import EstadoArrendamiento
-from Enums.EstadoPago import EstadoPago
+from enums.EstadoArrendamiento import EstadoArrendamiento
+from enums.EstadoPago import EstadoPago
 from model.Pago import Pago
 from model.ParticipacionArrendador import ParticipacionArrendador
 from model.Arrendamiento import Arrendamiento

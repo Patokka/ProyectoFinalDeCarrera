@@ -10,6 +10,7 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ArrendadorDtoOut } from '@/lib/type';
 import { deleteArrendador, fetchArrendadores } from '@/lib/arrendadores/auth';
 import { toast } from 'sonner';
+import { formatCuit, getCondicionBadgeColor } from '@/lib/helpers';
 
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
@@ -70,19 +71,6 @@ export default function ArrendadoresPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit, condicionFilter]);
-
-  const getCondicionBadgeColor = (condicion: string) => {
-    switch (condicion) {
-      case 'MONOTRIBUTISTA':
-        return 'bg-green-100 text-green-800';
-      case 'RESPONSABLE_INSCRIPTO':
-        return 'bg-blue-100 text-blue-800';
-      case 'RESPONSABLE_NO_INSCRIPTO_O_EXENTO':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
 const handleDelete = (id: number) => {
   // Confirmación
@@ -198,7 +186,7 @@ const handleDelete = (id: number) => {
                           <div className="truncate">{arrendador.nombre_o_razon_social}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendador.cuil}
+                          {formatCuit(arrendador.cuil)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCondicionBadgeColor(arrendador.condicion_fiscal)}`}>
@@ -216,9 +204,11 @@ const handleDelete = (id: number) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
-                              <Eye className="h-4 w-4" />
-                            </button>
+                            <Link href={`/arrendadores/${arrendador.id}`}>
+                              <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
+                                <Eye className="h-4 w-4" />
+                              </button>
+                            </Link>
                             <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
                               <Edit className="h-4 w-4" />
                             </button>

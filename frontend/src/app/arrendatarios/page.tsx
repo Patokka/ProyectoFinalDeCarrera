@@ -10,6 +10,7 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ArrendatarioDtoOut } from '@/lib/type';
 import { toast } from 'sonner';
 import { deleteArrendatario, fetchArrendatarios } from '@/lib/arrendatarios/auth';
+import { formatCuit, getCondicionBadgeColor } from '@/lib/helpers';
 
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
@@ -70,19 +71,6 @@ export default function ArrendatariosPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit, condicionFilter]);
-
-  const getCondicionBadgeColor = (condicion: string) => {
-    switch (condicion) {
-      case 'MONOTRIBUTISTA':
-        return 'bg-green-100 text-green-800';
-      case 'RESPONSABLE_INSCRIPTO':
-        return 'bg-blue-100 text-blue-800';
-      case 'RESPONSABLE_NO_INSCRIPTO_O_EXENTO':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
 const handleDelete = (id: number) => {
   // Confirmación
@@ -195,7 +183,7 @@ const handleDelete = (id: number) => {
                           <div className="truncate">{arrendatario.razon_social}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendatario.cuit}
+                          {formatCuit(arrendatario.cuit)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCondicionBadgeColor(arrendatario.condicion_fiscal)}`}>

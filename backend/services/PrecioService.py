@@ -1,4 +1,6 @@
 from datetime import date, timedelta
+
+from sqlalchemy import desc
 from util.dbValidator import verificar_relaciones_existentes
 from fastapi.responses import JSONResponse
 import os, requests
@@ -6,7 +8,7 @@ import re
 from dotenv import load_dotenv
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from Enums.TipoOrigenPrecio import TipoOrigenPrecio
+from enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Precio import Precio
 from dtos.PrecioDto import PrecioDto, PrecioDtoModificacion
 
@@ -29,11 +31,11 @@ class PrecioService:
     
     @staticmethod
     def listar_precios_agd(db: Session):
-        return db.query(Precio).filter(Precio.origen == TipoOrigenPrecio.AGD).all()
+        return db.query(Precio).filter(Precio.origen == TipoOrigenPrecio.AGD).order_by(desc(Precio.fecha_precio)).all()
     
     @staticmethod
     def listar_precios_bcr(db: Session):
-        return db.query(Precio).filter(Precio.origen == TipoOrigenPrecio.BCR).all()
+        return db.query(Precio).filter(Precio.origen == TipoOrigenPrecio.BCR).order_by(desc(Precio.fecha_precio)).all()
 
     @staticmethod
     def obtener_precio_por_id(db: Session, precio_id: int):

@@ -48,7 +48,7 @@ export default function FacturacionesPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermArrendador, fechaDesde, fechaHasta]);
- 
+
   useEffect(()=> {
     const loadFacturaciones = async () =>{
       try{

@@ -30,9 +30,9 @@ export default function SideBar({ children }: { children: React.ReactNode }) {
             <Calendar/>
             <PaymentSummary/>
             <div className="card p-4">
-              <Link href="/facturaciones" passHref>
+              <Link href="/pagos" passHref>
                 <button className="w-full btn-primary text-sm">
-                  Ir a pestaña de facturación
+                  Ir a pestaña de pagos
                 </button>
               </Link>
             </div>

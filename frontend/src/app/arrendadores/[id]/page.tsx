@@ -8,7 +8,7 @@ import Pagination from '@/components/ui/Pagination';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { toast } from 'sonner';
 import { ArrendadorDtoOut, PagoDtoOut } from '@/lib/type';
-import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
+import { formatCuit, formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
 import { facturarPagos, fetchPagosByArrendador } from '@/lib/pagos/auth';
 import Text from '@/components/ui/Text'
 import Link from 'next/link';
@@ -44,7 +44,6 @@ useEffect(() => {
         setArrendador(arr);
         setPagos(pagosArr);
     } catch (e: any) {
-        console.error(e);
         toast.error('Error al cargar los datos del arrendador');
         setError('Error al cargar datos');
     } finally {
@@ -111,7 +110,6 @@ const handleFacturarSeleccionados = () => {
             setSelectedPagos([]);
             toast.success('Facturaciones realizadas con éxito');
         } catch (e: any) {
-            console.error(e);
             toast.error('Error al facturar pagos');
         }
         }
@@ -166,8 +164,7 @@ function handleDeleteArrendador(){
             toast.success('Arrendador eliminado con éxito, volviendo a la página de arrendadores...');
             setTimeout(() => router.push('/arrendadores'), 1000);
         } catch (e: any) {
-            console.error(e);
-            toast.error('Error al eliminar el arrendador');
+            toast.error(e.message);
         }
         }
     },
@@ -201,12 +198,12 @@ return (
                         disabled={false}
                     />
                     <Text label="CUIL-CUIT:"
-                        value={arrendador.cuil}
+                        value={formatCuit(arrendador.cuil)}
                         readOnly={true}
                         disabled={false}
                     /> 
                     <Text label="Condición Fiscal:"
-                        value={arrendador.condicion_fiscal}
+                        value={arrendador.condicion_fiscal.replace('_', ' ')}
                         readOnly={true}
                         disabled={false}
                     /> 
@@ -267,7 +264,7 @@ return (
             <div className="overflow-x-auto">
                 {paginatedPagos.length === 0 ? (
                     <div className="text-center py-12">
-                        <p className="text-gray-500">No se encontraron pagos que coincidan con los filtros.</p>
+                        <p className="text-gray-500">No se encontraron pagos que coincidan con los filtros o no se tienen pagos pendientes.</p>
                     </div>
                 ) : (
                     <table className="min-w-full divide-y divide-gray-200">

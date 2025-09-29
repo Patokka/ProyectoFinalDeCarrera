@@ -21,7 +21,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from sqlalchemy import func
-from Enums.TipoCondicion import TipoCondicion
+from enums.TipoCondicion import TipoCondicion
 from model.Arrendador import Arrendador
 from model.Arrendatario import Arrendatario
 from model.Arrendamiento import Arrendamiento

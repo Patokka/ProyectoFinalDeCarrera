@@ -3,9 +3,9 @@ from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from Enums.EstadoPago import EstadoPago
-from Enums.TipoCondicion import TipoCondicion
-from Enums.TipoFactura import TipoFactura
+from enums.EstadoPago import EstadoPago
+from enums.TipoCondicion import TipoCondicion
+from enums.TipoFactura import TipoFactura
 from services.ArrendadorService import ArrendadorService
 from services.PagoService import PagoService
 from services.RetencionService import RetencionService

@@ -10,7 +10,7 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { toast } from 'sonner';
 import { facturarPagos, fetchPagos } from '@/lib/pagos/auth';
 import { PagoDtoOut } from '@/lib/type';
-import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
+import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getPagoBadgeColor } from '@/lib/helpers';
 
 // Opciones para los filtros
 const estadoOptions = [
@@ -78,21 +78,6 @@ const filteredData = useMemo(() => {
     };
     loadPagos();
   }, []);
-
-  const getEstadoBadgeColor = (estado: string) => {
-    switch (estado) {
-      case 'PENDIENTE':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'REALIZADO':
-        return 'bg-green-100 text-green-800';
-      case 'VENCIDO':
-        return 'bg-red-100 text-red-800';
-      case 'CANCELADO':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const handleSelectPago = (pagoId: number) => {
     setSelectedPagos(prev =>
@@ -266,7 +251,7 @@ const filteredData = useMemo(() => {
                           {pago.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEstadoBadgeColor(pago.estado)}`}>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPagoBadgeColor(pago.estado)}`}>
                             {pago.estado}
                           </span>
                         </td>

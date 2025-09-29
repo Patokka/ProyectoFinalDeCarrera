@@ -11,6 +11,7 @@ import { fetchArrendamientos } from '@/lib/arrendamientos/auth';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
+import { getEstadoBadgeColor } from '@/lib/helpers';
 
 
 // Opciones para los filtros
@@ -82,20 +83,6 @@ export default function ArrendamientosPage() {
     setCurrentPage(1);
   }, [searchTerm, tipoFilter, estadoFilter]);
 
-  const getEstadoBadgeColor = (estado: string) => {
-    switch (estado) {
-      case 'ACTIVO':
-        return 'bg-green-100 text-green-800';
-      case 'FINALIZADO':
-        return 'bg-blue-100 text-blue-800';
-      case 'VENCIDO':
-        return 'bg-red-100 text-red-800';
-      case 'CANCELADO':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 p-6">
@@ -203,10 +190,10 @@ export default function ArrendamientosPage() {
                             {arrendamiento.arrendadores?.map((a: ArrendadorDtoOut) => a.nombre_o_razon_social).join(" - ")}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendamiento.hectareas}
+                          {arrendamiento.hectareas + ' ha'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendamiento.quintales}
+                          {arrendamiento.quintales + ' qq'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {format(parseISO(arrendamiento.fecha_fin),'dd/MM/yyyy')}

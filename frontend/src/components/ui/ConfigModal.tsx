@@ -68,11 +68,11 @@ export const useConfigModal = () => {
         try {
             setIsSubmitting(true);
             await updateJobConfig({
-            job_id: selectedConfigCard.jobId,
-            hour,
-            minute,
-            day,
-            active: !isDeactivated,
+                job_id: selectedConfigCard.jobId,
+                hour,
+                minute,
+                day,
+                active: !isDeactivated,
             });
             toast.success("Configuración actualizada");
             onClose();

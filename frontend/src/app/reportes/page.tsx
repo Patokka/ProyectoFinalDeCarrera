@@ -36,7 +36,7 @@ const reportCards: ReportCard[] = [
   {
     id: "pagos-realizados",
     title: "Reporte de Pagos Realizados",
-    description: "Para mesese anteriores al actual",
+    description: "Para meses anteriores al actual",
     icon: BarChart3,
     fileType: "pdf",
     endpoint: "/reportes/mensual/pdf",
@@ -190,15 +190,15 @@ export default function ReportesPage() {
       return;
     }
 
-    if(parseInt(year,10) > 2050 || parseInt(year,10) > 2050) {
-      toast.error("Año fuera de rango (2020 - 2050).");
+    if(parseInt(year,10) < 2020 || parseInt(year,10) > 2100) {
+      toast.error("Año fuera de rango (2020 - 2100).");
       return;
     }
 
     const mes = parseInt(month, 10);
     const anio = parseInt(year, 10);
     const hoy = new Date();
-    const actualMes = hoy.getMonth() + 1; // getMonth() devuelve 0-11
+    const actualMes = hoy.getMonth() + 1;
     const actualAnio = hoy.getFullYear();
 
     // VALIDACIÓN SEGÚN REPORTE
@@ -246,12 +246,12 @@ export default function ReportesPage() {
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-2">
+          <div className="mb-10">
             <h1 className="text-2xl font-bold text-gray-900">Reportes:</h1>
           </div>
 
           {/* Tarjetas de reporte, similares al dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-3  ">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14  ">
             {reportCards.map((report) => {
               const Icon = report.icon
               return (
@@ -276,8 +276,8 @@ export default function ReportesPage() {
 
           {/* Sección de Configuración */}
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Configuración de horarios:</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Configuración de horarios:</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {configurationCards.map((config) => {
             const Icon = config.icon;
             return (
@@ -352,7 +352,7 @@ export default function ReportesPage() {
                       value={year ? parseInt(year) : undefined}
                       onChange={(val) => setYear(val ? val.toString() : "")}
                       min={2020}
-                      max={2050}
+                      max={2100}
                       step={1}
                       placeholder="Ej: 2025"
                     />
@@ -360,19 +360,19 @@ export default function ReportesPage() {
 
                   {/* Extra info para facturación */}
                   {selectedReport === "facturaciones" && (
-                    <div className="text-xs text-yellow-600">
+                    <div className="text-xs text-center text-blue-800 leading-snug">
                       Se generará un reporte fiscal anual desde el mes/año seleccionado (12 meses).
                     </div>
                   )}
 
                   {/* Validaciones específicas (opcional: podrías mostrar advertencias según el tipo) */}
                   {selectedReport === "pagos-realizados" && (
-                    <p className="text-xs text-yellow-600">
+                    <p className="text-xs text-center text-blue-800 leading-snug">
                       Solo se permiten reportes hasta el mes anterior al actual.
                     </p>
                   )}
                   {selectedReport === "pagos-realizar" && (
-                    <p className="text-xs text-yellow-600">
+                    <p className="text-xs text-center text-blue-800 leading-snug">
                       Solo se permiten reportes del mes actual o futuro.
                     </p>
                   )}
