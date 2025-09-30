@@ -12,7 +12,7 @@ from model.Arrendamiento import Arrendamiento
 from dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 
 class ArrendamientoService:
-
+    
     @staticmethod
     def listar_todos(db: Session):
         arrendamientos = (
@@ -77,7 +77,8 @@ class ArrendamientoService:
         pagos = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
         
         for pago in pagos:
-            pago.estado = EstadoPago.CANCELADO
+            if pago.estado != EstadoPago.REALIZADO:
+                pago.estado = EstadoPago.CANCELADO
         
         arrendamiento.estado = EstadoArrendamiento.CANCELADO
         
@@ -193,3 +194,9 @@ class ArrendamientoService:
         verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
+        
+    @staticmethod
+    def obtener_participaciones_por_id(db, arrendamiento_id):
+        arrendamiento = ArrendamientoService.obtener_por_id(db, arrendamiento_id)
+        resultado = arrendamiento.participaciones
+        return resultado

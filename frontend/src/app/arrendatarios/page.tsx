@@ -198,9 +198,11 @@ const handleDelete = (id: number) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
-                              <Eye className="h-4 w-4" />
-                            </button>
+                            <Link href = {`/arrendatarios/${arrendatario.id}`}>
+                              <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
+                                <Eye className="h-4 w-4" />
+                              </button>
+                            </Link>
                             <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
                               <Edit className="h-4 w-4" />
                             </button>
@@ -211,7 +213,7 @@ const handleDelete = (id: number) => {
                         </td>
                       </tr>
                     ))}
-                  </tbody>
+                  </tbody>  
                 </table>
               </div>
             )}

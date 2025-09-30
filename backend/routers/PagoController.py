@@ -61,3 +61,7 @@ def actualizar_precio_pago(pago_id: int, db: Session = Depends(get_db)):
 @router.get("/arrendador/{arrendador_id}", response_model=list[PagoDtoOut], description="Obtención de los pagos PENDIENTES correspondientes a un arrendador.")
 def obtener_pago(arrendador_id: int, db: Session = Depends(get_db)):
     return PagoService.obtener_pendientes_arrendador(db, arrendador_id)
+
+@router.get("/arrendamiento/{arrendamiento_id}", response_model=list[PagoDtoOut], description="Obtención de los pagos correspondientes a un arrendamiento.")
+def obtener_pago(arrendamiento_id: int, db: Session = Depends(get_db)):
+    return PagoService.obtener_pagos_arrendamiento(db, arrendamiento_id)

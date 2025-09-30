@@ -18,7 +18,7 @@ import { getEstadoBadgeColor } from '@/lib/helpers';
 const tipoOptions = [
   { value: '', label: 'Todos los tipos' },
   { value: 'FIJO', label: 'FIJO' },
-  { value: 'APARCERIA', label: 'APARCERIA' }
+  { value: 'A_PORCENTAJE', label: 'APARCERIA (A PORCENTAJE)' }
 ];
 
 const estadoOptions = [
@@ -146,13 +146,16 @@ export default function ArrendamientosPage() {
                 <table className="min-w-full divide-y divide-gray-300">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Número
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Tipo
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Estado
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Arrendatario
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -175,15 +178,18 @@ export default function ArrendamientosPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {paginatedData.map((arrendamiento) => (
                       <tr key={arrendamiento.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {arrendamiento.tipo}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {arrendamiento.id}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {arrendamiento.tipo.replace("_", " ")}
+                        </td>
+                        <td className="px-3 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getEstadoBadgeColor(arrendamiento.estado)}`}>
                             {arrendamiento.estado}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {arrendamiento.arrendatario.razon_social}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
@@ -199,14 +205,19 @@ export default function ArrendamientosPage() {
                           {format(parseISO(arrendamiento.fecha_fin),'dd/MM/yyyy')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
-                              <Edit className="h-4 w-4" />
-                            </button>
-                          </div>
+                          
+                            <div className="flex space-x-2">
+                              <Link href = {`/arrendamientos/${arrendamiento.id}`}>
+                                <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
+                                  <Eye className="h-4 w-4" />
+                                </button>
+                              </Link>
+                              {arrendamiento.estado != 'CANCELADO' &&
+                              <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
+                                <Edit className="h-4 w-4" />
+                              </button>
+                              }
+                            </div>
                         </td>
                       </tr>
                     ))}

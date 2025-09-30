@@ -6,10 +6,13 @@ from sqlalchemy.orm import Session
 from enums.EstadoPago import EstadoPago
 from enums.TipoCondicion import TipoCondicion
 from enums.TipoFactura import TipoFactura
+from services.ArrendatarioService import ArrendatarioService
 from services.ArrendadorService import ArrendadorService
 from services.PagoService import PagoService
 from services.RetencionService import RetencionService
 from model.Facturacion import Facturacion
+from model.Arrendamiento import Arrendamiento
+from model.Pago import Pago
 from dtos.FacturacionDto import FacturacionDtoModificacion
 
 class FacturacionService:
@@ -103,4 +106,19 @@ class FacturacionService:
         facturaciones = db.query(Facturacion).filter(
             Facturacion.arrendador_id == arrendador_id
         ).all()
+        return facturaciones
+
+    @staticmethod
+    def obtener_facturaciones_arrendatario(db: Session, arrendatario_id: int):
+        #Solamente se consulta el arrendatario para obtener la excepción en caso de que no exista        
+        ArrendatarioService.obtener_por_id(db,arrendatario_id)
+        
+        # Hacer join de Facturacion para llegar al arrendatario
+        facturaciones = (
+            db.query(Facturacion)
+            .join(Pago, Facturacion.pago_id == Pago.id)
+            .join(Arrendamiento, Pago.arrendamiento_id == Arrendamiento.id)
+            .filter(Arrendamiento.arrendatario_id == arrendatario_id)
+            .all()
+        )
         return facturaciones

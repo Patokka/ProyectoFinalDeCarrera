@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDtoOut
 from util.database import get_db
 from dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 from services.ArrendamientoService import ArrendamientoService
@@ -9,6 +10,10 @@ router = APIRouter()
 @router.get("/", response_model=list[ArrendamientoDtoOut], description="Obtención de todos los arrendamientos.")
 def listar_arrendamientos(db: Session = Depends(get_db)):
     return ArrendamientoService.listar_todos(db)
+
+@router.get("/participaciones/{arrendamiento_id}", response_model=list[ParticipacionArrendadorDtoOut], description="Obtención de las participaciones de un arrendamiento por id.")
+def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
+    return ArrendamientoService.obtener_participaciones_por_id(db, arrendamiento_id)
 
 @router.get("/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Obtención de un arrendamiento por id.")
 def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):

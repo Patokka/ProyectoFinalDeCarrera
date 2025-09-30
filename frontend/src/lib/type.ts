@@ -124,6 +124,16 @@ export interface ParticipacionArrendador {
   arrendamiento_id?: number;
 }
 
+export interface ParticipacionArrendadorDtoOut {
+  id: number;
+  arrendador: ArrendadorDtoOut;
+  hectareas_asignadas: number;
+  quintales_asignados: number;
+  porcentaje: number;
+  observacion?: string;
+  arrendamiento: ArrendamientoDtoOut;
+}
+
 export type ArrendamientoForm = {
   tipo: TipoArrendamiento;
   localidad_id: number;

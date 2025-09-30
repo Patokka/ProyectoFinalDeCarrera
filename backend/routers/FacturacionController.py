@@ -30,3 +30,7 @@ def eliminar_facturacion(facturacion_id: int, db: Session = Depends(get_db)):
 @router.get("/arrendador/{arrendador_id}", response_model=list[FacturacionDtoOut], description="Obtención de todas las facturaciones de un arrendador.")
 def obtener_facturaciones_arrendador(arrendador_id: int, db: Session = Depends(get_db)):
     return FacturacionService.obtener_facturaciones_arrendador(db, arrendador_id)
+
+@router.get("/arrendatario/{arrendatario_id}", response_model=list[FacturacionDtoOut], description="Obtención de todas las facturaciones de un arrendatario.")
+def obtener_facturaciones_arrendador(arrendatario_id: int, db: Session = Depends(get_db)):
+    return FacturacionService.obtener_facturaciones_arrendatario(db, arrendatario_id)

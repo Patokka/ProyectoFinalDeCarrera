@@ -32,7 +32,7 @@ export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
 export async function fetchLocalidades(provincia_id: number): Promise<LocalidadDtoOut[]> {
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${API_URL}/provincia/${provincia_id}/localidades`, {
+    const res = await fetch(`${API_URL}/provincias/${provincia_id}/localidades`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,

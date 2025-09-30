@@ -435,7 +435,8 @@ export default function CrearArrendamientoPage() {
                         value={formData.porcentaje_aparceria}
                         min = {0}
                         max = {100}
-                        onChange={(value) => handleNumberChange('porcentajeProduccion', value)}
+                        step={0.5}
+                        onChange={(value) => handleNumberChange('porcentaje_aparceria', value)}
                         error={errors.porcentajeProduccion}               
                       />
                     </div>

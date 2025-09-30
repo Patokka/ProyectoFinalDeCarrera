@@ -372,3 +372,9 @@ class PagoService:
             .all()
         )
         return pagos
+
+    @staticmethod
+    def obtener_pagos_arrendamiento(db, arrendamiento_id):
+        arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id= arrendamiento_id)
+        resultados = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
+        return resultados
