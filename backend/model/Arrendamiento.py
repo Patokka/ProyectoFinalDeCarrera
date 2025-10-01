@@ -35,6 +35,4 @@ class Arrendamiento(Base):
     localidad: Mapped["Localidad"] = relationship()
     usuario: Mapped["Usuario"] = relationship()
     arrendatario: Mapped["Arrendatario"] = relationship()
-    participaciones: Mapped[list["ParticipacionArrendador"]] = relationship(
-        back_populates="arrendamiento"
-    )
+    participaciones: Mapped[list["ParticipacionArrendador"]] = relationship(back_populates="arrendamiento")

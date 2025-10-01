@@ -99,36 +99,31 @@ const filteredData = useMemo(() => {
   };
 
   const handleFacturarSeleccionados = () => {
-      const confirmToastId = toast.info(
-        `¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`,
-        {
-          action: {
-            label: "Confirmar",
-            onClick: () => {
-                toast.dismiss(confirmToastId);
-                
-                //Facturar
-                toast.promise(facturarPagos(selectedPagos).then(async () => {
-                
-                //Refrescar los pagos
-                const nuevosPagos = await fetchPagos();
-                setPagos(nuevosPagos);
+    const confirmToastId = toast.info(
+      `¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`,
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
 
-                //Deseleccionar los pagos facturados
-                setSelectedPagos([]);
-
-                return nuevosPagos; // para que toast.promise sepa que terminó bien
+            // Facturar
+            toast.promise(
+              facturarPagos(selectedPagos).then(() => {
+                // Recargar la página al finalizar con éxito para actualizar sidebar
+                window.location.reload();
               }),
               {
                 loading: "Facturando pagos...",
                 success: "Facturaciones realizadas con éxito",
-                error: (err) => err.message || "Error al eliminar el arrendador",
-              });
-            },
+                error: (err) => err.message || "Error al facturar los pagos",
+              }
+            );
           },
-          duration: 5000, // 5 segundos
-        }
-      );
+        },
+        duration: 5000, // 5 segundos
+      }
+    );
   };
 
   const allCurrentPageSelected =
@@ -272,9 +267,11 @@ const filteredData = useMemo(() => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
-                              <Eye className="h-4 w-4" />
-                            </button>
+                            <Link href = {`pagos/${pago.id}`}>
+                              <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
+                                <Eye className="h-4 w-4" />
+                              </button>
+                            </Link>
                             <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
                               <Edit className="h-4 w-4" />
                             </button>

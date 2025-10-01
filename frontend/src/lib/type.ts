@@ -159,7 +159,7 @@ export interface PagoDtoOut {
   fuente_precio?: TipoOrigenPrecio;
   monto_a_pagar?: number;
   arrendamiento: ArrendamientoDtoOut;
-  participacion_arrendador: ParticipacionArrendador
+  participacion_arrendador: ParticipacionArrendadorDtoOut
 }
 
 export interface PrecioDtoOut{

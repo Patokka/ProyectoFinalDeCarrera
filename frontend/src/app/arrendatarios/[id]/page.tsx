@@ -12,6 +12,7 @@ import { fetchFacturacionesByArrendatario } from "@/lib/facturaciones/auth"
 import Text from "@/components/ui/Text"
 import Link from "next/link"
 import { deleteArrendatario, fetchArrendatarioById } from "@/lib/arrendatarios/auth"
+import DateInput from "@/components/ui/DateInput"
 
 const ITEMS_PER_PAGE = 5
 
@@ -24,6 +25,8 @@ export default function ArrendatarioDetailPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+    const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth())
+    const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth())
 
     // Cargar arrendatario + facturaciones del mes actual
     useEffect(() => {
@@ -51,15 +54,17 @@ export default function ArrendatarioDetailPage() {
 
     // Filtrado de facturaciones del mes actual
     const filteredFacturaciones = useMemo(() => {
-        const firstDay = new Date(getFirstDayOfCurrentMonth())
-        const lastDay = new Date(getLastDayOfCurrentMonth())
-
         return facturaciones.filter((facturacion) => {
         const fecha = new Date(facturacion.fecha_facturacion)
-        return fecha >= firstDay && fecha <= lastDay
+        const desdeOk = !fechaDesde || fecha >= new Date(fechaDesde)
+        const hastaOk = !fechaHasta || fecha <= new Date(fechaHasta)
+        return desdeOk && hastaOk
         })
-    }, [facturaciones])
+    }, [facturaciones, fechaDesde, fechaHasta])
 
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [fechaDesde, fechaHasta])
     // Paginación
     const totalPages = Math.ceil(filteredFacturaciones.length / ITEMS_PER_PAGE)
     const paginatedFacturaciones = useMemo(() => {
@@ -126,7 +131,7 @@ export default function ArrendatarioDetailPage() {
                     <div className="flex items-center space-x-3">
                     <h1 className="text-2xl font-bold text-gray-900">Detalle de Arrendatario</h1>
                     </div>
-                    <Link href={`/arrendatario/${arrendatario.id}/edit`} passHref>
+                    <Link href={`/arrendatarios/${arrendatario.id}/edit`} passHref>
                     <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
                         <Edit className="h-4 w-4" />
                         <span>Editar Arrendatario</span>
@@ -158,9 +163,18 @@ export default function ArrendatarioDetailPage() {
                 {/* Sección de facturaciones */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
                     <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-semibold">Facturaciones del mes actual:</h2>
+                        <h2 className="text-lg font-semibold">Facturaciones:</h2>
                     </div>
-
+                    {/* Date filters section */}
+                    <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
+                        <div className="mb-3">
+                            <h3 className="text-sm font-medium text-gray-700 underline">Filtrar:</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <DateInput value={fechaDesde} onChange={setFechaDesde} label="Desde" placeholder="Seleccionar fecha" />
+                            <DateInput value={fechaHasta} onChange={setFechaHasta} label="Hasta" placeholder="Seleccionar fecha" />
+                        </div>
+                    </div>
                     {/* Tabla de facturaciones */}
                     <div className="overflow-x-auto">
                     {paginatedFacturaciones.length === 0 ? (
@@ -181,6 +195,9 @@ export default function ArrendatarioDetailPage() {
                                 Arrendador
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                Arrendamiento
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 Pago
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -194,25 +211,32 @@ export default function ArrendatarioDetailPage() {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {paginatedFacturaciones.map((facturacion) => (
                             <tr key={facturacion.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{facturacion.id}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatDate(facturacion.fecha_facturacion)}
+                                    {facturacion.id}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {facturacion.arrendador.nombre_o_razon_social}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{facturacion.pago.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {facturacion.tipo_factura}
+                                    {formatDate(facturacion.fecha_facturacion)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(facturacion.monto_facturacion)}
+                                    {facturacion.arrendador.nombre_o_razon_social}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {facturacion.pago.arrendamiento.id}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {facturacion.pago.id}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {facturacion.tipo_factura}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {formatCurrency(facturacion.monto_facturacion)}
                                 </td>
                             </tr>
                             ))}
                             {/* Renglón de totales */}
                             <tr className="bg-gray-100 font-semibold">
-                            <td colSpan={5} className="px-6 py-3 text-sm text-gray-900">
+                            <td colSpan={6} className="px-6 py-3 text-sm text-gray-900">
                                 Total Facturado:
                             </td>
                             <td className="px-6 py-3 text-sm text-gray-900">

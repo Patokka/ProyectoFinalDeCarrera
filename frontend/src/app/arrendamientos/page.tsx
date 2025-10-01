@@ -205,18 +205,12 @@ export default function ArrendamientosPage() {
                           {format(parseISO(arrendamiento.fecha_fin),'dd/MM/yyyy')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          
                             <div className="flex space-x-2">
                               <Link href = {`/arrendamientos/${arrendamiento.id}`}>
                                 <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors">
                                   <Eye className="h-4 w-4" />
                                 </button>
                               </Link>
-                              {arrendamiento.estado != 'CANCELADO' &&
-                              <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
-                                <Edit className="h-4 w-4" />
-                              </button>
-                              }
                             </div>
                         </td>
                       </tr>

@@ -65,3 +65,7 @@ def obtener_pago(arrendador_id: int, db: Session = Depends(get_db)):
 @router.get("/arrendamiento/{arrendamiento_id}", response_model=list[PagoDtoOut], description="Obtención de los pagos correspondientes a un arrendamiento.")
 def obtener_pago(arrendamiento_id: int, db: Session = Depends(get_db)):
     return PagoService.obtener_pagos_arrendamiento(db, arrendamiento_id)
+
+@router.put("/cancelar/{pago_id}", response_model=PagoDtoOut, description="Cancelación de un pago por id.")
+def cancelar_pago(pago_id: int, db: Session = Depends(get_db)):
+    return PagoService.cancelar_pago(db, pago_id)

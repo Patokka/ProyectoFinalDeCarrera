@@ -132,14 +132,6 @@ export default function ArrendamientoDetailPage() {
                             {formatEstado(arrendamiento.estado)}
                         </span>
                     </div>
-                    {arrendamiento.estado != 'CANCELADO' &&
-                        <Link href={`/arrendamientos/${arrendamiento.id}/edit`} passHref>
-                            <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
-                                <Edit className="h-4 w-4" />
-                                <span>Editar Arrendamiento</span>
-                            </button>
-                        </Link>
-                    }
                 </div>
 
                 {/* Información del arrendamiento */}
@@ -150,55 +142,59 @@ export default function ArrendamientoDetailPage() {
                         label="Tipo de Arrendamiento:"
                         value={arrendamiento.tipo === "FIJO" ? "Fijo" : "A Porcentaje"}
                         readOnly={true}
-                        disabled={false}
-                    />
+                        disabled={false}/>
                     <Text
                         label="Arrendatario:"
                         value={arrendamiento.arrendatario.razon_social}
                         readOnly={true}
-                        disabled={false}
-                    />
+                        disabled={false}/>
                     <Text
                         label="Creado por (Usuario):"
                         value={`${arrendamiento.usuario.nombre} ${arrendamiento.usuario.apellido}`}
                         readOnly={true}
-                        disabled={false}
-                    />
+                        disabled={false}/>
                     <Text
                         label="Localidad:"
                         value={`${arrendamiento.localidad.nombre_localidad}, ${arrendamiento.localidad.provincia.nombre_provincia}`}
                         readOnly={true}
-                        disabled={false}
-                    />
+                        disabled={false}/>
                     <Text
                         label="Fecha Inicio:"
                         value={formatDate(arrendamiento.fecha_inicio)}
                         readOnly={true}
-                        disabled={false}
-                    />
-                    <Text label="Fecha Fin:" value={formatDate(arrendamiento.fecha_fin)} readOnly={true} disabled={false} />
-                    <Text label="Hectáreas:" value={arrendamiento.hectareas.toString()} readOnly={true} disabled={false} />
-                    <Text label="Quintales por Hectárea:" value={arrendamiento.quintales.toString()} readOnly={true} disabled={false} />
+                        disabled={false}/>
+                    <Text 
+                        label="Fecha Fin:" 
+                        value={formatDate(arrendamiento.fecha_fin)} 
+                        readOnly={true} 
+                        disabled={false} />
+                    <Text 
+                        label="Hectáreas:" 
+                        value={arrendamiento.hectareas.toString()} 
+                        readOnly={true} 
+                        disabled={false} />
+                    <Text 
+                        label="Quintales por Hectárea:" 
+                        value={arrendamiento.quintales.toString()} 
+                        readOnly={true} 
+                        disabled={false} />
                     <Text
                         label="Plazo de Pago:"
                         value={formatPlazoPago(arrendamiento.plazo_pago)}
                         readOnly={true}
-                        disabled={false}
-                    />
+                        disabled={false}/>
                     <Text
                         label="Días Promedio:"
                         value={formatDiasPromedio(arrendamiento.dias_promedio)}
                         readOnly={true}
-                        disabled={false}
-                    />
+                        disabled={false}/>
                     <Text label="Origen Precio:" value={arrendamiento.origen_precio} readOnly={true} disabled={false} />
                     {arrendamiento.porcentaje_aparceria != null && arrendamiento.tipo == 'A_PORCENTAJE' && (
                         <Text
                         label="Porcentaje Aparcería:"
                         value={`${arrendamiento.porcentaje_aparceria}%`}
                         readOnly={true}
-                        disabled={false}
-                        />
+                        disabled={false}/>
                     )}
                     {arrendamiento.descripcion && (
                         <div className="md:col-span-2 lg:col-span-3">

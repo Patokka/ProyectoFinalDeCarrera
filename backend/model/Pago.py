@@ -27,9 +27,4 @@ class Pago(Base):
     #Relaciones
     arrendamiento: Mapped["Arrendamiento"] = relationship()
     participacion_arrendador: Mapped["ParticipacionArrendador"] = relationship()
-    
-    precios: Mapped[list["Precio"]] = relationship(
-        "Precio",
-        secondary=pago_precio_association,
-        back_populates="pagos"
-    )
+    precios: Mapped[list["Precio"]] = relationship("Precio",secondary=pago_precio_association,back_populates="pagos")

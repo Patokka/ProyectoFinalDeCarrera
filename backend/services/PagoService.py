@@ -378,3 +378,13 @@ class PagoService:
         arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id= arrendamiento_id)
         resultados = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
         return resultados
+    
+    @staticmethod
+    def cancelar_pago(db, pago_id):
+        pago = PagoService.obtener_por_id(db,pago_id)
+        if pago.estado == EstadoPago.CANCELADO:
+            raise HTTPException(status_code=409, detail="El pago ya se encuentra cancelado")
+        pago.estado = EstadoPago.CANCELADO
+        db.commit()
+        db.refresh(pago)
+        return pago

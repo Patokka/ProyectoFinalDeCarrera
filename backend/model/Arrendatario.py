@@ -16,3 +16,4 @@ class Arrendatario(Base):
     
     #Relaciones
     localidad:  Mapped["Localidad"] = relationship()
+    arrendamientos: Mapped[list["Arrendamiento"]] = relationship(back_populates="arrendatario") # type: ignore NO ELIMINAR COMENTARIO
