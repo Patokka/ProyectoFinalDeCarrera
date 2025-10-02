@@ -87,17 +87,24 @@ class ArrendamientoService:
     
     @staticmethod
     def finalizar_arrendamiento(db: Session, arrendamiento_id: int):
-        arrendamiento = ArrendamientoService.obtener_por_id(db,arrendamiento_id)
-        
+        """
+        Intenta finalizar el arrendamiento si todas las cuotas están pagadas.
+        No lanza errores si no se puede finalizar.
+        """
+        arrendamiento = ArrendamientoService.obtener_por_id(db, arrendamiento_id)
+
+        # Si ya está cancelado, simplemente no hace nada
         if arrendamiento.estado == EstadoArrendamiento.CANCELADO:
-            raise HTTPException(status_code=500, detail=f"No se puede finalizar el arrendamiento de id {arrendamiento.id} ya que el mismo ha sido CANCELADO.")
-        
+            return None
+
+        # Si tiene todas las cuotas pagadas, lo finaliza
         if ArrendamientoService.tieneCuotasPagadas(db, arrendamiento.id):
             arrendamiento.estado = EstadoArrendamiento.FINALIZADO
             db.commit()
             return arrendamiento
-        else:
-            raise HTTPException(status_code=500, detail= f"No se puede finalizar el arrendamiento de id {arrendamiento.id} ya que posee cuotas sin facturar.")
+        
+        # Si no se puede finalizar, no hacer nada
+        return None
     
     @staticmethod
     def tieneCuotasPagadas(db: Session, arrendamiento_id):

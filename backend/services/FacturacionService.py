@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from enums.EstadoPago import EstadoPago
 from enums.TipoCondicion import TipoCondicion
 from enums.TipoFactura import TipoFactura
+from services.ArrendamientoService import ArrendamientoService
 from services.ArrendatarioService import ArrendatarioService
 from services.ArrendadorService import ArrendadorService
 from services.PagoService import PagoService
@@ -37,8 +38,23 @@ class FacturacionService:
             raise HTTPException(status_code=500, detail= "El pago ya fue facturado o está cancelado.")
         
         #verifica si existe el arrendador y si no existe retorna un 404
-        arrendador = pago.participacion_arrendador.arrendador
+        arrendador = ArrendadorService.obtener_por_id(db, pago.participacion_arrendador.arrendador_id)
         hoy = date.today()
+        
+        # Caso especial de pago a porcentaje
+        if pago.participacion_arrendador and pago.participacion_arrendador.porcentaje and pago.participacion_arrendador.porcentaje > 0:
+            pago.estado = EstadoPago.REALIZADO
+            db.commit()
+            ArrendamientoService.finalizar_arrendamiento(db, pago.arrendamiento_id)
+            # Crear objeto Facturacion "dummy" en memoria
+            return {
+                "id": 0,
+                "tipo_factura": TipoFactura.A,
+                "fecha_facturacion": hoy,
+                "monto_facturacion": 0,
+                "arrendador_id": pago.participacion_arrendador.arrendador_id,
+                "pago_id": pago.id,
+            }
         
         #Verifica si el pago ya tiene asignado el precio promedio por quintal, sino devuelve error
         if not (pago.precio_promedio or pago.monto_a_pagar or pago.precio_promedio == 0 or pago.monto_a_pagar == 0):
@@ -76,6 +92,7 @@ class FacturacionService:
         pago.estado = EstadoPago.REALIZADO
         db.commit()
         db.refresh(nuevo)
+        ArrendamientoService.finalizar_arrendamiento(db, pago.arrendamiento_id)
         return nuevo
 
     @staticmethod

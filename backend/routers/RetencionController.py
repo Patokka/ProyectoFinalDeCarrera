@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -34,6 +35,9 @@ def eliminar_retencion(retencion_id: int, db: Session = Depends(get_db)):
 def obtener_retenciones_arrendador(arrendador_id: int, db: Session = Depends(get_db)):
     return RetencionService.obtener_retenciones_arrendador(db, arrendador_id)
 
+@router.get("/facturacion/{facturacion_id}", response_model=Optional[RetencionDtoOut], description="Obtención de retención de una facturación determinada.")
+def listar_retenciones(facturacion_id: int,db: Session = Depends(get_db)):
+    return RetencionService.obtener_por_factura_id(db, facturacion_id)
 
 @router.get("/configuracion/{clave}")
 def obtener_configuracion(clave: str, db: Session = Depends(get_db)):

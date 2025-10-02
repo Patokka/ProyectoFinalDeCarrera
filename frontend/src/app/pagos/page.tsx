@@ -88,7 +88,7 @@ const filteredData = useMemo(() => {
   };
 
   const handleSelectAll = () => {
-    const allCurrentPageIds = paginatedData.filter(pago => (pago.estado === "PENDIENTE" && pago.precio_promedio) || pago.estado === "VENCIDO").map(pago => pago.id);
+    const allCurrentPageIds = paginatedData.filter(pago => (pago.estado === "PENDIENTE" && pago.precio_promedio && !!pago.quintales) || pago.estado === "VENCIDO").map(pago => pago.id);
     const allSelected = allCurrentPageIds.every(id => selectedPagos.includes(id));
 
     if (allSelected) {
@@ -215,7 +215,7 @@ const filteredData = useMemo(() => {
                         Precio Promedio Quintal
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Quintales
+                        Quintales - Porcentaje
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Origen Precio
@@ -238,7 +238,7 @@ const filteredData = useMemo(() => {
                               checked={selectedPagos.includes(pago.id)}
                               onChange={() => handleSelectPago(pago.id)}
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              disabled= {pago.estado === "CANCELADO" || pago.estado === "REALIZADO" || (pago.estado === "PENDIENTE" && !pago.precio_promedio)}
+                              disabled= {pago.estado === "CANCELADO" || pago.estado === "REALIZADO" || (pago.estado === "PENDIENTE" && !pago.precio_promedio && !!pago.quintales)}
                             />
                           </div>
                         </td>
@@ -257,7 +257,7 @@ const filteredData = useMemo(() => {
                           {pago.precio_promedio? formatCurrency(pago.precio_promedio) : "-" }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {pago.quintales || pago.participacion_arrendador.porcentaje + "%"}
+                          {pago.quintales? pago.quintales + ' qq' : pago.participacion_arrendador.porcentaje + "%"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {pago.fuente_precio || '-'}
@@ -272,9 +272,6 @@ const filteredData = useMemo(() => {
                                 <Eye className="h-4 w-4" />
                               </button>
                             </Link>
-                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-gray-50 rounded transition-colors">
-                              <Edit className="h-4 w-4" />
-                            </button>
                           </div>
                         </td>
                       </tr>
@@ -291,7 +288,7 @@ const filteredData = useMemo(() => {
                               ? acc + (p.quintales ?? 0)
                               : acc,
                           0
-                        )}
+                        ) + ' qq'}
                       </td>
                       <td className="px-6 py-4"></td>
                       <td className="px-6 py-4 text-sm text-gray-900">

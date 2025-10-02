@@ -153,8 +153,10 @@ export default function FacturacionesPage() {
                         <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                           <div className="truncate">{facturacion.arrendador.nombre_o_razon_social}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {facturacion.pago.id}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hover:text-blue-500 hover:underline">
+                          <Link href={`pagos/${facturacion.pago.id}`} passHref>
+                            {facturacion.pago.id}
+                          </Link>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {facturacion.tipo_factura}
@@ -164,12 +166,11 @@ export default function FacturacionesPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
-                              <Edit className="h-4 w-4" />
-                            </button>
+                            <Link href = {`/facturaciones/${facturacion.id}`} passHref>
+                              <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
+                                <Eye className="h-4 w-4" />
+                              </button>
+                            </Link>
                           </div>
                         </td>
                       </tr>

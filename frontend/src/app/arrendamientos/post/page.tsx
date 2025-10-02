@@ -107,7 +107,7 @@ export default function CrearArrendamientoPage() {
   const agregarArrendador = () => {
     if (!nuevoArrendador.arrendador_id) return;
     if (participaciones.some((a) => a.arrendador_id === nuevoArrendador.arrendador_id)){
-      toast.error("El arrenddor ya ha sido agregado");
+      toast.error("El arrendador ya ha sido agregado");
       return;
     }
     setParticipaciones((prev) => [...prev, nuevoArrendador]);
@@ -169,13 +169,25 @@ export default function CrearArrendamientoPage() {
       return;
     }
 
-    // Aquí iría la lógica para guardar en el backend
-    try{
+    //Lógica para guardar en el backend
+    try {
       const respuesta = await postArrendamiento(formData);
-      await postParticipaciones(participaciones, respuesta.id);
-      await generarCuotas(respuesta.id)
-    }catch(e){
-      toast.error("Error al guardar el arrendamiento")
+
+      let participacionesAEnviar = participaciones;
+
+      if (formData.tipo === "A_PORCENTAJE" && formData.porcentaje_aparceria) {
+        const porcentajePorArrendador = formData.porcentaje_aparceria / participaciones.length;
+
+        participacionesAEnviar = participaciones.map((p) => ({
+          ...p,
+          porcentaje: porcentajePorArrendador,
+        }));
+      }
+
+      await postParticipaciones(participacionesAEnviar, respuesta.id);
+      await generarCuotas(respuesta.id);
+    } catch (e) {
+      toast.error("Error al guardar el arrendamiento");
     }
     toast.success("Arrendamiento guardado con éxito")
     router.push("/arrendamientos")
@@ -501,7 +513,17 @@ export default function CrearArrendamientoPage() {
                 </button>
               </div>
             </div>
-
+            <div className='mb-3'>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Observación</label>
+                <textarea
+                  value={nuevoArrendador.observacion}
+                  onChange={(e) => setNuevoArrendador({...nuevoArrendador, observacion: e.target.value})}
+                  rows={1}
+                  className="min-h-2 w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Observación del arrendador"
+                  />
+            </div>
+        
             {/* Tabla de arrendadores */}
             {participaciones.length > 0 && (
               <div className="overflow-x-auto">
@@ -511,7 +533,7 @@ export default function CrearArrendamientoPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Arrendador
                       </th>
-                      {formData.tipo === 'FIJO' && (
+                      {formData.tipo === "FIJO" && (
                         <>
                           <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
                             Hectáreas Asignadas
@@ -521,18 +543,28 @@ export default function CrearArrendamientoPage() {
                           </th>
                         </>
                       )}
+                      {formData.tipo === "A_PORCENTAJE" && (
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                          Porcentaje Producción
+                        </th>
+                      )}
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Observación
+                      </th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Acción
                       </th>
                     </tr>
                   </thead>
+
                   <tbody className="bg-white divide-y divide-gray-200">
                     {participaciones.map((participacion) => (
                       <tr key={participacion.arrendador_id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {arrendadores.find(a => Number(a.value) === participacion.arrendador_id)?.label}
                         </td>
-                        {formData.tipo === 'FIJO' && (
+
+                        {formData.tipo === "FIJO" && (
                           <>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                               {participacion.hectareas_asignadas}
@@ -542,6 +574,17 @@ export default function CrearArrendamientoPage() {
                             </td>
                           </>
                         )}
+
+                        {formData.tipo === "A_PORCENTAJE" && participaciones.length > 0 && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            {(formData.porcentaje_aparceria / participaciones.length).toFixed(2)}%
+                          </td>
+                        )}
+
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {participacion.observacion || "-"}
+                        </td>
+
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                           <button
                             onClick={() => eliminarArrendador(participacion.arrendador_id)}
@@ -552,11 +595,10 @@ export default function CrearArrendamientoPage() {
                         </td>
                       </tr>
                     ))}
-                    {formData.tipo === 'FIJO' && (
+
+                    {formData.tipo === "FIJO" && (
                       <tr className="bg-gray-50 font-semibold">
-                        <td className="px-6 py-3 text-sm text-gray-900">
-                          Total:
-                        </td>
+                        <td className="px-6 py-3 text-sm text-gray-900">Total:</td>
                         <td className="px-6 py-3 text-sm text-gray-900 text-center">
                           {totalHectareas.toFixed(2)}
                         </td>
@@ -564,9 +606,11 @@ export default function CrearArrendamientoPage() {
                           {totalQuintales.toFixed(1)}
                         </td>
                         <td></td>
+                        <td></td>
                       </tr>
                     )}
                   </tbody>
+
                 </table>
               </div>
             )}

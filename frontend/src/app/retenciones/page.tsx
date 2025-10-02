@@ -133,9 +133,6 @@ export default function RetencionesPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Monto Retención
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Acciones
-                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -150,24 +147,16 @@ export default function RetencionesPage() {
                         <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                           <div className="truncate">{retencion.arrendador.nombre_o_razon_social}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {retencion.facturacion.id}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hover:text-blue-500 hover:underline">
+                          <Link href = {`/facturaciones/${retencion.facturacion.id}`} passHref>
+                            {retencion.facturacion.id}
+                          </Link>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatCurrency(retencion.monto_imponible)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                           {formatCurrency(retencion.total_retencion)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
-                              <Edit className="h-4 w-4" />
-                            </button>
-                          </div>
                         </td>
                       </tr>
                     ))}

@@ -9,7 +9,7 @@ from enums.TipoCondicion import TipoCondicion
 from services.ArrendadorService import ArrendadorService
 from services.ArrendamientoService import ArrendamientoService
 from model.Retencion import Retencion
-from dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
+from dtos.RetencionDto import RetencionDto, RetencionDtoModificacion
 from util.Configuracion import Configuracion
 class RetencionService:
 
@@ -122,3 +122,8 @@ class RetencionService:
         db.flush()
 
         return retencion
+    
+    @staticmethod
+    def obtener_por_factura_id(db: Session, facturacion_id: int):
+        obj = db.query(Retencion).filter(Retencion.facturacion_id == facturacion_id).first()
+        return obj 

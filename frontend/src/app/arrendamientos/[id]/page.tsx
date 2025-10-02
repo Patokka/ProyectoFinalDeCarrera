@@ -248,10 +248,10 @@ export default function ArrendamientoDetailPage() {
                                 {participacion.arrendador ? formatCuit(participacion.arrendador.cuil) : "-"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {participacion.hectareas_asignadas} ha
+                                {participacion.hectareas_asignadas > 0 ? participacion.hectareas_asignadas+' ha' : '-'} 
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {participacion.quintales_asignados} qq
+                                {participacion.quintales_asignados > 0 ? participacion.hectareas_asignadas + ' qq' : '-'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {participacion.porcentaje}%

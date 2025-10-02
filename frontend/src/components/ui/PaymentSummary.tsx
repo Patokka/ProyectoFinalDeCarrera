@@ -88,7 +88,7 @@ export default function PaymentSummary() {
         <div className="p-4">
           <div className="mb-4">
             <p className="text-sm text-gray-600">
-              Este mes debe realizar <span className="font-semibold text-primary-600">{totalPagos} pagos</span>:
+              Este mes debe realizar <span className="font-semibold text-primary-600">{totalPagos} pago/s</span>:
             </p>
           </div>
 

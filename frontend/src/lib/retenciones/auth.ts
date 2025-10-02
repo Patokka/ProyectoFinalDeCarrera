@@ -27,3 +27,29 @@ export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
 
     return res.json();
 }
+
+export async function fetchRetencionByFacturacionId(facturacion_id: number): Promise<RetencionDtoOut | null> {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(`${API_URL}/retenciones/facturacion/${facturacion_id}`, {
+        method: "GET",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+    });
+
+    if (res.status === 401) {
+        // limpiar sesión y redirigir
+        localStorage.removeItem("token")
+        window.location.href = "/login"
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al obtener la retencion");
+    }
+
+    return res.json();
+}
