@@ -1,4 +1,4 @@
-import { ArrendatarioDtoOut } from "../type";
+import { ArrendatarioDtoOut, ArrendatarioForm } from "../type";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -74,6 +74,46 @@ export async function fetchArrendatarioById(arrendatario_id: number): Promise<Ar
     if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail || "Error al obtener el arrendatario");
+    }
+
+    return res.json();
+}
+
+export async function postArrendatario(formData: ArrendatarioForm): Promise<ArrendatarioDtoOut> {
+    const token = localStorage.getItem("token");
+
+    const body = {
+        razon_social: formData.razon_social,
+        cuit: formData.cuit,
+        condicion_fiscal: formData.condicion_fiscal,
+        mail: formData.mail,
+        localidad_id: formData.localidad_id,
+    };
+
+    const res = await fetch(`${API_URL}/arrendatarios`, {
+        method: "POST",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al crear arrendador");
     }
 
     return res.json();

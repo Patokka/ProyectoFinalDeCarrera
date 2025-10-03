@@ -53,7 +53,7 @@ class PagoService:
         obj = db.query(Pago).get(pago_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
-        verificar_relaciones_existentes(obj)
+        verificar_relaciones_existentes(obj,db)
         db.delete(obj)
         db.commit()
         

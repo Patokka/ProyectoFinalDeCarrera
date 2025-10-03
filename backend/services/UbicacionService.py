@@ -46,7 +46,7 @@ class UbicacionService:
         obj = db.query(Localidad).get(localidad_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Localidad no encontrada.")
-        verificar_relaciones_existentes(obj)
+        verificar_relaciones_existentes(obj,db)
         db.delete(obj)
         db.commit()
         
@@ -88,7 +88,7 @@ class UbicacionService:
         obj = db.query(Provincia).get(provincia_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Provincia no encontrada.")
-        verificar_relaciones_existentes(obj)
+        verificar_relaciones_existentes(obj,db)
         db.delete(obj)
         db.commit()
         

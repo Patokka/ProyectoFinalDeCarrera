@@ -19,6 +19,14 @@ export function formatCuit(cuit: string | number): string {
     return `${str.slice(0, 2)}-${str.slice(2, 10)}-${str.slice(10)}`;
 }
 
+export const formatCuitDisplay = (cuil: string) => {
+    if (!cuil) return '';
+    const nums = cuil.replace(/\D/g, ''); // nos aseguramos que sean solo números
+    if (nums.length <= 2) return nums;
+    if (nums.length <= 10) return `${nums.slice(0,2)}-${nums.slice(2)}`;
+    return `${nums.slice(0,2)}-${nums.slice(2,10)}-${nums.slice(10,11)}`;
+};
+
 export const formatPlazoPago = (plazo: PlazoPago) => {
     const plazos: Record<PlazoPago, string> = {
         ANUAL: "Anual",
@@ -96,3 +104,28 @@ export const getRolBadgeColor = (rol: string) => {
             return 'bg-gray-100 text-gray-800';
     }
 };
+
+export function validarCuilCuit(cuil: string): boolean {
+    // Normalizamos quitando guiones y espacios
+    const limpio = cuil.replace(/[-\s]/g, "");
+
+    // Validamos que tenga exactamente 11 dígitos
+    if (!/^\d{11}$/.test(limpio)) {
+        return false;
+    }
+
+    const numeros = limpio.split("").map(Number);
+    const coeficientes = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2];
+
+    const suma = numeros
+        .slice(0, 10)
+        .reduce((acc, num, i) => acc + num * coeficientes[i], 0);
+
+    const resto = suma % 11;
+    let digitoVerificador = 11 - resto;
+
+    if (digitoVerificador === 11) digitoVerificador = 0;
+    else if (digitoVerificador === 10) digitoVerificador = 9;
+
+    return numeros[10] === digitoVerificador;
+}

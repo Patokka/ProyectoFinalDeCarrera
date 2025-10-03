@@ -8,8 +8,15 @@ class ArrendatarioDto(BaseModel):
     razon_social: str
     cuit: str
     condicion_fiscal: TipoCondicion
-    mail: Optional[EmailStr]
+    mail: Optional[EmailStr] = None
     localidad_id: int
+    
+    @field_validator("mail", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
     
     @field_validator("cuit")
     @classmethod

@@ -8,7 +8,7 @@ class ArrendadorDto(BaseModel):
     nombre_o_razon_social: str
     cuil: str
     condicion_fiscal: TipoCondicion
-    mail: Optional[EmailStr]
+    mail: Optional[EmailStr] = None
     telefono: Optional[str]
     localidad_id: int
     descripcion: Optional[str]
@@ -17,6 +17,13 @@ class ArrendadorDto(BaseModel):
         "from_attributes": True,     
         "use_enum_values": True      
     }
+    
+    @field_validator("mail", mode="before")
+    @classmethod
+    def empty_str_to_none(cls, v):
+        if v == "":
+            return None
+        return v
     
     @field_validator("cuil")
     @classmethod

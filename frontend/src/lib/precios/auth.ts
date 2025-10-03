@@ -91,3 +91,28 @@ export async function postPrecio(formData: PrecioForm): Promise<PrecioDtoOut> {
 
     return res.json();
 }
+
+export async function deletePrecio(precio_id: number) {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_URL}/precios/${precio_id}`, {
+    method: "DELETE",
+    headers: {
+        "Authorization": `Bearer ${token}`,
+    },
+    body: undefined,
+    });
+
+    if (res.status === 401) {
+        // limpiar sesión y redirigir
+        localStorage.removeItem("token")
+        window.location.href = "/login"
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
+
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "No se pudo eliminar el precios");
+    }
+
+    return true;
+}

@@ -77,6 +77,14 @@ export interface ArrendatarioDtoOut {
   localidad: LocalidadDtoOut;
 }
 
+export type ArrendatarioForm = {
+  razon_social: string;
+  cuit: string;
+  condicion_fiscal: TipoCondicion;
+  mail?: string;
+  localidad_id: number
+}
+
 export interface ArrendadorDtoOut {
   id: number;
   nombre_o_razon_social: string;
@@ -85,6 +93,16 @@ export interface ArrendadorDtoOut {
   mail?: string;
   telefono?: string;
   localidad: LocalidadDtoOut;
+  descripcion?: string;
+}
+
+export type ArrendadorForm = {
+  nombre_o_razon_social: string;
+  cuil: string;
+  condicion_fiscal: TipoCondicion;
+  mail?: string
+  telefono?: string;
+  localidad_id: number;
   descripcion?: string;
 }
 

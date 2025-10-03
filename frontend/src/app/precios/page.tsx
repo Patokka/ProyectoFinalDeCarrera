@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Edit, Plus } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { PrecioDtoOut } from '@/lib/type';
 import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
-import { fetchPreciosAGD, fetchPreciosBCR } from '@/lib/precios/auth';
+import { deletePrecio, fetchPreciosAGD, fetchPreciosBCR } from '@/lib/precios/auth';
 import PrecioModal from '@/components/ui/PriceModal';
 
 const ITEMS_PER_PAGE = 6;
@@ -87,6 +87,42 @@ export default function PreciosPage() {
     toast.info(`Editando precio del ${formatDate(precio.fecha_precio)} - ${precio.origen}`);
   };
 
+  const handleDelete = (precio: PrecioDtoOut) => {
+    // Confirmación
+    const confirmToastId = toast.info(
+      "¿Está seguro que desea eliminar este precio?",
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
+            
+            //Delete
+            toast.promise(
+              deletePrecio(precio.id).then(() => {
+                if(precio.origen == 'AGD'){
+                  setPreciosAGD(prev =>
+                    prev.filter((item) => item.id !== precio.id)
+                  );
+                }else{
+                  setPreciosBCR(prev =>
+                    prev.filter((item) => item.id !== precio.id)
+                  );
+                }
+              }),
+              {
+                loading: "Eliminando precio...",
+                success: "Precio eliminado con éxito",
+                error: (err) => err.message || "Error al eliminar el precio",
+              }
+            );
+          },
+        },
+        duration: 5000, // 5 segundos
+      }
+    );
+  };
+
   // Tabla de precios reutilizable
   const PreciosTable = ({data, title, currentPage, totalPages, onPageChange}: { data: PrecioDtoOut[]; title: string; currentPage: number; totalPages: number; onPageChange: (page: number) => void; }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -134,6 +170,9 @@ export default function PreciosPage() {
                         className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors"
                       >
                         <Edit className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => handleDelete(precio)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>

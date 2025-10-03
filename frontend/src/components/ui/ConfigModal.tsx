@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { ArrowDownToLine, X } from "lucide-react";
 import { toast } from "sonner";
 import { updateJobConfig } from "@/lib/reportes/auth";
 import { ConfigCard } from "@/lib/type";
@@ -147,22 +147,21 @@ export const useConfigModal = () => {
 
             {/* Botones */}
             <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
-            <button
-                onClick={onClose}
-                className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""} `}
-                disabled={isSubmitting}
-            >
-                Cancelar
-            </button>
-            <button
-                onClick={handleSave}
-                disabled={isSubmitting}
-                className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-            >
-                {isSubmitting ? "Guardando..." : "Guardar Configuración"}
-            </button>
+                <button
+                    onClick={onClose}
+                    className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""} `}
+                    disabled={isSubmitting}
+                >
+                    Cancelar
+                </button>
+                <button
+                    onClick={handleSave}
+                    disabled={isSubmitting}
+                    className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}pl-2 pr-2`}
+                >
+                    <ArrowDownToLine className="h-5 w-5"/>
+                    <span>{isSubmitting ? "Guardando..." : "Guardar Configuración"}</span>
+                </button>
             </div>
         </div>
         </div>

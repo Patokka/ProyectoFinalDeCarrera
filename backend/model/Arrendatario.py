@@ -11,7 +11,7 @@ class Arrendatario(Base):
     razon_social: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     cuit: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
     condicion_fiscal: Mapped[TipoCondicion] = mapped_column(Enum(TipoCondicion), nullable=False)
-    mail: Mapped[str] = mapped_column(String(255), nullable=False)
+    mail: Mapped[str] = mapped_column(String(255), nullable=True)
     localidad_id: Mapped[int] = mapped_column(ForeignKey("localidad.id"), nullable=False)
     
     #Relaciones

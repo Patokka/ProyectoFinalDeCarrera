@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
-import { BarChart3, Settings, X } from "lucide-react"
+import { BarChart3, FileDown, Settings, X } from "lucide-react"
 import { toast } from "sonner"
 import { ReportCard, ReportConfig, ConfigCard } from "@/lib/type"
 import { fetchReporte } from "@/lib/reportes/auth"
@@ -387,14 +387,15 @@ export default function ReportesPage() {
                     disabled={isGenerating}
                   >
                     Cancelar
-                  </button>
-                  <button
-                    onClick={handleGenerateReport}
-                    className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={isGenerating}
-                  >
-                    {isGenerating ? "Generando..." : "Generar Reporte"}
-                  </button>
+                  </button>                 
+                    <button
+                      onClick={handleGenerateReport}
+                      className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isGenerating ? "opacity-50 cursor-not-allowed" : ""} pl-2`}
+                      disabled={isGenerating}
+                    >
+                    <FileDown className="h-5 w-5"/>
+                    <span>{isGenerating ? "Generando..." : "Generar Reporte"}</span>
+                    </button>
                 </div>
               </div>
             </div>

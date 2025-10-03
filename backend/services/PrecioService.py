@@ -80,7 +80,7 @@ class PrecioService:
         obj = db.query(Precio).get(precio_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Precio no encontrado.")
-        verificar_relaciones_existentes(obj)
+        verificar_relaciones_existentes(obj,db)
         db.delete(obj)
         db.commit()
         

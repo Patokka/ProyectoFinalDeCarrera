@@ -17,8 +17,4 @@ class Precio(Base):
     origen: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=False)
     
     
-    pagos: Mapped[list["Pago"]] = relationship(
-        "Pago",
-        secondary=pago_precio_association,
-        back_populates="precios"
-    )
+    pagos: Mapped[list["Pago"]] = relationship("Pago", secondary=pago_precio_association, back_populates="precios") # type: ignore

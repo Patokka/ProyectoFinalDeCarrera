@@ -46,7 +46,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 #Importación del bot de escucha de mensajes para actualizar precios de AGD
 from util.botPrecioAGD import BotPrecioAGD
 
-bot = BotPrecioAGD()
+###############################################################################bot = BotPrecioAGD()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,15 +59,15 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"❌ Error al crear las tablas: {e}")
     
-    print("🤖 Iniciando BotPrecioAGD...")
-    bot.start()
+    ###############################################################################print("🤖 Iniciando BotPrecioAGD...")
+    ###############################################################################bot.start()
     
     yield
     # Shutdown: limpiar recursos si es necesario
     print("🔄 Cerrando aplicación...")
-    print("🛑 Deteniendo BotPrecioAGD...")
-    bot.stop()
-    bot.esperar_hilo()
+    ###############################################################################print("🛑 Deteniendo BotPrecioAGD...")
+    ###############################################################################bot.stop()
+    ###############################################################################bot.esperar_hilo()
 
 # Crear la aplicación FastAPI con lifespan
 app = FastAPI(

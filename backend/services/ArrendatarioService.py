@@ -19,6 +19,10 @@ class ArrendatarioService:
 
     @staticmethod
     def crear(db: Session, dto: ArrendatarioDto):
+        # Validar si ya existe CUIL
+        existente = db.query(Arrendatario).filter(Arrendatario.cuit == dto.cuit).first()
+        if existente:
+            raise HTTPException(status_code=400, detail="El CUIT - CUIL ya está registrado para otro arrendatario")
         nuevo = Arrendatario(**dto.model_dump())
         db.add(nuevo)
         db.commit()
@@ -41,6 +45,6 @@ class ArrendatarioService:
         obj = db.query(Arrendatario).get(arrendatario_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Arrendatario no encontrado.")
-        verificar_relaciones_existentes(obj)
+        verificar_relaciones_existentes(obj,db)
         db.delete(obj)
         db.commit()

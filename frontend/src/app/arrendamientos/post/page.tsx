@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Download, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import SelectFilter from '@/components/ui/SelectFilter';
@@ -128,6 +128,7 @@ export default function CrearArrendamientoPage() {
   const guardarArrendamiento = async () => {
     // Validaciones
       const newErrors: { [key: string]: string } = {};
+      if (!provinciaActual) newErrors.provincia = "Campo obligatorio";
       if (!formData.arrendatario_id) newErrors.arrendatario = "Campo obligatorio";
       if (!formData.localidad_id) newErrors.localidad = "Campo obligatorio";
       if (!formData.fecha_inicio) newErrors.fechaInicio = "Campo obligatorio";
@@ -189,7 +190,7 @@ export default function CrearArrendamientoPage() {
     } catch (e) {
       toast.error("Error al guardar el arrendamiento");
     }
-    toast.success("Arrendamiento guardado con éxito")
+    toast.success("Arrendamiento guardado con éxito, volviendo a página de arrendamientos...")
     router.push("/arrendamientos")
   };
 
@@ -291,6 +292,7 @@ export default function CrearArrendamientoPage() {
                 onClick={guardarArrendamiento}
                 className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
               >
+                <Download className='h-4 w-4'/>
                 <span>Guardar Arrendamiento</span>
               </button>
             </div>
@@ -369,7 +371,7 @@ export default function CrearArrendamientoPage() {
                   label="Hectáreas para Arrendador"
                   value={formData.hectareas}
                   min = {1}
-                  max = {10000}
+                  max = {1000000}
                   onChange={(e) => handleNumberChange('hectareas', e)}
                   placeholder='Ej: 99.9'
                   error={errors.hectareas}
@@ -381,7 +383,7 @@ export default function CrearArrendamientoPage() {
                   label="Quintales por Hectárea"
                   value={formData.quintales}
                   min = {1}
-                  max = {10000}
+                  max = {1000000}
                   onChange={(e) => handleNumberChange('quintales', e)}
                   placeholder='Ej: 99.9'
                   error={errors.quintalesPorHectarea}
@@ -509,6 +511,7 @@ export default function CrearArrendamientoPage() {
                   onClick={agregarArrendador}
                   className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors w-full justify-center"
                 >
+                  <Plus className='h-4 w-4'/>
                   <span>Agregar Arrendador</span>
                 </button>
               </div>
