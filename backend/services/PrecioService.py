@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Precio import Precio
+from model.pago_precio_association import pago_precio_association
 from dtos.PrecioDto import PrecioDto, PrecioDtoModificacion
 
 # Cargar variables del .env
@@ -80,7 +81,18 @@ class PrecioService:
         obj = db.query(Precio).get(precio_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Precio no encontrado.")
-        verificar_relaciones_existentes(obj,db)
+        pagos_asociados = (
+            db.query(pago_precio_association)
+            .filter(pago_precio_association.c.precio_id == precio_id)
+            .count()
+        )
+
+        if pagos_asociados > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="No se puede eliminar el precio porque tiene pagos asociados."
+            )
+
         db.delete(obj)
         db.commit()
         

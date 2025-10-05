@@ -169,7 +169,7 @@ export default function PagoDetailPage() {
                             readOnly={true}
                             disabled={false}/>
                         <Text
-                            label="Porcentaje de Producción a abonar:"
+                            label="Porcentaje de Producción a entregar:"
                             value={participacion? participacion.porcentaje + '%' : ''}
                             readOnly={true}
                             disabled={false}/>
@@ -191,7 +191,7 @@ export default function PagoDetailPage() {
                                 readOnly={true}
                                 disabled={false}/>
                             <Text
-                                label="Total Quintales:"
+                                label="Total Quintales a pagar:"
                                 value={pago.quintales? pago.quintales + ' qq' : '-'}
                                 readOnly={true}
                                 disabled={false}/>

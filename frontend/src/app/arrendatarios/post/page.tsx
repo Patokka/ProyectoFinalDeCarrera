@@ -194,7 +194,7 @@ export default function CrearArrendatarioPage() {
                                 error={errors.localidad}
                             />
                             <Input
-                                label="Email (opcional)"
+                                label="Mail (opcional)"
                                 value={String(formData.mail)}
                                 onChange={(val) => handleInputChange('mail', val)}
                                 placeholder="ejemplo@correo.com"

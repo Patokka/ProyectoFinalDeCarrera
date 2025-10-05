@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '@/components/context/AuthContext'
+import { formatCuitDisplay } from '@/lib/helpers'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -19,7 +20,7 @@ export default function LoginPage() {
     setError('')
 
     try {
-      await login(formData.cuil, formData.contrasena)
+      await login(formData.cuil.replace(/-/g,""), formData.contrasena)
       // Al actualizarse el contexto, Navbar y Sidebar se re-renderizan automáticamente
       router.push('/dashboard')
     } catch (err: any) {
@@ -55,9 +56,9 @@ export default function LoginPage() {
               name="cuil"
               type="text"
               required
-              value={formData.cuil}
+              value={formatCuitDisplay(formData.cuil)}
               onChange={handleInputChange}
-              placeholder="Ej. 99999999999"
+              placeholder="Ej. 99-99999999-9"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>

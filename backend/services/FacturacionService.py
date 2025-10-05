@@ -111,7 +111,7 @@ class FacturacionService:
         obj = db.query(Facturacion).get(facturacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Facturación no encontrada.")
-        verificar_relaciones_existentes(obj,db)
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         

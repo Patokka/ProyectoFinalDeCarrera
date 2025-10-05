@@ -220,11 +220,15 @@ export default function ArrendatarioDetailPage() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {facturacion.arrendador.nombre_o_razon_social}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {facturacion.pago.arrendamiento.id}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hover:text-blue-500 hover:underline">
+                                    <Link href={`/arrendamientos/${facturacion.pago.arrendamiento.id}`} passHref>
+                                        {facturacion.pago.arrendamiento.id}
+                                    </Link>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {facturacion.pago.id}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hover:text-blue-500 hover:underline">
+                                    <Link href={`/pagos/${facturacion.pago.id}`} passHref>
+                                        {facturacion.pago.id}
+                                    </Link>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {facturacion.tipo_factura}

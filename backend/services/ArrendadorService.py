@@ -46,7 +46,7 @@ class ArrendadorService:
         if not arrendador:
             raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
         
-        verificar_relaciones_existentes(arrendador,db)
+        verificar_relaciones_existentes(arrendador)
         
         db.delete(arrendador)
         db.commit()

@@ -10,7 +10,7 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ArrendadorDtoOut } from '@/lib/type';
 import { deleteArrendador, fetchArrendadores } from '@/lib/arrendadores/auth';
 import { toast } from 'sonner';
-import { formatCuit, getCondicionBadgeColor } from '@/lib/helpers';
+import { formatCuit, formatCuitDisplay, getCondicionBadgeColor } from '@/lib/helpers';
 
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
@@ -55,7 +55,7 @@ export default function ArrendadoresPage() {
         .includes(searchTermNombre.toLowerCase());
       const matchesCuit = item.cuil
         .toLowerCase()
-        .includes(searchTermCuit.toLowerCase());
+        .includes(searchTermCuit.toLowerCase().replace(/-/g,""));
       const matchesCondicion = !condicionFilter || item.condicion_fiscal === condicionFilter;
 
       return matchesNombre && matchesCuit && matchesCondicion;
@@ -126,8 +126,8 @@ const handleDelete = (id: number) => {
                 label="Nombre"
               />
               <SearchInput
-                placeholder="ej: 999999999"
-                value={searchTermCuit}
+                placeholder="Ej: 99-999999-9"
+                value={formatCuitDisplay(searchTermCuit)}
                 onChange={setSearchTermCuit}
                 label="CUIT-CUIL"
               />
@@ -135,7 +135,7 @@ const handleDelete = (id: number) => {
                 options={condicionFiscalOptions}
                 value={condicionFilter}
                 onChange={setCondicionFilter}
-                placeholder="ej: MONOTRIBUTISTA"
+                placeholder="Ej: MONOTRIBUTISTA"
                 label="Condición Fiscal"
               />
             </div>

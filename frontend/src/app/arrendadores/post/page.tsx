@@ -161,7 +161,7 @@ export default function CrearArrendadorPage() {
                                     setFormData({ ...formData, cuil: val });
                                 }
                             }}
-                            placeholder="20-12345678-9"
+                            placeholder="99-99999999-9"
                             error={errors.cuil}
                         />
 
@@ -195,7 +195,7 @@ export default function CrearArrendadorPage() {
                                 error={errors.localidad}
                             />
                             <Input
-                                label="Teléfono"
+                                label="Teléfono (opcional)"
                                 value={formData.telefono? formData.telefono : ''}
                                 onChange={(val) => {
                                     // Permitís solo dígitos y el +
@@ -209,7 +209,7 @@ export default function CrearArrendadorPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <Input
-                                    label="Email (opcional)"
+                                    label="Mail (opcional)"
                                     value={String(formData.mail)}
                                     onChange={(val) => handleInputChange('mail', val)}
                                     placeholder="ejemplo@correo.com"

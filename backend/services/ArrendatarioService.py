@@ -45,6 +45,6 @@ class ArrendatarioService:
         obj = db.query(Arrendatario).get(arrendatario_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Arrendatario no encontrado.")
-        verificar_relaciones_existentes(obj,db)
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()

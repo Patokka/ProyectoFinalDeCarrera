@@ -10,7 +10,7 @@ import { UsuarioDtoOut } from '@/lib/type';
 import { toast } from 'sonner';
 import { deleteUsuario, fetchUsuarios } from '@/lib/usuarios/auth';
 import { useAuth } from '@/components/context/AuthContext';
-import { formatCuit, getRolBadgeColor } from '@/lib/helpers';
+import { formatCuit, formatCuitDisplay, getRolBadgeColor } from '@/lib/helpers';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -47,7 +47,7 @@ export default function UsuariosPage() {
         .includes(searchTermNombre.toLowerCase());
       const matchesCuit = item.cuil
         .toLowerCase()
-        .includes(searchTermCuit.toLowerCase());
+        .includes(searchTermCuit.toLowerCase().replace(/-/g,""));
 
       return matchesNombre && matchesCuit;
     });
@@ -120,8 +120,8 @@ const handleDelete = (id: number) => {
                 label="Nombre"
               />
               <SearchInput
-                placeholder="ej: 999999999"
-                value={searchTermCuit}
+                placeholder="ej: 99-999999-9"
+                value={formatCuitDisplay(searchTermCuit)}
                 onChange={setSearchTermCuit}
                 label="CUIT-CUIL"
               />

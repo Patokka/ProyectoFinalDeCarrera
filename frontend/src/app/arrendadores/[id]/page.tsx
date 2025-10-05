@@ -267,7 +267,7 @@ return (
                         <p className="text-gray-500">No se encontraron pagos que coincidan con los filtros o no se tienen pagos pendientes.</p>
                     </div>
                 ) : (
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full table-fixed divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -326,8 +326,10 @@ return (
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {formatDate(pago.vencimiento)}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {pago.arrendamiento.id}
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hover:text-blue-500 hover:underline">
+                                    <Link href={`/arrendamientos/${pago.arrendamiento.id}`}passHref>
+                                        {pago.arrendamiento.id}
+                                    </Link>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {pago.quintales != null ? pago.quintales : (pago.participacion_arrendador?.porcentaje ? `${pago.participacion_arrendador.porcentaje}%` : '-')}

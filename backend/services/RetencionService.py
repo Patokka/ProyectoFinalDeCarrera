@@ -54,7 +54,7 @@ class RetencionService:
         obj = db.query(Retencion).get(retencion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Retención no encontrada.")
-        verificar_relaciones_existentes(obj,db)
+        verificar_relaciones_existentes(obj)
         db.delete(obj)
         db.commit()
         
