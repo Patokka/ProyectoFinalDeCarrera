@@ -34,8 +34,24 @@ class ArrendadorService:
         arrendador = db.query(Arrendador).get(arrendador_id)
         if not arrendador:
             raise HTTPException(status_code=404, detail="Arrendador no encontrado.")
-        for campo, valor in dto.model_dump(exclude_unset=True).items():
+
+        datos = dto.model_dump(exclude_unset=True)
+
+        #Verificación de unicidad de nombre y cuil
+        if "nombre_o_razon_social" in datos:
+            existe_nombre = (db.query(Arrendador).filter(Arrendador.nombre_o_razon_social == datos["nombre_o_razon_social"],Arrendador.id != arrendador_id).first())
+            if existe_nombre:
+                raise HTTPException(status_code=400, detail="El nombre ya está registrado para otro arrendador")
+
+        if "cuil" in datos:
+            existe_cuil = (db.query(Arrendador).filter(Arrendador.cuil == datos["cuil"], Arrendador.id != arrendador_id).first())
+            if existe_cuil:
+                raise HTTPException(status_code=400, detail="El CUIT - CUIL ya está registrado para otro arrendador")
+
+        #Actualización de campos
+        for campo, valor in datos.items():
             setattr(arrendador, campo, valor)
+
         db.commit()
         db.refresh(arrendador)
         return arrendador

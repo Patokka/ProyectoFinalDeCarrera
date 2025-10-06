@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { facturarPagos, fetchPagos } from '@/lib/pagos/auth';
 import { PagoDtoOut } from '@/lib/type';
 import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getPagoBadgeColor } from '@/lib/helpers';
+import PagoParticularModal from '@/components/ui/PagoParticularModal';
 
 // Opciones para los filtros
 const estadoOptions = [
@@ -33,7 +34,19 @@ export default function PagosPage() {
   const [selectedPagos, setSelectedPagos] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
+  const loadPagos = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchPagos();
+      setPagos(data);
+    } catch (e) {
+      toast.error("Error al cargar los pagos");
+      setError("Error al cargar los pagos")
+    } finally {
+        setLoading(false);
+      }
+    };
 
   // Filtrar datos
 const filteredData = useMemo(() => {
@@ -64,18 +77,6 @@ const filteredData = useMemo(() => {
   }, [estadoFilter, fechaDesde, fechaHasta]);
 
   useEffect(() => {
-    const loadPagos = async () => {
-      try {
-        setLoading(true);
-        const data = await fetchPagos();
-        setPagos(data);
-      } catch (e) {
-        toast.error("Error al cargar los pagos");
-        setError("Error al cargar los pagos")
-      } finally {
-        setLoading(false);
-      }
-    };
     loadPagos();
   }, []);
 
@@ -138,7 +139,7 @@ const filteredData = useMemo(() => {
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
-              <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+              <button onClick={() => setIsPagoModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
                 <Plus className="h-4 w-4" />
                 <span>Nuevo Pago Particular</span>
               </button>
@@ -347,6 +348,16 @@ const filteredData = useMemo(() => {
           </div>
         </div>
       </div>
+      <PagoParticularModal
+        isOpen={isPagoModalOpen}
+        onClose={() => setIsPagoModalOpen(false)}
+        onSuccess={() => {
+          setIsPagoModalOpen(false);
+          // Opcional: recargar los pagos si agregaste uno nuevo
+          loadPagos(); 
+        }}
+        onGuardar={() => setIsPagoModalOpen(false)}
+      />
     </ProtectedRoute>
   );
 }

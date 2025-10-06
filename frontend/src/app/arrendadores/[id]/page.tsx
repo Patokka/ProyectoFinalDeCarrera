@@ -181,7 +181,7 @@ return (
                 <div className="flex items-center space-x-3">
                     <h1 className="text-2xl font-bold text-gray-900">Detalle de Arrendador</h1>
                 </div>
-                <Link href = {`/arrendador/${arrendador.id}/edit`} passHref> 
+                <Link href = {`/arrendadores/${arrendador.id}/edit`} passHref> 
                     <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
                         <Edit className="h-4 w-4" />
                         <span>Editar Arrendador</span>

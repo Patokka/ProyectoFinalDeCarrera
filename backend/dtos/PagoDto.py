@@ -10,6 +10,7 @@ class PagoDto(BaseModel):
     quintales: float
     precio_promedio: Optional[float]
     vencimiento: date
+    fuente_precio: TipoOrigenPrecio
     monto_a_pagar: Optional[float]
     arrendamiento_id: int
     participacion_arrendador_id: int

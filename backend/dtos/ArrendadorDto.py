@@ -48,6 +48,8 @@ class ArrendadorDtoOut(BaseModel):
     }
 
 class ArrendadorDtoModificacion(BaseModel):
+    nombre_o_razon_social: Optional[str]
+    cuil: Optional[str]
     condicion_fiscal: Optional[TipoCondicion]
     mail: Optional[EmailStr]
     telefono: Optional[str]

@@ -123,7 +123,7 @@ const handleDelete = (id: number) => {
                 placeholder="Buscar..."
                 value={searchTermNombre}
                 onChange={setSearchTermNombre}
-                label="Nombre"
+                label="Nombre / Razón Social"
               />
               <SearchInput
                 placeholder="Ej: 99-999999-9"
@@ -157,7 +157,7 @@ const handleDelete = (id: number) => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Nombre
+                        Nombre / Razón Social
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         CUIT-CUIL
@@ -209,9 +209,11 @@ const handleDelete = (id: number) => {
                                 <Eye className="h-4 w-4" />
                               </button>
                             </Link>
-                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
-                              <Edit className="h-4 w-4" />
-                            </button>
+                            <Link href={`/arrendadores/${arrendador.id}/edit`}passHref>
+                              <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
+                                <Edit className="h-4 w-4" />
+                              </button>
+                            </Link>
                             <button onClick={() => handleDelete(arrendador.id)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
                               <Trash2 className="h-4 w-4" />
                             </button>

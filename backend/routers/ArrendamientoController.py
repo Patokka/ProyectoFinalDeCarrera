@@ -11,6 +11,10 @@ router = APIRouter()
 def listar_arrendamientos(db: Session = Depends(get_db)):
     return ArrendamientoService.listar_todos(db)
 
+@router.get("/activos", response_model=list[ArrendamientoDtoOut], description="Obtención de todos los arrendamientos activos.")
+def listar_arrendamientos_activos(db: Session = Depends(get_db)):
+    return ArrendamientoService.listar_activos(db)
+
 @router.get("/participaciones/{arrendamiento_id}", response_model=list[ParticipacionArrendadorDtoOut], description="Obtención de las participaciones de un arrendamiento por id.")
 def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
     return ArrendamientoService.obtener_participaciones_por_id(db, arrendamiento_id)

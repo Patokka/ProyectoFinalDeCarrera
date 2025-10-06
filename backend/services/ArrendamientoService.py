@@ -12,6 +12,24 @@ from model.Arrendamiento import Arrendamiento
 from dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 
 class ArrendamientoService:
+    @staticmethod
+    def listar_activos(db: Session):
+        arrendamientos = (
+            db.query(Arrendamiento)
+            .options(
+                joinedload(Arrendamiento.participaciones)
+                .joinedload(ParticipacionArrendador.arrendador)
+            ).filter(Arrendamiento.estado==EstadoArrendamiento.ACTIVO)
+            .all()
+        )
+        result = []
+        for arr in arrendamientos:
+            arr_dto = ArrendamientoDtoOut.model_validate(arr)
+            # mapear solo arrendadores, no participaciones
+            arr_dto.arrendadores = [p.arrendador for p in arr.participaciones]
+            result.append(arr_dto)
+
+        return result
     
     @staticmethod
     def listar_todos(db: Session):

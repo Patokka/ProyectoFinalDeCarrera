@@ -41,8 +41,8 @@ class ArrendatarioDtoOut(BaseModel):
 class ArrendatarioDtoModificacion(BaseModel):
     mail: Optional[str]
     razon_social: Optional[str]
+    cuit: Optional[str]
     condicion_fiscal: Optional[TipoCondicion]
-    telefono: Optional[str]
     localidad_id: Optional[int]
     
     model_config = {

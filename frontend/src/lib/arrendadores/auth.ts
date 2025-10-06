@@ -121,3 +121,45 @@ export async function postArrendador(formData: ArrendadorForm): Promise<Arrendad
 
     return res.json();
 }
+
+export async function putArrendador(formData: ArrendadorForm, idArrendador: number): Promise<ArrendadorDtoOut> {
+    const token = localStorage.getItem("token");
+
+    const body = {
+        nombre_o_razon_social: formData.nombre_o_razon_social,
+        cuil: formData.cuil,
+        condicion_fiscal: formData.condicion_fiscal,
+        mail: formData.mail,
+        telefono: formData.telefono,
+        localidad_id: formData.localidad_id,
+        descripcion: formData.descripcion,
+    };
+
+    const res = await fetch(`${API_URL}/arrendadores/${idArrendador}`, {
+        method: "PUT",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al crear arrendador");
+    }
+
+    return res.json();
+}
