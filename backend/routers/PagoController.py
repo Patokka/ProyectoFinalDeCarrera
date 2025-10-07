@@ -11,15 +11,23 @@ router = APIRouter()
 def obtener_pagos_agrupados_mes(db:Session = Depends(get_db)):
     try:
         return PagoService.obtener_pagos_agrupados_mes(db)
+    except HTTPException as e:
+        # Si ya es una excepción HTTP de FastAPI, la relanzamos tal cual
+        raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Solo si es otro tipo de error (por ejemplo, ValueError o bug interno)
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/vencimientos-mes", response_model=List[str], description="Se obtienen todas las fechas de vencimiento de los pagos de un mes determinado.")
 def obtener_vencimientos_mes(mes: int, anio: int, db: Session = Depends(get_db)):
     try:
         return PagoService.obtener_vencimientos_mes(db, mes, anio)
+    except HTTPException as e:
+        # Si ya es una excepción HTTP de FastAPI, la relanzamos tal cual
+        raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Solo si es otro tipo de error (por ejemplo, ValueError o bug interno)
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/", response_model=list[PagoDtoOut], description="Obtención de todos los pagos.")
 def listar_pagos(db: Session = Depends(get_db)):
@@ -42,21 +50,13 @@ def eliminar_pago(pago_id: int, db: Session = Depends(get_db)):
     PagoService.eliminar(db, pago_id)
     return {"mensaje": "Pago eliminado correctamente."}
 
-
 @router.post("/generar/{arrendamiento_id}", response_model=List[PagoDtoOut], description="Creación de los pagos de un arrendamiento.")
 def crear_pago(arrendamiento_id: int, db: Session = Depends(get_db)):
-    try:
-        return  PagoService.generarCuotas(db, arrendamiento_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=e)
-
+    return  PagoService.generarCuotas(db, arrendamiento_id)
 
 @router.put("/precio/{pago_id}", response_model=PagoDtoOut, description="Modificación del precio de un pago por id.")
 def actualizar_precio_pago(pago_id: int, db: Session = Depends(get_db)):
-    try:
-        return PagoService.generarPrecioCuota(db, pago_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+    return PagoService.generarPrecioCuota(db, pago_id)
 
 @router.get("/arrendador/{arrendador_id}", response_model=list[PagoDtoOut], description="Obtención de los pagos PENDIENTES correspondientes a un arrendador.")
 def obtener_pago(arrendador_id: int, db: Session = Depends(get_db)):

@@ -11,6 +11,7 @@ import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurr
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { deletePrecio, fetchPreciosAGD, fetchPreciosBCR } from '@/lib/precios/auth';
 import PrecioModal from '@/components/ui/PriceModal';
+import EditPrecioModal from '@/components/ui/EditPrecioModal';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -24,6 +25,8 @@ export default function PreciosPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [precioSeleccionado, setPrecioSeleccionado] = useState<PrecioDtoOut | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Filtrado de datos BCR
   const filteredBCRData = useMemo(() => {
@@ -84,8 +87,9 @@ export default function PreciosPage() {
   };
 
   const handleEditPrecio = (precio: PrecioDtoOut) => {
-    toast.info(`Editando precio del ${formatDate(precio.fecha_precio)} - ${precio.origen}`);
-  };
+      setPrecioSeleccionado(precio);
+      setIsEditModalOpen(true);
+    };
 
   const handleDelete = (precio: PrecioDtoOut) => {
     // Confirmación
@@ -270,6 +274,26 @@ export default function PreciosPage() {
             toast.error("Error al actualizar la lista de precios");
           }
         }}
+      />
+      <EditPrecioModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+            setIsEditModalOpen(false);
+            setPrecioSeleccionado(null);
+        }}
+        onSuccess={async () => {
+            try {
+                const dataBCR = await fetchPreciosBCR();
+                const dataAGD = await fetchPreciosAGD();
+                setPreciosAGD(dataAGD);
+                setPreciosBCR(dataBCR);
+                setIsEditModalOpen(false);
+                setPrecioSeleccionado(null);
+            } catch (e) {
+                toast.error("Error al actualizar la lista de precios");
+            }
+        }}
+      precioActual={precioSeleccionado!}
       />
     </ProtectedRoute>
   );

@@ -1,6 +1,7 @@
+from decimal import ROUND_HALF_UP, Decimal
 from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
-from sqlalchemy import extract, func
+from sqlalchemy import asc, extract, func
 from sqlalchemy.orm import Session, joinedload
 from model.Arrendamiento import Arrendamiento
 from model.Arrendatario import Arrendatario
@@ -20,7 +21,7 @@ class PagoService:
 
     @staticmethod
     def listar_todos(db: Session):
-        return db.query(Pago).all()
+        return db.query(Pago).order_by(asc(Pago.vencimiento)).all()
 
     @staticmethod
     def obtener_por_id(db: Session, pago_id: int):
@@ -32,6 +33,7 @@ class PagoService:
     @staticmethod
     def crear(db: Session, dto: PagoDto):
         nuevo = Pago(**dto.model_dump())
+        nuevo.estado = EstadoPago.PENDIENTE
         db.add(nuevo)
         db.commit()
         db.refresh(nuevo)
@@ -78,7 +80,7 @@ class PagoService:
         # Obtener participaciones
         participaciones = db.query(ParticipacionArrendador).filter_by(arrendamiento_id=arrendamiento.id).all()
         if not participaciones:
-            raise ValueError("No hay participaciones registradas para este arrendamiento.")
+            raise HTTPException(status_code=400, detail="No hay participaciones registradas para este arrendamiento.")
 
         # Mapeo de periodicidad
         periodos = {
@@ -91,18 +93,30 @@ class PagoService:
         }
         meses_por_cuota = periodos.get(arrendamiento.plazo_pago)
         if not meses_por_cuota:
-            raise ValueError(f"Periodicidad '{arrendamiento.plazo_pago}' no soportada.")
+            raise HTTPException(status_code=400, detail=f"Periodicidad '{arrendamiento.plazo_pago}' no soportada.")
 
         cuotas = []
 
         for participacion in participaciones:
+            # Calcular cuántas cuotas se van a generar para este arrendamiento
             fecha_actual = PagoService._sumar_meses(arrendamiento.fecha_inicio, meses_por_cuota)
-
+            fechas_cuotas = []
             while fecha_actual <= arrendamiento.fecha_fin:
+                fechas_cuotas.append(fecha_actual)
+                fecha_actual = PagoService._sumar_meses(fecha_actual, meses_por_cuota)
+
+            cantidad_cuotas = len(fechas_cuotas)
+
+            # Reiniciar fecha_actual para generar los pagos
+            for fecha_actual in fechas_cuotas:
                 if arrendamiento.tipo == TipoArrendamiento.FIJO:
                     quintales_pago = participacion.hectareas_asignadas * participacion.quintales_asignados
+                    dias_promedio_pago = arrendamiento.dias_promedio
+                    porcentaje_pago = None
                 else:  # A_PORCENTAJE
                     quintales_pago = None
+                    porcentaje_pago = participacion.porcentaje / cantidad_cuotas
+                    dias_promedio_pago = None
 
                 cuotas.append(Pago(
                     estado=EstadoPago.PENDIENTE,
@@ -112,7 +126,9 @@ class PagoService:
                     fuente_precio=arrendamiento.origen_precio,
                     monto_a_pagar=None,
                     arrendamiento_id=arrendamiento.id,
-                    participacion_arrendador_id=participacion.id
+                    participacion_arrendador_id=participacion.id,
+                    dias_promedio = dias_promedio_pago,
+                    porcentaje = porcentaje_pago
                 ))
                 fecha_actual = PagoService._sumar_meses(fecha_actual, meses_por_cuota)
 
@@ -121,7 +137,7 @@ class PagoService:
         return cuotas
     
     @staticmethod
-    def _obtener_precios_promedio(db: Session, pago: Pago):
+    def _obtener_precios_promedio(db: Session, pago: "Pago"):
         vencimiento = pago.vencimiento
         mes_anterior = (vencimiento.replace(day=1) - timedelta(days=1)).month
         anio_anterior = (vencimiento.replace(day=1) - timedelta(days=1)).year
@@ -137,9 +153,8 @@ class PagoService:
         match pago.arrendamiento.dias_promedio:
             case TipoDiasPromedio.ULTIMOS_5_HABILES:
                 precios = query_base.order_by(Precio.fecha_precio.desc()).limit(5).all()
-
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
                 if len(precios) < 5:
                     faltan = 5 - len(precios)
@@ -151,9 +166,8 @@ class PagoService:
 
             case TipoDiasPromedio.ULTIMOS_10_HABILES:
                 precios = query_base.order_by(Precio.fecha_precio.desc()).limit(10).all()
-
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
                 if len(precios) < 10:
                     faltan = 10 - len(precios)
@@ -163,29 +177,29 @@ class PagoService:
                     ).order_by(Precio.fecha_precio.desc()).limit(faltan).all()
                     precios.extend(precios_extra)
 
-            case TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:  ##Se ajusta la query porque es el unico caso que se toman los dias del mes corriente
+            case TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
                 precios = db.query(Precio).filter(
-                                Precio.origen == pago.fuente_precio,
-                                extract("month", Precio.fecha_precio) == vencimiento.month,
-                                extract("year", Precio.fecha_precio) == vencimiento.year
-                            ).filter(
-                                extract("day", Precio.fecha_precio) >= 10,
-                                extract("day", Precio.fecha_precio) <= 15
-                            ).order_by(Precio.fecha_precio).all()
+                    Precio.origen == pago.fuente_precio,
+                    extract("month", Precio.fecha_precio) == vencimiento.month,
+                    extract("year", Precio.fecha_precio) == vencimiento.year,
+                    extract("day", Precio.fecha_precio) >= 10,
+                    extract("day", Precio.fecha_precio) <= 15
+                ).order_by(Precio.fecha_precio).all()
 
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
             case TipoDiasPromedio.ULTIMO_MES:
                 precios = query_base.order_by(Precio.fecha_precio).all()
-
                 if not precios:
-                    raise ValueError(f"No hay precios en {mes_anterior}/{anio_anterior} para {pago.fuente_precio.name}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
             case _:
-                raise ValueError(f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")
+                raise HTTPException(status_code=400, detail=f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")
 
-        precio_promedio = sum(p.precio_obtenido for p in precios) / len(precios)
+        # Convertimos a Decimal para preservar precisión
+        total = sum(Decimal(p.precio_obtenido) for p in precios)
+        precio_promedio = (total / Decimal(len(precios))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         return precio_promedio, precios
 
@@ -199,14 +213,17 @@ class PagoService:
         if not pago:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
         
+        if pago.porcentaje and pago.porcentaje> 0:
+            raise HTTPException(status_code=400, detail="No se le puede asignar un precio a un pago de porcentaje de producción")
+        
         if (pago.precio_promedio is not None and pago.precio_promedio > 0) or (pago.monto_a_pagar is not None and pago.monto_a_pagar > 0):
-            raise HTTPException(status_code=500, detail="El pago ya tiene un monto y precio calculado.")
+            raise HTTPException(status_code=400, detail="El pago ya tiene un monto y precio calculado.")
         
         precio_promedio, precios_en_rango = PagoService._obtener_precios_promedio(db, pago)
-
-        pago.precio_promedio = precio_promedio / 10
+        
+        pago.precio_promedio = float(precio_promedio / Decimal("10"))
         if pago.quintales is not None:
-            pago.monto_a_pagar = pago.precio_promedio * pago.quintales
+            pago.monto_a_pagar = float(pago.precio_promedio * Decimal(pago.quintales))
 
         #Asignar precios a la relación many-to-many
         pago.precios.extend(precios_en_rango)
@@ -233,7 +250,6 @@ class PagoService:
         # Traer pagos del mes
         pagos = (
             db.query(Pago)
-            .options(joinedload(Pago.arrendamiento))
             .filter(
                 Pago.vencimiento >= fecha_inicio,
                 Pago.vencimiento < fecha_fin,
@@ -243,9 +259,9 @@ class PagoService:
         contador = 0
         for pago in pagos:
             #Excluir cuotas especiales
-            if pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
+            if pago.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL:
                 continue
-            if pago.quintales is None:
+            if pago.quintales is None or pago.porcentaje > 0:
                 continue
             contador+=1
             print(f"----Calculando precio a pago de id: {pago.id}")
@@ -270,12 +286,11 @@ class PagoService:
         fecha_fin = date(anio + (mes // 12), (mes % 12) + 1, 1)
         pagos = (
             db.query(Pago)
-            .options(joinedload(Pago.arrendamiento))
             .filter(
                 Pago.vencimiento >= fecha_inicio,
                 Pago.vencimiento < fecha_fin,
                 Pago.estado == EstadoPago.PENDIENTE,
-                Pago.arrendamiento.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL,
+                Pago.dias_promedio == TipoDiasPromedio.DEL_10_AL_15_MES_ACTUAL,
                 Pago.quintales.isnot(None)
             )
         )

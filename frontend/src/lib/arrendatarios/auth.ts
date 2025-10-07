@@ -153,7 +153,7 @@ export async function putArrendatario(formData: ArrendatarioForm, idArrendatario
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Error al crear arrendador");
+        throw new Error(err.detail || "Error al modificar el arrendatario");
     }
 
     return res.json();

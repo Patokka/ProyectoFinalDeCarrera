@@ -7,6 +7,7 @@ from model.ParticipacionArrendador import ParticipacionArrendador
 from model.Precio import Precio
 from util.database import Base
 from enums.EstadoPago import EstadoPago
+from enums.TipoDiasPromedio import TipoDiasPromedio
 from enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Arrendamiento import Arrendamiento
 
@@ -23,7 +24,9 @@ class Pago(Base):
     monto_a_pagar: Mapped[Decimal] = mapped_column(Numeric(12,2),nullable=True)
     arrendamiento_id: Mapped[int] = mapped_column(ForeignKey("arrendamiento.id"), nullable=False)
     participacion_arrendador_id: Mapped[int] = mapped_column(ForeignKey("participacion_arrendador.id"), nullable=False)
-
+    porcentaje: Mapped[float] = mapped_column(nullable=True)
+    dias_promedio: Mapped[TipoDiasPromedio] = mapped_column(Enum(TipoDiasPromedio, nullable=True))
+    
     #Relaciones
     arrendamiento: Mapped["Arrendamiento"] = relationship()
     participacion_arrendador: Mapped["ParticipacionArrendador"] = relationship()

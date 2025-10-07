@@ -1,4 +1,4 @@
-import { PagoDtoOut, PaymentSummaryResponse } from "../type";
+import { PagoDtoOut, PagoForm, PaymentSummaryResponse } from "../type";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -95,31 +95,31 @@ export async function fetchPagos(): Promise<PagoDtoOut[]> {
 }
 
 export async function facturarPago(pago: number): Promise<void>{
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  const res = await fetch(`${API_URL}/facturaciones/crear/${pago}`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  });  
-  if (res.status === 401) {
-      // limpiar sesión y redirigir
-      localStorage.removeItem("token")
-      window.location.href = "/login"
-      throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
-  }
+    const res = await fetch(`${API_URL}/facturaciones/crear/${pago}`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    });  
+    if (res.status === 401) {
+        // limpiar sesión y redirigir
+        localStorage.removeItem("token")
+        window.location.href = "/login"
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
 
-  if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Error al obtener los pagos");
-  }
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al obtener los pagos");
+    }
 }
 
 export async function facturarPagos(pagos: number[]): Promise<void>{
     for (const p of pagos) {
-      await facturarPago(p);
+        await facturarPago(p);
     }
 }
 
@@ -226,4 +226,75 @@ export async function cancelarPago(pago_id: number){
     }
 
     return true;
+}
+
+export async function postPago(formData: PagoForm): Promise<PagoDtoOut> {
+    const token = localStorage.getItem("token");
+
+    const body = {
+        quintales: formData.quintales,
+        vencimiento: formData.vencimiento,
+        fuente_precio: formData.fuente_precio,
+        arrendamiento_id: formData.arrendamiento_id,
+        participacion_arrendador_id: formData.participacion_arrendador_id,
+        dias_promedio: formData.dias_promedio,
+        porcentaje: formData.porcentaje
+    };
+
+    const res = await fetch(`${API_URL}/pagos`, {
+        method: "POST",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al crear pago");
+    }
+
+    return res.json();
+}
+
+export async function asignarPrecioPago(idPago: number): Promise<PagoDtoOut> {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_URL}/pagos/precio/${idPago}`, {
+        method: "PUT",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+    });
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al asignarle el precio al pago");
+    }
+
+    return res.json();
 }

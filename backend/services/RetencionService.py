@@ -1,5 +1,7 @@
 from datetime import date
 from decimal import Decimal
+
+from sqlalchemy import asc
 from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -15,7 +17,7 @@ class RetencionService:
 
     @staticmethod
     def listar_todos(db: Session):
-        return db.query(Retencion).all()
+        return db.query(Retencion).order_by(asc(Retencion.fecha_retencion)).all()
 
     @staticmethod
     def obtener_por_id(db: Session, retencion_id: int):
@@ -71,7 +73,7 @@ class RetencionService:
     @staticmethod
     def obtener_configuracion(db: Session, clave: str) -> str | None:
         config = db.query(Configuracion).filter_by(clave=clave).first()
-        return config.valor if config else HTTPException(status_code=404, detail= "No hay monto imponible cargado.")
+        return config.valor if config else HTTPException(status_code=404, detail= f"No se encontró la configuración de {clave}")
 
     @staticmethod
     def actualizar_configuracion(db: Session, clave: str, valor: str) -> dict:
@@ -84,6 +86,15 @@ class RetencionService:
 
         db.commit()
         return {"status": "ok", "clave": clave, "valor": valor}
+    
+    @staticmethod
+    def eliminar_configuracion(db: Session, clave: str) -> dict:
+        config = db.query(Configuracion).filter_by(clave=clave).first()
+        if not config:
+            raise HTTPException(status_code=404, detail=f"No se encontró la configuración de {clave}")
+        db.delete(config)
+        db.commit()
+        return {"status": "ok", "clave": clave}
     
     @staticmethod
     def crear_para_factura(db: Session, arrendador_id: int, pago, fecha: date):

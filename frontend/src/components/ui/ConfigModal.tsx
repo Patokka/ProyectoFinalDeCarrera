@@ -24,19 +24,8 @@ export const useConfigModal = () => {
         setSelectedConfigCard(null);
     };
 
-    return {
-        isOpen,
-        openModal,
-        closeModal,
-        selectedConfigCard,
-        configTime,
-        setConfigTime,
-        configDay,
-        setConfigDay,
-        isSubmitting,
-        setIsSubmitting,
-    };
-    };
+    return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting,setIsSubmitting,};
+};
 
     interface ConfigModalProps {
     isOpen: boolean;

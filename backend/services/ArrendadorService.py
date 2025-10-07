@@ -2,7 +2,7 @@ from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Arrendador import Arrendador
-from dtos.ArrendadorDto import ArrendadorDto, ArrendadorDtoOut, ArrendadorDtoModificacion
+from dtos.ArrendadorDto import ArrendadorDto, ArrendadorDtoModificacion
 
 class ArrendadorService:
 

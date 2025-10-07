@@ -1,4 +1,6 @@
 from datetime import date
+
+from sqlalchemy import asc
 from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -20,7 +22,7 @@ class FacturacionService:
 
     @staticmethod
     def listar_todos(db: Session):
-        return db.query(Facturacion).all()
+        return db.query(Facturacion).order_by(asc(Facturacion.fecha_facturacion)).all()
 
     @staticmethod
     def obtener_por_id(db: Session, facturacion_id: int):
@@ -42,7 +44,7 @@ class FacturacionService:
         hoy = date.today()
         
         # Caso especial de pago a porcentaje
-        if pago.participacion_arrendador and pago.participacion_arrendador.porcentaje and pago.participacion_arrendador.porcentaje > 0:
+        if pago.porcentaje and pago.porcentaje > 0:
             pago.estado = EstadoPago.REALIZADO
             db.commit()
             ArrendamientoService.finalizar_arrendamiento(db, pago.arrendamiento_id)

@@ -11,6 +11,7 @@ import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurr
 import { toast } from 'sonner';
 import { fetchRetenciones } from '@/lib/retenciones/auth';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
+import MontoImponibleModal from '@/components/ui/MontoImponibleModal';
 
 
 const ITEMS_PER_PAGE = 8;
@@ -19,7 +20,7 @@ export default function RetencionesPage() {
   const [retenciones, setRetenciones] = useState<RetencionDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [isMontoImponibleModalOpen, setIsMontoImponibleModalOpen] = useState(false);
   const [searchTermArrendador, setSearchTermArrendador] = useState('');
   const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
   const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
@@ -175,7 +176,7 @@ export default function RetencionesPage() {
             </Link>
             
             
-            <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+            <button onClick={() => setIsMontoImponibleModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
             <Settings className="h-4 w-4 mr-1" />
               Configuración Monto Imponible
             </button>
@@ -192,6 +193,13 @@ export default function RetencionesPage() {
           </div>
         </div>
       </div>
+      <MontoImponibleModal
+        isOpen={isMontoImponibleModalOpen}
+        onClose={() => setIsMontoImponibleModalOpen(false)}
+        onSuccess={() => {
+          setIsMontoImponibleModalOpen(false);
+        }}
+      />
     </ProtectedRoute>
   );
 }

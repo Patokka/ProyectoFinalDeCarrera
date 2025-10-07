@@ -1,5 +1,6 @@
 from datetime import date
-from sqlalchemy import Date, Enum, ForeignKey, UniqueConstraint
+from decimal import Decimal
+from sqlalchemy import Date, Enum, ForeignKey, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from model.pago_precio_association import pago_precio_association
 from util.database import Base
@@ -13,7 +14,7 @@ class Precio(Base):
 
     id:  Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     fecha_precio:  Mapped[date] = mapped_column(Date, nullable=False)
-    precio_obtenido:  Mapped[float] = mapped_column(nullable=False) #Acá los precios que se guardan, independientemente del origen, son precios por TONELADA DE SOJA
+    precio_obtenido: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False) #Acá los precios que se guardan, independientemente del origen, son precios por TONELADA DE SOJA
     origen: Mapped[TipoOrigenPrecio] = mapped_column(Enum(TipoOrigenPrecio), nullable=False)
     
     

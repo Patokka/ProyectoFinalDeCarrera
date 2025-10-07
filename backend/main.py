@@ -241,7 +241,7 @@ def logout(response: Response):
     return response
 
 #Ruta para poder modificar la frecuencia con la que se realizan los diferentes trabajos
-@app.post("/actualizar-job")
+@app.post("/actualizar-job", dependencies=[Depends(get_current_user)])
 def actualizar_job(data: JobUpdateRequest, db: Session = Depends(get_db)):
     job_config = db.query(jobConfiguration).filter_by(job_id = data.job_id).first()
     if not job_config:

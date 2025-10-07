@@ -2,7 +2,7 @@ from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Usuario import Usuario
-from dtos.UsuarioDto import UsuarioDto, UsuarioDtoOut, UsuarioDtoModificacion, UsuarioLogueado
+from dtos.UsuarioDto import UsuarioDto, UsuarioDtoModificacion, UsuarioLogueado
 from util.jwtYPasswordHandler import hash_password, verify_password
 
 class UsuarioService:

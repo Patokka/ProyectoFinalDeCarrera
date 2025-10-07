@@ -1,4 +1,6 @@
 from datetime import date, timedelta
+
+from sqlalchemy import asc
 from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
@@ -38,8 +40,7 @@ class ArrendamientoService:
             .options(
                 joinedload(Arrendamiento.participaciones)
                 .joinedload(ParticipacionArrendador.arrendador)
-            )
-            .all()
+            ).order_by(asc(Arrendamiento.fecha_fin)).all()
         )
 
         result = []

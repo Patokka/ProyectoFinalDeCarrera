@@ -5,15 +5,16 @@ from dtos.ArrendamientoDto import ArrendamientoDtoOut
 from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDtoOut
 from enums.EstadoPago import EstadoPago
 from enums.TipoOrigenPrecio import TipoOrigenPrecio
+from enums.TipoDiasPromedio import TipoDiasPromedio
 
 class PagoDto(BaseModel):
-    quintales: float
-    precio_promedio: Optional[float]
+    quintales: Optional[float]
     vencimiento: date
     fuente_precio: TipoOrigenPrecio
-    monto_a_pagar: Optional[float]
     arrendamiento_id: int
     participacion_arrendador_id: int
+    porcentaje: Optional[float]
+    dias_promedio: Optional[TipoDiasPromedio]
     
     model_config = {
         "from_attributes": True,     
@@ -30,6 +31,8 @@ class PagoDtoOut(BaseModel):
     monto_a_pagar: Optional[float]
     arrendamiento: ArrendamientoDtoOut
     participacion_arrendador: ParticipacionArrendadorDtoOut
+    porcentaje: Optional[float]
+    dias_promedio: Optional[TipoDiasPromedio]
     
     model_config = {
         "from_attributes": True,

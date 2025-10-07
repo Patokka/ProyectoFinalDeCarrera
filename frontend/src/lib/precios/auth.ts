@@ -116,3 +116,41 @@ export async function deletePrecio(precio_id: number) {
 
     return true;
 }
+
+export async function putPrecio(formData: PrecioForm, idPrecio: number): Promise<PrecioDtoOut> {
+    const token = localStorage.getItem("token");
+
+    const body = {
+        fecha_precio: formData.fecha_precio,
+        precio_obtenido: formData.precio_obtenido,
+        origen: formData.origen,
+    };
+
+    const res = await fetch(`${API_URL}/precios/${idPrecio}`, {
+        method: "PUT",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al modificar el precio");
+    }
+
+    return res.json();
+}

@@ -178,16 +178,18 @@ export interface PagoDtoOut {
   monto_a_pagar?: number;
   arrendamiento: ArrendamientoDtoOut;
   participacion_arrendador: ParticipacionArrendadorDtoOut
+  dias_promedio?: TipoDiasPromedio;
+  porcentaje?: number;
 }
 
 export type PagoForm ={
-  quintales: number;
-  precio_promedio?: number;
+  quintales?: number | null;
   vencimiento: string;
   fuente_precio: TipoOrigenPrecio;
-  monto_a_pagar?: number;
   arrendamiento_id: number;
   participacion_arrendador_id: number;
+  dias_promedio?: TipoDiasPromedio | null;
+  porcentaje?: number | null;
 }
 
 export interface PrecioDtoOut{

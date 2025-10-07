@@ -1,21 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Download, X } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
 import DateInput from '../ui/DateInput';
 import SelectFilter from '../ui/SelectFilter';
-import { PrecioForm, TipoOrigenPrecio } from '@/lib/type';
-import { postPrecio } from '@/lib/precios/auth';
+import { PrecioForm, TipoOrigenPrecio, PrecioDtoOut } from '@/lib/type';
+import { putPrecio } from '@/lib/precios/auth';
 
-interface PrecioModalProps {
+interface EditPrecioModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    precioActual: PrecioDtoOut; // datos actuales del precio a editar
 }
 
-const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
+const EditPrecioModal = ({ isOpen, onClose, onSuccess, precioActual }: EditPrecioModalProps) => {
     const [fecha, setFecha] = useState("");
     const [precio, setPrecio] = useState<number | undefined>(undefined);
     const [origen, setOrigen] = useState("");
@@ -26,6 +27,16 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
         { value: "BCR", label: "Bolsa de Comercio (BCR)" },
         { value: "AGD", label: "Aceitera General Deheza (AGD)" },
     ];
+
+    // Cuando se abre el modal, inicializamos con los valores actuales
+    useEffect(() => {
+        if (isOpen && precioActual) {
+            setFecha(precioActual.fecha_precio);
+            setPrecio(precioActual.precio_obtenido);
+            setOrigen(precioActual.origen);
+            setErrors({});
+        }
+    }, [isOpen, precioActual]);
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
@@ -61,17 +72,13 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
                 precio_obtenido: precio!,
                 origen: origen as TipoOrigenPrecio,
             };
-            await postPrecio(envioPrecio);
-            toast.success("Precio cargado correctamente, volviendo a página de precios...");
-            // Resetear todos los campos
-            setFecha("");
-            setPrecio(undefined);
-            setOrigen("");
-            setErrors({});
+            await putPrecio(envioPrecio, precioActual.id); 
+            toast.success("Precio actualizado correctamente");
             onSuccess();
+            handleClose();
         } catch (error) {
             console.error(error);
-            const message = error instanceof Error ? error.message : "Error al cargar el precio";
+            const message = error instanceof Error ? error.message : "Error al actualizar el precio";
             toast.error(message);
         } finally {
             setIsSubmitting(false);
@@ -79,12 +86,7 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
     };
 
     const handleClose = () => {
-        // Resetear todos los campos
-        setFecha("");
-        setPrecio(undefined);
-        setOrigen("");
         setErrors({});
-        // Llamar al onClose externo
         onClose();
     };
 
@@ -95,7 +97,7 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div className="flex items-start justify-between p-6 border-b">
                     <h3 className="text-lg font-semibold text-center text-gray-900">
-                        Cargar Precio Actual
+                        Editar Precio
                     </h3>
                     <button
                         onClick={handleClose}
@@ -124,7 +126,7 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
                                 setPrecio(undefined);
                                 return;
                             }
-                            const numberVal = parseFloat(val.toFixed(2)); // conserva 2 decimales
+                            const numberVal = Math.floor(val * 100) / 100; // max 2 decimales
                             setPrecio(numberVal);
                         }}
                         placeholder="Ej: 420,50"
@@ -155,7 +157,7 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
                         disabled={isSubmitting}
                     >
                         <Download className='h-4 w-4'/>
-                        <span>{isSubmitting ? "Guardando..." : "Guardar Precio"}</span>
+                        <span>{isSubmitting ? "Guardando..." : "Guardar Cambios"}</span>
                     </button>
                 </div>
             </div>
@@ -163,4 +165,4 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
     );
 };
 
-export default PrecioModal;
+export default EditPrecioModal;

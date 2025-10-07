@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Eye, Edit, Plus, FileText } from 'lucide-react';
+import { Eye, Plus, FileText, Calculator } from 'lucide-react';
 import SelectFilter from '@/components/ui/SelectFilter';
 import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
@@ -12,6 +12,7 @@ import { facturarPagos, fetchPagos } from '@/lib/pagos/auth';
 import { PagoDtoOut } from '@/lib/type';
 import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getPagoBadgeColor } from '@/lib/helpers';
 import PagoParticularModal from '@/components/ui/PagoParticularModal';
+import AsignarPrecioModal from '@/components/ui/AsignarPrecioPagoModal';
 
 // Opciones para los filtros
 const estadoOptions = [
@@ -35,6 +36,8 @@ export default function PagosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
+  const [isAsignarPrecioPagoModalOpen, setIsAsignarPrecioPagoModalOpen] = useState(false);
+
   const loadPagos = async () => {
     try {
       setLoading(true);
@@ -48,21 +51,19 @@ export default function PagosPage() {
       }
     };
 
-  // Filtrar datos
-const filteredData = useMemo(() => {
-  return pagos.filter(item => {
-    const matchesEstado =
-      !estadoFilter || item.estado === estadoFilter;
-
-    const fecha = new Date(item.vencimiento);
-    const matchesFechaDesde =
-      !fechaDesde || fecha >= new Date(fechaDesde);
-    const matchesFechaHasta =
-      !fechaHasta || fecha <= new Date(fechaHasta);
-
-    return matchesEstado && matchesFechaDesde && matchesFechaHasta;
-  });
-}, [pagos, estadoFilter, fechaDesde, fechaHasta]);
+    // Filtrar datos
+  const filteredData = useMemo(() => {
+    return pagos.filter(item => {
+      const matchesEstado =
+        !estadoFilter || item.estado === estadoFilter;
+      const fecha = new Date(item.vencimiento);
+      const matchesFechaDesde =
+        !fechaDesde || fecha >= new Date(fechaDesde);
+      const matchesFechaHasta =
+        !fechaHasta || fecha <= new Date(fechaHasta);
+      return matchesEstado && matchesFechaDesde && matchesFechaHasta;
+    });
+  }, [pagos, estadoFilter, fechaDesde, fechaHasta]);
 
   // Paginación
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
@@ -139,10 +140,16 @@ const filteredData = useMemo(() => {
           <div className="mb-6">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
-              <button onClick={() => setIsPagoModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
-                <Plus className="h-4 w-4" />
-                <span>Nuevo Pago Particular</span>
-              </button>
+              <div className='flex justify-around gap-3'>
+                <button onClick={() => setIsAsignarPrecioPagoModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                  <Calculator className="h-4 w-4" />
+                  <span>Calcular Precio de Pago</span>
+                </button>
+                <button onClick={() => setIsPagoModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                  <Plus className="h-4 w-4" />
+                  <span>Nuevo Pago Particular</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -258,7 +265,7 @@ const filteredData = useMemo(() => {
                           {pago.precio_promedio? formatCurrency(pago.precio_promedio) : "-" }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {pago.quintales? pago.quintales + ' qq' : pago.participacion_arrendador.porcentaje + "%"}
+                          {pago.quintales? pago.quintales + ' qq' : pago.porcentaje + "%"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {pago.fuente_precio || '-'}
@@ -339,7 +346,7 @@ const filteredData = useMemo(() => {
                 />
               </div>
             )}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-1 pb-0 pt-0 h- w-fit">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-1 pb-0 pt-0 px-3 w-fit">
               <h6 className="text-sm font-medium text-blue-900 ">Nota:</h6>
               <p className="text-sm text-blue-800 leading-relaxed">
                 Los pagos pueden estar sujetos a retenciones.
@@ -353,10 +360,18 @@ const filteredData = useMemo(() => {
         onClose={() => setIsPagoModalOpen(false)}
         onSuccess={() => {
           setIsPagoModalOpen(false);
-          // Opcional: recargar los pagos si agregaste uno nuevo
           loadPagos(); 
+          window.location.reload();
         }}
-        onGuardar={() => setIsPagoModalOpen(false)}
+      />
+      <AsignarPrecioModal
+        isOpen={isAsignarPrecioPagoModalOpen}
+        onClose={() => setIsAsignarPrecioPagoModalOpen(false)}
+        onSuccess={() => {
+          setIsAsignarPrecioPagoModalOpen(false);
+          loadPagos(); 
+          window.location.reload();
+        }}
       />
     </ProtectedRoute>
   );

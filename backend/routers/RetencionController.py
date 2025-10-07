@@ -49,3 +49,7 @@ def obtener_configuracion(clave: str, db: Session = Depends(get_db)):
 @router.post("/configuracion")
 def actualizar_configuracion(config_update: ConfiguracionDtoModificacion, db: Session = Depends(get_db)):
     return RetencionService.actualizar_configuracion(db, config_update.clave, config_update.valor)
+
+@router.delete("/configuracion/{clave}")
+def eliminar_configuracion(clave: str, db: Session = Depends(get_db)):
+    return RetencionService.eliminar_configuracion(db, clave)

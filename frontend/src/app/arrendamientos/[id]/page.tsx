@@ -288,7 +288,7 @@ export default function ArrendamientoDetailPage() {
                                 Estado
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                Quintales
+                                Quintales - Porcentaje
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                                 Precio Promedio
@@ -316,7 +316,7 @@ export default function ArrendamientoDetailPage() {
                                 </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {pago.quintales != null ? `${pago.quintales} qq` : "-"}
+                                {pago.quintales != null ? `${pago.quintales} qq` : pago.porcentaje + '%'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {pago.precio_promedio != null ? formatCurrency(pago.precio_promedio) : "-"}

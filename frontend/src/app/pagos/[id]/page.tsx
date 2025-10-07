@@ -170,7 +170,7 @@ export default function PagoDetailPage() {
                             disabled={false}/>
                         <Text
                             label="Porcentaje de Producción a entregar:"
-                            value={participacion? participacion.porcentaje + '%' : ''}
+                            value={pago.porcentaje? pago.porcentaje + '%' : ''}
                             readOnly={true}
                             disabled={false}/>
                         {pago?.monto_a_pagar && (

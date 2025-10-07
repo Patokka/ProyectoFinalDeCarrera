@@ -11,6 +11,7 @@ import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurr
 import { toast } from 'sonner';
 import { fetchFacturaciones } from '@/lib/facturaciones/auth';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
+import FacturacionModal from '@/components/ui/FacturacionModal';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -18,7 +19,7 @@ export default function FacturacionesPage() {
   const [facturaciones, setFacturaciones] = useState<FacturacionDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [isFacturacionModalOpen, setIsFacturacionModalOpen] = useState(false);
   const [searchTermArrendador, setSearchTermArrendador] = useState('');
   const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
   const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
@@ -49,19 +50,20 @@ export default function FacturacionesPage() {
     setCurrentPage(1);
   }, [searchTermArrendador, fechaDesde, fechaHasta]);
 
-  useEffect(()=> {
-    const loadFacturaciones = async () =>{
-      try{
-        setLoading(true);
-        const dataFacturaciones = await fetchFacturaciones();
-        setFacturaciones(dataFacturaciones);
-      }catch(e){
-        toast.error("Error al cargar las facturaciones");
-        setError("Error al cargar las facturaciones");
-      }finally{
-        setLoading(false);
-      }
+  const loadFacturaciones = async () =>{
+    try{
+      setLoading(true);
+      const dataFacturaciones = await fetchFacturaciones();
+      setFacturaciones(dataFacturaciones);
+    }catch(e){
+      toast.error("Error al cargar las facturaciones");
+      setError("Error al cargar las facturaciones");
+    }finally{
+      setLoading(false);
     }
+  };
+
+  useEffect(()=> {
     loadFacturaciones();
   },[]);
 
@@ -72,7 +74,7 @@ export default function FacturacionesPage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Facturaciones</h1>
-            <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+            <button onClick={() => setIsFacturacionModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
               <Plus className="h-4 w-4" />
               <span>Nueva Facturación</span>
             </button>
@@ -200,6 +202,15 @@ export default function FacturacionesPage() {
           </div>
         </div>
       </div>
+      <FacturacionModal
+        isOpen={isFacturacionModalOpen}
+        onClose={() => setIsFacturacionModalOpen(false)}
+        onSuccess={() => {
+          setIsFacturacionModalOpen(false);
+          loadFacturaciones();
+          window.location.reload();
+        }}
+      />
     </ProtectedRoute>
   );
 }

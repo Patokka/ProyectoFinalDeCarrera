@@ -1,7 +1,7 @@
 from datetime import date, timedelta
+from decimal import Decimal
 
 from sqlalchemy import desc
-from util.dbValidator import verificar_relaciones_existentes
 from fastapi.responses import JSONResponse
 import os, requests
 import re
@@ -56,7 +56,7 @@ class PrecioService:
         if existente:
             raise HTTPException(
                 status_code=400,
-                detail=f"Ya existe un precio registrado para el origen '{dto.origen}' en la fecha '{dto.fecha_precio}'."
+                detail=f"Ya existe un precio registrado para el origen '{dto.origen}' en la fecha {dto.fecha_precio.strftime('%d/%m/%Y')}."
             )
 
         nuevo = Precio(**dto.model_dump())
@@ -68,8 +68,22 @@ class PrecioService:
     @staticmethod
     def actualizar_precio(db: Session, precio_id: int, dto: PrecioDtoModificacion):
         obj = db.query(Precio).get(precio_id)
+        
         if not obj:
             raise HTTPException(status_code=404, detail="Precio no encontrado.")
+        
+        existente = db.query(Precio).filter(
+            Precio.fecha_precio == dto.fecha_precio,
+            Precio.origen == dto.origen,
+            Precio.id != precio_id
+        ).first()
+
+        if existente:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ya existe un precio registrado para el origen '{dto.origen}' en la fecha {dto.fecha_precio.strftime('%d/%m/%Y')}."
+            )
+        
         for campo, valor in dto.model_dump(exclude_unset=True).items():
             setattr(obj, campo, valor)
         db.commit()
@@ -215,7 +229,7 @@ class PrecioService:
         # Crear nuevo precio
         precio = Precio(
             fecha_precio=hoy,
-            precio_obtenido=valor,
+            precio_obtenido=Decimal(str(valor)),
             origen=TipoOrigenPrecio.AGD
         )
         db.add(precio)
