@@ -4,6 +4,10 @@ export interface ReportConfig {
   fileType: "pdf" | "excel";
   inputFields: Array<"month" | "year">;
 }
+export interface Recipient {
+    clave: string;
+    valor: string;
+}
 
 export interface ReportCard {
   id: string;
@@ -28,7 +32,7 @@ export interface ConfigCard {
   title: string
   description: string
   icon: React.ComponentType<{ className?: string }>
-  type: "time" | "frequency" | "schedule"
+  type: "time" | "frequency" | "schedule" | "recipients"
   jobId: string
 }
 
@@ -64,6 +68,15 @@ export interface UsuarioDtoOut {
   apellido: string;
   mail?: string;
   rol: TipoRol;
+}
+
+export type UsuarioForm ={
+  nombre: string;
+  apellido: string;
+  contrasena: string;
+  mail?: string;
+  cuil: string;
+  rol: TipoRol
 }
 
 export type TipoCondicion = "RESPONSABLE_INSCRIPTO" | "RESPONSABLE_NO_INSCRIPTO_O_EXENTO" | "MONOTRIBUTISTA"; 

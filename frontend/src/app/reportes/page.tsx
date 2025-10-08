@@ -10,6 +10,7 @@ import { fetchReporte } from "@/lib/reportes/auth"
 import { NumberInput } from "@/components/ui/NumberInput"
 import { ConfigModal, useConfigModal } from "@/components/ui/ConfigModal"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
+import RecipientsModal from "@/components/ui/RecipientModal";
 
 const reportConfigs: Record<string, ReportConfig> = {
   "pagos-realizados": {
@@ -160,9 +161,18 @@ const configurationCards: ConfigCard[] = [
     type: "frequency",
     jobId: "actualizar_arrendamientos_vencidos"
   },
+  {
+    id: "destinatarios-reportes",
+    title: "Configurar destinatarios de reportes automáticos",
+    description: "Editar, agregar o eliminar los correos que recibirán los reportes por email",
+    icon: Settings,
+    type: "recipients",
+    jobId: "configurar_destinatarios_reportes"
+  },
 ]
 
 export default function ReportesPage() {
+  const [isRecipientsModalOpen, setIsRecipientsModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
   const [month, setMonth] = useState("")
   const [year, setYear] = useState("")
@@ -276,14 +286,20 @@ export default function ReportesPage() {
 
           {/* Sección de Configuración */}
       <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Configuración de horarios:</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Configuración de horarios y destinatarios:</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {configurationCards.map((config) => {
             const Icon = config.icon;
             return (
               <div
                 key={config.id}
-                onClick={() => openModal(config)}
+                onClick={() => {
+                  if (config.type === "recipients") {
+                    setIsRecipientsModalOpen(true);
+                  } else {
+                    openModal(config);
+                  }
+                }}
                 className="bg-white border border-gray-300 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
               >
                 <div className="flex items-center space-x-3 text-center">
@@ -413,6 +429,10 @@ export default function ReportesPage() {
             setConfigDay={setConfigDay}
             isSubmitting={isSubmitting}
             setIsSubmitting={setIsSubmitting}
+          />
+          <RecipientsModal
+            isOpen={isRecipientsModalOpen}
+            onClose={() => setIsRecipientsModalOpen(false)}
           />
         </div>
       </div>

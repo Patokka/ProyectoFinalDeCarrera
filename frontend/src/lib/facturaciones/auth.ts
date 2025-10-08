@@ -4,6 +4,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchFacturaciones(): Promise<FacturacionDtoOut[]> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const res = await fetch(`${API_URL}/facturaciones`, {
         method: "GET",
@@ -30,7 +34,11 @@ export async function fetchFacturaciones(): Promise<FacturacionDtoOut[]> {
 
 export async function fetchFacturacionesByArrendatario(arrendatario_id: number): Promise<FacturacionDtoOut[]> {
     const token = localStorage.getItem("token");
-
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const res = await fetch(`${API_URL}/facturaciones/arrendatario/${arrendatario_id}`, {
         method: "GET",
         headers: {
@@ -56,7 +64,11 @@ export async function fetchFacturacionesByArrendatario(arrendatario_id: number):
 
 export async function fetchFacturacionById(facturacion_id: number): Promise<FacturacionDtoOut> {
     const token = localStorage.getItem("token");
-
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const res = await fetch(`${API_URL}/facturaciones/${facturacion_id}`, {
         method: "GET",
         headers: {

@@ -57,7 +57,7 @@ export default function CrearArrendatarioPage() {
         }
         if (!provinciaActual) newErrors.provincia = 'Campo obligatorio';
         if (!formData.localidad_id) newErrors.localidad = 'Campo obligatorio';
-        if (formData.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) newErrors.mail = 'Email inválido';
+        if (formData.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) newErrors.mail = 'Mail inválido';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };

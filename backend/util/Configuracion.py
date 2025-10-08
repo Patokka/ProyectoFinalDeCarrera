@@ -7,4 +7,3 @@ class Configuracion(Base):
 
     clave: Mapped[str] = mapped_column(String(50), primary_key=True)
     valor: Mapped[str] = mapped_column(String(255), nullable=False)
- 

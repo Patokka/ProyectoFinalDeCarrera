@@ -4,6 +4,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const res = await fetch(`${API_URL}/retenciones`, {
         method: "GET",
@@ -30,7 +34,11 @@ export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
 
 export async function fetchRetencionByFacturacionId(facturacion_id: number): Promise<RetencionDtoOut | null> {
     const token = localStorage.getItem("token");
-
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const res = await fetch(`${API_URL}/retenciones/facturacion/${facturacion_id}`, {
         method: "GET",
         headers: {

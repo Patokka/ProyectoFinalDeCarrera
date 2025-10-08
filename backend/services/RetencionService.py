@@ -97,6 +97,16 @@ class RetencionService:
         return {"status": "ok", "clave": clave}
     
     @staticmethod
+    def obtener_destinatarios(db: Session) -> list[str]:
+        """
+        Obtiene todos los destinatarios de correo configurados en la tabla Configuracion.
+        Devuelve una lista de direcciones de correo electrónico.
+        """
+        registros = (db.query(Configuracion).filter(Configuracion.clave.like("DESTINATARIO%")).order_by(Configuracion.clave.asc()).all())
+        destinatarios = [r.valor for r in registros if r.valor]
+        return destinatarios
+    
+    @staticmethod
     def crear_para_factura(db: Session, arrendador_id: int, pago, fecha: date):
         """
         Crea una retención en base al pago y la fecha dada.

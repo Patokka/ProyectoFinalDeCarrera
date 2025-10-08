@@ -4,6 +4,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const res = await fetch(`${API_URL}/precios/AGD`, {
         method: "GET",
@@ -30,6 +34,10 @@ export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
 
 export async function fetchPreciosBCR(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const res = await fetch(`${API_URL}/precios/BCR`, {
         method: "GET",
@@ -56,6 +64,10 @@ export async function fetchPreciosBCR(): Promise<PrecioDtoOut[]> {
 
 export async function postPrecio(formData: PrecioForm): Promise<PrecioDtoOut> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const body = {
         fecha_precio: formData.fecha_precio,
@@ -94,6 +106,11 @@ export async function postPrecio(formData: PrecioForm): Promise<PrecioDtoOut> {
 
 export async function deletePrecio(precio_id: number) {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+
     const res = await fetch(`${API_URL}/precios/${precio_id}`, {
     method: "DELETE",
     headers: {
@@ -119,7 +136,11 @@ export async function deletePrecio(precio_id: number) {
 
 export async function putPrecio(formData: PrecioForm, idPrecio: number): Promise<PrecioDtoOut> {
     const token = localStorage.getItem("token");
-
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const body = {
         fecha_precio: formData.fecha_precio,
         precio_obtenido: formData.precio_obtenido,

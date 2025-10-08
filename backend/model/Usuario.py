@@ -9,7 +9,7 @@ class Usuario(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     nombre: Mapped[str] = mapped_column(String(75),nullable=False)
     apellido: Mapped[str] = mapped_column(String(75),nullable=False)
-    contrasena: Mapped[str] = mapped_column(String(255),nullable=False, unique=True)
+    contrasena: Mapped[str] = mapped_column(String(255),nullable=False)
     mail: Mapped[str] = mapped_column(String(255),nullable=False)
     cuil: Mapped[str] = mapped_column(String(20),nullable=False, unique=True)
     rol: Mapped[TipoRol] = mapped_column(Enum(TipoRol), nullable=False)

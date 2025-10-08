@@ -2,7 +2,7 @@ from util.dbValidator import verificar_relaciones_existentes
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from model.Usuario import Usuario
-from dtos.UsuarioDto import UsuarioDto, UsuarioDtoModificacion, UsuarioLogueado
+from dtos.UsuarioDto import UsuarioDto, UsuarioLogueado
 from util.jwtYPasswordHandler import hash_password, verify_password
 
 class UsuarioService:
@@ -22,7 +22,7 @@ class UsuarioService:
     def crear(db: Session, dto: UsuarioDto):
         usuario_existente = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
         if usuario_existente:
-            raise HTTPException(status_code=400, detail="El usuario ya existe.")
+            raise HTTPException(status_code=400, detail="El CUIT - CUIL ya está registrado para otro usuario.")
 
         usuario = Usuario(
             nombre = dto.nombre,
@@ -38,11 +38,24 @@ class UsuarioService:
         return usuario
     
     @staticmethod
-    def actualizar(db: Session, usuario_id: int, dto: UsuarioDtoModificacion):
+    def actualizar(db: Session, usuario_id: int, dto: UsuarioDto):
         usuario = db.query(Usuario).get(usuario_id)
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado.")
-        for campo, valor in dto.model_dump(exclude_unset=True).items():
+        
+        usuario_existente = db.query(Usuario).filter(Usuario.cuil == dto.cuil, Usuario.id != usuario_id).first()
+        if usuario_existente:
+            raise HTTPException(status_code=400, detail="El CUIT - CUIL ya está registrado para otro usuario.")
+        
+        # Convertir los datos del DTO en diccionario
+        campos = dto.model_dump(exclude_unset=True)
+
+        # Si viene una contraseña nueva, la hasheamos
+        if "contrasena" in campos and campos["contrasena"]:
+            campos["contrasena"] = hash_password(campos["contrasena"])
+
+        # Actualizamos los campos del usuario
+        for campo, valor in campos.items():
             setattr(usuario, campo, valor)
         db.commit()
         db.refresh(usuario)

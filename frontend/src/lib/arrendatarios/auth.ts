@@ -4,7 +4,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
     const token = localStorage.getItem("token");
-
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const res = await fetch(`${API_URL}/arrendatarios`, {
         method: "GET",
         headers: {
@@ -30,6 +34,10 @@ export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
 
 export async function deleteArrendatario(id: number) {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
     const res = await fetch(`${API_URL}/arrendatarios/${id}`, {
     method: "DELETE",
     headers: {
@@ -55,6 +63,10 @@ export async function deleteArrendatario(id: number) {
 
 export async function fetchArrendatarioById(arrendatario_id: number): Promise<ArrendatarioDtoOut> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const res = await fetch(`${API_URL}/arrendatarios/${arrendatario_id}`, {
         method: "GET",
@@ -81,6 +93,10 @@ export async function fetchArrendatarioById(arrendatario_id: number): Promise<Ar
 
 export async function postArrendatario(formData: ArrendatarioForm): Promise<ArrendatarioDtoOut> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const body = {
         razon_social: formData.razon_social,
@@ -113,7 +129,7 @@ export async function postArrendatario(formData: ArrendatarioForm): Promise<Arre
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Error al crear arrendador");
+        throw new Error(err.detail || "Error al crear el arrendador");
     }
 
     return res.json();
@@ -121,6 +137,10 @@ export async function postArrendatario(formData: ArrendatarioForm): Promise<Arre
 
 export async function putArrendatario(formData: ArrendatarioForm, idArrendatario: number): Promise<ArrendatarioDtoOut> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const body = {
         razon_social: formData.razon_social,

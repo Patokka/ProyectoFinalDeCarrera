@@ -22,7 +22,7 @@ def crear_usuario(dto: UsuarioDto, db: Session = Depends(get_db)):
     return UsuarioService.crear(db, dto)
 
 @router.put("/{usuario_id}", response_model=UsuarioDtoOut, description="Actualización de un usuario por id.")
-def actualizar_usuario(usuario_id: int, dto: UsuarioDtoModificacion, db: Session = Depends(get_db)):
+def actualizar_usuario(usuario_id: int, dto: UsuarioDto, db: Session = Depends(get_db), current_user: Usuario = Depends(admin_required)):
     return UsuarioService.actualizar(db, usuario_id, dto)
 
 @router.delete("/{usuario_id}", description="Eliminación de un usuario por id.")

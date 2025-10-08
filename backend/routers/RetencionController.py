@@ -39,16 +39,20 @@ def obtener_retenciones_arrendador(arrendador_id: int, db: Session = Depends(get
 def listar_retenciones(facturacion_id: int,db: Session = Depends(get_db)):
     return RetencionService.obtener_por_factura_id(db, facturacion_id)
 
+@router.post("/configuracion")
+def actualizar_configuracion(config_update: ConfiguracionDtoModificacion, db: Session = Depends(get_db)):
+    return RetencionService.actualizar_configuracion(db, config_update.clave, config_update.valor)
+
+@router.get("/configuracion/destinatarios", response_model= list[str])
+def obtener_destinatarios(db: Session = Depends(get_db)):
+    return RetencionService.obtener_destinatarios(db)
+
 @router.get("/configuracion/{clave}")
 def obtener_configuracion(clave: str, db: Session = Depends(get_db)):
     valor = RetencionService.obtener_configuracion(db, clave)
     if valor is None:
         return {"status": "Configuracion no encontrada", "clave": clave}
     return {"clave": clave, "valor": valor}
-
-@router.post("/configuracion")
-def actualizar_configuracion(config_update: ConfiguracionDtoModificacion, db: Session = Depends(get_db)):
-    return RetencionService.actualizar_configuracion(db, config_update.clave, config_update.valor)
 
 @router.delete("/configuracion/{clave}")
 def eliminar_configuracion(clave: str, db: Session = Depends(get_db)):

@@ -2,6 +2,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchReporte(endpoint: string, params: Record<string, string>): Promise<Blob> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }    
+    
     const url = new URL(endpoint, API_URL);
 
     // Agregar parámetros al query string
@@ -36,6 +41,11 @@ export async function fetchReporte(endpoint: string, params: Record<string, stri
 
 export async function updateJobConfig(data: {job_id: string; hour: number; minute: number; day?: number; active: boolean;}) {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const res = await fetch(`${API_URL}/actualizar-job`, {
         method: "POST",
         headers: {
@@ -47,7 +57,7 @@ export async function updateJobConfig(data: {job_id: string; hour: number; minut
 
     if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.detail || "Error al actualizar configuración");
+        throw new Error(err.detail || "Error al actualizar la configuración");
     }
 
     return res.json();

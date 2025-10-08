@@ -70,7 +70,6 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
             setErrors({});
             onSuccess();
         } catch (error) {
-            console.error(error);
             const message = error instanceof Error ? error.message : "Error al cargar el precio";
             toast.error(message);
         } finally {

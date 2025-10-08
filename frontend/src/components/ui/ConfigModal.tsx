@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowDownToLine, X } from "lucide-react";
+import { Download, X } from "lucide-react";
 import { toast } from "sonner";
 import { updateJobConfig } from "@/lib/reportes/auth";
 import { ConfigCard } from "@/lib/type";
@@ -148,7 +148,7 @@ export const useConfigModal = () => {
                     disabled={isSubmitting}
                     className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}pl-2 pr-2`}
                 >
-                    <ArrowDownToLine className="h-5 w-5"/>
+                    <Download className="h-5 w-5"/>
                     <span>{isSubmitting ? "Guardando..." : "Guardar Configuración"}</span>
                 </button>
             </div>

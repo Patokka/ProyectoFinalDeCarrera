@@ -4,7 +4,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
   const token = localStorage.getItem("token");
-
+  if (!token) {
+    window.location.href = "/login";
+    throw new Error("No hay sesión activa");
+  }
+  
   const res = await fetch(`${API_URL}/arrendamientos`, {
     method: "GET",
     headers: {
@@ -22,7 +26,7 @@ export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
 
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.detail || "Error al obtener arrendamientos");
+    throw new Error(err.detail || "Error al obtener los arrendamientos");
   }
 
   return res.json();
@@ -30,6 +34,10 @@ export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
 
 export async function postArrendamiento(formData: ArrendamientoForm): Promise<ArrendamientoDtoOut> {
   const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    throw new Error("No hay sesión activa");
+  }
 
   const body = {
     tipo: formData.tipo,
@@ -70,7 +78,7 @@ export async function postArrendamiento(formData: ArrendamientoForm): Promise<Ar
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.detail || "Error al crear arrendamiento");
+      throw new Error(err.detail || "Error al crear el arrendamiento");
     }
 
     return res.json();
@@ -79,6 +87,10 @@ export async function postArrendamiento(formData: ArrendamientoForm): Promise<Ar
 //Guarda individualmente una participación
 export async function postParticipacion(participacion: ParticipacionArrendador): Promise<void> {
   const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    throw new Error("No hay sesión activa");
+  }
 
   const res = await fetch(`${API_URL}/participaciones`, {
     method: "POST",
@@ -107,6 +119,10 @@ export async function postParticipaciones(participaciones: ParticipacionArrendad
 
 export async function fetchArrendamientoById(arrendamiento_id: number): Promise<ArrendamientoDtoOut> {
   const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    throw new Error("No hay sesión activa");
+  }
 
   const res = await fetch(`${API_URL}/arrendamientos/${arrendamiento_id}`, {
     method: "GET",
@@ -133,6 +149,10 @@ export async function fetchArrendamientoById(arrendamiento_id: number): Promise<
 
 export async function fetchParticipacionesByArrendamiento(arrendamiento_id: number): Promise<ParticipacionArrendadorDtoOut[]> {
   const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login";
+    throw new Error("No hay sesión activa");
+  }
 
   const res = await fetch(`${API_URL}/arrendamientos/participaciones/${arrendamiento_id}`, {
     method: "GET",
@@ -159,6 +179,10 @@ export async function fetchParticipacionesByArrendamiento(arrendamiento_id: numb
 
 export async function cancelarArrendamiento(arrendamiento_id: number) {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
     const res = await fetch(`${API_URL}/arrendamientos/cancelar/${arrendamiento_id}`, {
     method: "POST",
     headers: {
@@ -185,6 +209,10 @@ export async function cancelarArrendamiento(arrendamiento_id: number) {
 
 export async function fetchArrendamientosActivos(): Promise<ArrendamientoDtoOut[]> {
   const token = localStorage.getItem("token");
+  if (!token) {
+      window.location.href = "/login";
+      throw new Error("No hay sesión activa");
+  }
 
   const res = await fetch(`${API_URL}/arrendamientos/activos`, {
     method: "GET",
@@ -203,7 +231,7 @@ export async function fetchArrendamientosActivos(): Promise<ArrendamientoDtoOut[
 
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.detail || "Error al obtener arrendamientos");
+    throw new Error(err.detail || "Error al obtener los arrendamientos");
   }
 
   return res.json();

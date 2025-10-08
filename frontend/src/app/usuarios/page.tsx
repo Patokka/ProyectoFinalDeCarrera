@@ -187,9 +187,11 @@ const handleDelete = (id: number) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
-                              <Edit className="h-4 w-4" />
-                            </button>
+                            <Link href = {`/usuarios/${usuario.id}/edit`} passHref>
+                              <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
+                                <Edit className="h-4 w-4" />
+                              </button>
+                            </Link>
                             <button onClick={() => handleDelete(usuario.id)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
                               <Trash2 className="h-4 w-4" />
                             </button>

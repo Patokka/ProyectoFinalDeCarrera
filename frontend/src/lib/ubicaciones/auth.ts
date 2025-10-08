@@ -4,6 +4,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
     const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
 
     const res = await fetch(`${API_URL}/provincias`, {
         method: "GET",
@@ -31,7 +35,11 @@ export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
 
 export async function fetchLocalidades(provincia_id: number): Promise<LocalidadDtoOut[]> {
     const token = localStorage.getItem("token");
-
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    
     const res = await fetch(`${API_URL}/provincias/${provincia_id}/localidades`, {
         method: "GET",
         headers: {

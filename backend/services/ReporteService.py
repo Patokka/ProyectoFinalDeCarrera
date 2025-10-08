@@ -21,6 +21,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from sqlalchemy import func
+from util import Configuracion
 from enums.TipoCondicion import TipoCondicion
 from model.Arrendador import Arrendador
 from model.Arrendatario import Arrendatario
@@ -45,92 +46,123 @@ def formato_moneda(valor):
 class ReporteService:
     
     SMTP_USER = os.getenv("SMTP_USER")
-    DESTINATARIOS = os.getenv("DESTINATARIOS", "").split(",")
     SMTP_SERVER = os.getenv("SMTP_SERVER")
     SMTP_PORT = os.getenv("SMTP_PORT")
     SMTP_PASS = os.getenv("SMTP_PASS")
     
     
+
     @staticmethod
     def enviar_reporte_pagos_mes_anterior(db):
         hoy = date.today()
-        
+
+        #Calcular mes anterior
         if hoy.month == 1:
             ultimo_anio = hoy.year - 1
             ultimo_mes = 12
         else:
             ultimo_anio = hoy.year
             ultimo_mes = hoy.month - 1
-        # Generar el reporte del mes actual
+
+        #Obtener destinatarios desde configuración (DESTINATARIO_*)
+        destinatarios = [
+            c.valor for c in db.query(Configuracion)
+            .filter(Configuracion.clave.like("DESTINATARIO%"))
+            .order_by(Configuracion.clave.asc())
+            .all()
+        ]
+
+        if not destinatarios:
+            print("⚠️ No se encontraron destinatarios configurados en la tabla 'configuracion'.")
+            return
+
+        #Generar el reporte del mes anterior
         buffer = ReporteService.generar_reporte_mensual_pdf(db, anio=ultimo_anio, mes=ultimo_mes)
-        
-        # Preparar email
+
+        #Preparar email
         msg = MIMEMultipart()
         msg["From"] = ReporteService.SMTP_USER
-        msg["To"] = ", ".join(ReporteService.DESTINATARIOS)
-        msg["Subject"] = f"Reporte de pagos pendientes {ultimo_mes:02d}-{ultimo_anio}"
+        msg["To"] = ", ".join(destinatarios)
+        msg["Subject"] = f"Reporte de pagos pendientes {ultimo_mes:02d}/{ultimo_anio}"
 
         cuerpo = f"""
         Estimados/as,
 
-        Se adjunta el reporte de pagos correspondientes a {ultimo_mes:02d}-{ultimo_anio}.
+        Se adjunta el reporte de pagos correspondientes a {ultimo_mes:02d}/{ultimo_anio}.
 
         Saludos,
         Sistema de Arrendamientos
         """
         msg.attach(MIMEText(cuerpo, "plain"))
 
-        # Adjuntar PDF
-        filename = f"reporte_pagos_pendientes_{ultimo_anio}_{ultimo_mes}.pdf"
+        #Adjuntar PDF
+        filename = f"reporte_pagos_pendientes_{ultimo_mes}_{ultimo_anio}.pdf"
         adjunto = MIMEApplication(buffer.read(), _subtype="pdf")
         adjunto.add_header("Content-Disposition", "attachment", filename=filename)
         msg.attach(adjunto)
 
-        # Enviar correo
-        with smtplib.SMTP(ReporteService.SMTP_SERVER, ReporteService.SMTP_PORT) as server:
-            server.starttls()
-            server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
-            server.sendmail(ReporteService.SMTP_USER, ReporteService.DESTINATARIOS, msg.as_string())
+        #Enviar correo
+        try:
+            with smtplib.SMTP(ReporteService.SMTP_SERVER, ReporteService.SMTP_PORT) as server:
+                server.starttls()
+                server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
+                server.sendmail(ReporteService.SMTP_USER, destinatarios, msg.as_string())
+            print(f"✅ Reporte del mes {ultimo_mes:02d}/{ultimo_anio} enviado a {len(destinatarios)} destinatarios.")
+        except Exception as e:
+            print(f"❌ Error al enviar el correo: {e}")
 
-        print("✅ Reporte de pagos enviados por mail.")
-
-    
     @staticmethod
     def enviar_reportes_pagos(db):
         hoy = date.today()
-        
-        # Generar el reporte del mes actual
-        buffer = ReporteService.generar_reporte_pagos_pendientes_pdf(db, anio=hoy.year, mes=hoy.month)
-        
-        # Preparar email
+
+        #Obtener destinatarios desde configuración (DESTINATARIO_*)
+        destinatarios = [
+            c.valor for c in db.query(Configuracion)
+            .filter(Configuracion.clave.like("DESTINATARIO%"))
+            .order_by(Configuracion.clave.asc())
+            .all()
+        ]
+
+        if not destinatarios:
+            print("⚠️ No se encontraron destinatarios configurados en la tabla 'configuracion'.")
+            return
+
+        #Generar el reporte del mes actual
+        buffer = ReporteService.generar_reporte_pagos_pendientes_pdf(
+            db, anio=hoy.year, mes=hoy.month
+        )
+
+        #Preparar el correo
         msg = MIMEMultipart()
         msg["From"] = ReporteService.SMTP_USER
-        msg["To"] = ", ".join(ReporteService.DESTINATARIOS)
-        msg["Subject"] = f"Reporte de pagos pendientes {hoy.month:02d}-{hoy.year}"
+        msg["To"] = ", ".join(destinatarios)
+        msg["Subject"] = f"Reporte de pagos pendientes {hoy.month:02d}/{hoy.year}"
 
         cuerpo = f"""
         Estimados/as,
 
-        Se adjunta el reporte de pagos pendientes correspondiente a {hoy.month:02d}-{hoy.year}.
+        Se adjunta el reporte de pagos pendientes correspondiente a {hoy.month:02d}/{hoy.year}.
 
         Saludos,
         Sistema de Arrendamientos
         """
         msg.attach(MIMEText(cuerpo, "plain"))
 
-        # Adjuntar PDF
-        filename = f"reporte_pagos_pendientes_{hoy.year}_{hoy.month}.pdf"
+        #Adjuntar PDF
+        filename = f"reporte_pagos_pendientes_{hoy.month}_{hoy.year}.pdf"
         adjunto = MIMEApplication(buffer.read(), _subtype="pdf")
         adjunto.add_header("Content-Disposition", "attachment", filename=filename)
         msg.attach(adjunto)
 
-        # Enviar correo
-        with smtplib.SMTP(ReporteService.SMTP_SERVER, ReporteService.SMTP_PORT) as server:
-            server.starttls()
-            server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
-            server.sendmail(ReporteService.SMTP_USER, ReporteService.DESTINATARIOS, msg.as_string())
-
-        print("✅ Reporte de pagos enviados por mail.")
+        #Enviar correo
+        try:
+            with smtplib.SMTP(ReporteService.SMTP_SERVER, ReporteService.SMTP_PORT) as server:
+                server.starttls()
+                server.login(ReporteService.SMTP_USER, ReporteService.SMTP_PASS)
+                server.sendmail(ReporteService.SMTP_USER, destinatarios, msg.as_string())
+            print(f"✅ Reporte de pagos enviados a {len(destinatarios)} destinatarios.")
+        except Exception as e:
+            print(f"❌ Error al enviar el correo: {e}")
 
     @staticmethod
     def generar_reporte_mensual_pdf(db, anio: int, mes: int, logo_path: str = None):
@@ -153,8 +185,8 @@ class ReporteService:
         if (anio > ultimo_anio) or (anio == ultimo_anio and mes > ultimo_mes):
             raise HTTPException(
                 status_code=400,
-                detail=f"Solo se pueden generar reportes hasta {ultimo_mes:02d}-{ultimo_anio}. "
-                    f"El mes actual ({hoy.month:02d}-{hoy.year}) y meses futuros no están permitidos."
+                detail=f"Solo se pueden generar reportes hasta {ultimo_mes:02d}/{ultimo_anio}. "
+                    f"El mes actual ({hoy.month:02d}/{hoy.year}) y meses futuros no están permitidos."
             )
         
         BASE_DIR = Path(__file__).resolve().parent.parent  # apunta a /backend
@@ -288,7 +320,7 @@ class ReporteService:
 
         def encabezado(canvas, doc):
             canvas.saveState()
-            titulo_texto = f"Reporte de pagos {mes:02d}-{anio}"
+            titulo_texto = f"Reporte de pagos {mes:02d}/{anio}"
             canvas.setFont("Times-BoldItalic", 20)
             canvas.drawCentredString(landscape(A4)[0] / 2, landscape(A4)[1] - 1 * cm, titulo_texto)
 
@@ -446,7 +478,7 @@ class ReporteService:
         if (anio < hoy.year) or (anio == hoy.year and mes < hoy.month):
             raise HTTPException(
                 status_code=400,
-                detail=f"Solo se pueden generar reportes del mes actual ({hoy.month:02d}-{hoy.year}) o futuro."
+                detail=f"Solo se pueden generar reportes del mes actual ({hoy.month:02d}/{hoy.year}) o futuro."
             )
 
         BASE_DIR = Path(__file__).resolve().parent.parent
