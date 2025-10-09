@@ -71,3 +71,28 @@ class UsuarioService:
         verificar_relaciones_existentes(usuario)
         db.delete(usuario)
         db.commit()
+
+    @staticmethod
+    def cambiar_contrasena(db: Session, usuario_id: int, contrasena_actual: str, contrasena_nueva: str):
+        # Obtener usuario
+        usuario = db.query(Usuario).get(usuario_id)
+        if not usuario:
+            raise ValueError("Usuario no encontrado")
+
+        # Validar contraseña actual
+        if not verify_password(contrasena_actual, usuario.contrasena):
+            raise ValueError("La contraseña actual es incorrecta")
+
+        # Validar que la nueva contraseña sea distinta a la actual
+        if verify_password(contrasena_nueva, usuario.contrasena):
+            raise ValueError("La nueva contraseña no puede ser igual a la actual")
+
+        # Guardar nueva contraseña
+        usuario.contrasena = hash_password(contrasena_nueva)
+
+        # Commit en la DB
+        db.add(usuario)
+        db.commit()
+        db.refresh(usuario)
+
+        return usuario

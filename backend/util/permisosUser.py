@@ -35,6 +35,6 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 #Función para otorgar permisos a determinados roles de usuarios
 def admin_required(current_user: UsuarioLogueado = Depends(get_current_user), db: Session = Depends(get_db)):
     usuario = db.query(Usuario).get(current_user.id)
-    if usuario.rol == TipoRol.CONSULTA.name:
-        raise HTTPException(status_code=403, detail="No tienes permisos de administrador u operador.")
+    if usuario.rol != TipoRol.ADMINISTRADOR:
+        raise HTTPException(status_code=403, detail="No tienes permisos de Administrador.")
     return current_user

@@ -37,11 +37,8 @@ class UsuarioDtoOut(BaseModel):
     }
     
 class UsuarioDtoModificacion(BaseModel):
-    nombre: str
-    apellido: str
-    contrasena: str
-    mail: Optional[EmailStr]
-    rol: TipoRol
+    contrasenaActual: str
+    contrasenaNueva: str
     
     model_config = {
         "from_attributes": True,     

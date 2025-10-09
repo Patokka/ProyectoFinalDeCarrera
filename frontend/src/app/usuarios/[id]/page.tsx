@@ -3,12 +3,11 @@
 import { useState, useEffect, useMemo } from "react"
 import { Lock } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
-
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
 import { toast } from "sonner"
 import type { UsuarioDtoOut } from "@/lib/type"
 import {formatCuit} from "@/lib/helpers"
-
+import CambiarContrasenaModal from "@/components/ui/CambiarContrasenaModal"
 import Text from "@/components/ui/Text"
 import Link from "next/link"
 import { fetchUsuarioById } from "@/lib/usuarios/auth"
@@ -19,10 +18,8 @@ export default function UsuarioDetailPage() {
     const [usuario, setUsuario] = useState<UsuarioDtoOut>()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
-    // Cargar usuario + facturaciones del mes actual
-    useEffect(() => {
-        const load = async () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const load = async () => {
         if (!idUsuario) {
             setError("Id de usuario inválido")
             setLoading(false)
@@ -38,7 +35,9 @@ export default function UsuarioDetailPage() {
         } finally {
             setLoading(false)
         }
-        }
+    }
+    // Cargar usuario 
+    useEffect(() => {
         load()
     }, [idUsuario])
 
@@ -82,12 +81,12 @@ export default function UsuarioDetailPage() {
                     <div className="flex items-center space-x-3">
                     <h1 className="text-2xl font-bold text-gray-900">Detalle de Usuario</h1>
                     </div>
-                    <Link href={`/arrendatarios/${usuario.id}/edit`} passHref>
-                    <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                    <button 
+                        className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
+                        onClick={() => {setIsModalOpen(true)}}>
                         <Lock className="h-4 w-4" />
                         <span>Cambiar Contraseña</span>
                     </button>
-                    </Link>
                 </div>
 
                 {/* Información del usuario */}
@@ -133,6 +132,11 @@ export default function UsuarioDetailPage() {
                 </div>
                 </div>
             </div>
+            <CambiarContrasenaModal
+                isOpen={isModalOpen}
+                onClose={() =>{setIsModalOpen(false)}}
+                onSuccess={load}
+            />
         </ProtectedRoute>
     )
 }

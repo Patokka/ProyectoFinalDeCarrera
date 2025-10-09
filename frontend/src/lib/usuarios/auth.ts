@@ -185,3 +185,47 @@ export async function putUsuario(formData: UsuarioForm, idUsuario: number): Prom
 
     return res.json();
 }
+
+export async function cambiarContrasena(contrasenaActual: string, contrasenaNueva: string): Promise<void> {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+
+    const body = {
+        contrasenaActual,
+        contrasenaNueva,
+    };
+
+    const res = await fetch(`${API_URL}/usuarios/cambiar-contrasena`, {
+        method: "PUT",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    // Sesión expirada
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    // Errores de validación de FastAPI (body inválido, etc.)
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Formulario mal formado");
+    }
+
+    // Errores de negocio del backend (contraseña actual incorrecta, nueva igual, etc.)
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al cambiar la contraseña");
+    }
+
+    // Si todo ok, no hay nada más que devolver
+    return;
+}
