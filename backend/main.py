@@ -80,7 +80,7 @@ app = FastAPI(
 # Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"http://(192.168.0.\d{1,3}|localhost|127.0.0.1):3000", #de acá tocar la subred para producción
+    allow_origin_regex=r"http://(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|localhost|127\.0\.0\.1):3000", #Con esto ya abarcás la subred de producción y mantiene la restricción de estar en la misma red
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -216,6 +216,7 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
             "nombre": usuario.nombre,
             "apellido": usuario.apellido,
             "id": usuario.id,
+            "rol": usuario.rol.value,
         },
         expires_delta=access_token_expires,
     )
@@ -227,7 +228,8 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
                 "token_type": "bearer",
                 "nombre": usuario.nombre,
                 "apellido": usuario.apellido,
-                "id": usuario.id
+                "id": usuario.id,
+                "rol": usuario.rol.value,
             }
     )
     return response

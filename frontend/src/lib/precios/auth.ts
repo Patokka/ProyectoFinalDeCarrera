@@ -175,3 +175,32 @@ export async function putPrecio(formData: PrecioForm, idPrecio: number): Promise
 
     return res.json();
 }
+
+export async function fetchPreciosPago(pago_id: number): Promise<PrecioDtoOut[]> {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+
+    const res = await fetch(`${API_URL}/precios/pago/${pago_id}`, {
+        method: "GET",
+        headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión");
+    }
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al obtener precios del pago");
+    }
+
+    return res.json();
+}

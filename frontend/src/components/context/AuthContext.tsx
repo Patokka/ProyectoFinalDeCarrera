@@ -6,6 +6,7 @@ interface User {
   nombre: string
   apellido: string
   id: number
+  rol: string
 }
 
 interface AuthContextType {
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       nombre: data.nombre,
       apellido: data.apellido,
       id: data.id,
+      rol: data.rol,
     }
 
     setUser(loggedUser)

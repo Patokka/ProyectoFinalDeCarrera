@@ -46,6 +46,11 @@ class PrecioService:
         return obj
 
     @staticmethod
+    def obtener_precios_pago(db, pago_id):
+        precios = db.query(Precio).join(pago_precio_association, Precio.id == pago_precio_association.c.precio_id).filter(pago_precio_association.c.pago_id == pago_id).order_by(Precio.fecha_precio).all()
+        return precios
+    
+    @staticmethod
     def crear_precio(db: Session, dto: PrecioDto):
         #Primero se ve si ya existe un precio para esa fecha y origen
         existente = db.query(Precio).filter(

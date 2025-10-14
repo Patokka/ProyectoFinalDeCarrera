@@ -57,7 +57,8 @@ class UsuarioLogin(BaseModel):
 class UsuarioLogueado(BaseModel):
     nombre: str
     apellido: str
-    id: int    
+    id: int 
+    rol: TipoRol   
     
     model_config = {
         "from_attributes": True,     

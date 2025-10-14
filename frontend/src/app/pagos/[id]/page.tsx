@@ -5,11 +5,12 @@ import { FileText, Trash } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
 import { toast } from "sonner"
-import type { PagoDtoOut, ParticipacionArrendadorDtoOut } from "@/lib/type"
+import { PrecioDtoOut, type PagoDtoOut, type ParticipacionArrendadorDtoOut } from "@/lib/type"
 import { formatCurrency, formatDate, getPagoBadgeColor} from "@/lib/helpers"
 import Text from "@/components/ui/Text"
 import Link from "next/link"
 import { cancelarPago, facturarPago, fetchPagoById } from "@/lib/pagos/auth"
+import { fetchPreciosPago } from "@/lib/precios/auth"
 
 export default function PagoDetailPage() {
     const params = useParams()
@@ -19,6 +20,7 @@ export default function PagoDetailPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+    const [precios, setPrecios] = useState<PrecioDtoOut[]>([])
 
     // Cargar Pago y su correspondiente Participación
     useEffect(() => {
@@ -31,6 +33,8 @@ export default function PagoDetailPage() {
         try {
             setLoading(true)
             const pag = await fetchPagoById(Number(idPago))
+            const pre = await fetchPreciosPago(Number(idPago))
+            setPrecios(pre)
             setPago(pag)
             setParticipacion(pag.participacion_arrendador)
         } catch (e: any) {
@@ -200,11 +204,26 @@ export default function PagoDetailPage() {
                                 value={pago.monto_a_pagar? formatCurrency(pago.monto_a_pagar) : 'Se calculará cuando el precio promedio esté disponible'}
                                 readOnly={true}
                                 disabled={false}/>
+                            {precios && precios.length > 0 && (
+                                <div className="md:col-span-2 lg:col-span-3 mt-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Precios utilizados para calcular el promedio:
+                                    </label>
+                                    <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-md p-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                        {precios.map((precio, index) => (
+                                            <div key={index} className="bg-gray-100 px-2 py-1 rounded-md flex justify-between items-center text-sm">
+                                                <span>{formatDate(precio.fecha_precio)}:</span>
+                                                <span>{formatCurrency(precio.precio_obtenido)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             </>
                         )}
                         {participacion?.observacion && (
                             <div className="md:col-span-2 lg:col-span-3">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción:</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Observación:</label>
                             <textarea
                                 value={participacion.observacion}
                                 readOnly

@@ -6,7 +6,7 @@ export async function fetchReporte(endpoint: string, params: Record<string, stri
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }    
-    
+    console.log(params)
     const url = new URL(endpoint, API_URL);
 
     // Agregar parámetros al query string

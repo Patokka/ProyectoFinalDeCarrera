@@ -9,7 +9,7 @@ router = APIRouter()
 @router.get("/mensual/pdf")
 def descargar_reporte(anio: int, mes: int, db: Session = Depends(get_db)):
     buffer = ReporteService.generar_reporte_mensual_pdf(db, anio, mes)
-    filename = f"reporte_pagos_{mes}/{anio}.pdf"
+    filename = f"reporte_pagos_{mes}-{anio}.pdf"
 
     return StreamingResponse(
         buffer,
@@ -20,10 +20,10 @@ def descargar_reporte(anio: int, mes: int, db: Session = Depends(get_db)):
     )
 
 @router.get("/facturacion/excel")
-def descargar_reporte_fiscal(anio_inicio: int, mes_inicio: int, db: Session = Depends(get_db)):
-    buffer = ReporteService.generar_reporte_facturacion_anual(db, anio_inicio, mes_inicio)
+def descargar_reporte_fiscal(anio: int, mes: int, db: Session = Depends(get_db)):
+    buffer = ReporteService.generar_reporte_facturacion_anual(db, anio, mes)
 
-    filename = f"reporte_facturacion_{mes_inicio:02d}/{anio_inicio}.xlsx"
+    filename = f"reporte_facturacion_{mes:02d}-{anio}.xlsx"
     return StreamingResponse(
         buffer,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -37,7 +37,7 @@ def descargar_reporte_pagos_pendientes(anio: int, mes: int, db: Session = Depend
     Solo se permiten reportes del mes actual o futuro.
     """
     buffer = ReporteService.generar_reporte_pagos_pendientes_pdf(db, anio, mes)
-    filename = f"reporte_pagos_pendientes_{mes}/{anio}.pdf"
+    filename = f"reporte_pagos_pendientes_{mes}-{anio}.pdf"
 
     return StreamingResponse(
         buffer,

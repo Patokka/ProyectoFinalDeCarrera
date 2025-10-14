@@ -136,12 +136,12 @@ class ReporteService:
         msg = MIMEMultipart()
         msg["From"] = ReporteService.SMTP_USER
         msg["To"] = ", ".join(destinatarios)
-        msg["Subject"] = f"Reporte de pagos pendientes {hoy.month:02d}/{hoy.year}"
+        msg["Subject"] = f"Reporte de pagos pendientes {hoy.month:02d}-{hoy.year}"
 
         cuerpo = f"""
         Estimados/as,
 
-        Se adjunta el reporte de pagos pendientes correspondiente a {hoy.month:02d}/{hoy.year}.
+        Se adjunta el reporte de pagos pendientes correspondiente a {hoy.month:02d}-{hoy.year}.
 
         Saludos,
         Sistema de Arrendamientos
@@ -149,7 +149,7 @@ class ReporteService:
         msg.attach(MIMEText(cuerpo, "plain"))
 
         #Adjuntar PDF
-        filename = f"reporte_pagos_pendientes_{hoy.month}_{hoy.year}.pdf"
+        filename = f"reporte_pagos_pendientes_{hoy.month}-{hoy.year}.pdf"
         adjunto = MIMEApplication(buffer.read(), _subtype="pdf")
         adjunto.add_header("Content-Disposition", "attachment", filename=filename)
         msg.attach(adjunto)
@@ -185,8 +185,8 @@ class ReporteService:
         if (anio > ultimo_anio) or (anio == ultimo_anio and mes > ultimo_mes):
             raise HTTPException(
                 status_code=400,
-                detail=f"Solo se pueden generar reportes hasta {ultimo_mes:02d}/{ultimo_anio}. "
-                    f"El mes actual ({hoy.month:02d}/{hoy.year}) y meses futuros no están permitidos."
+                detail=f"Solo se pueden generar reportes hasta {ultimo_mes:02d}-{ultimo_anio}. "
+                    f"El mes actual ({hoy.month:02d}-{hoy.year}) y meses futuros no están permitidos."
             )
         
         BASE_DIR = Path(__file__).resolve().parent.parent  # apunta a /backend
@@ -320,7 +320,7 @@ class ReporteService:
 
         def encabezado(canvas, doc):
             canvas.saveState()
-            titulo_texto = f"Reporte de pagos {mes:02d}/{anio}"
+            titulo_texto = f"Reporte de pagos {mes:02d}-{anio}"
             canvas.setFont("Times-BoldItalic", 20)
             canvas.drawCentredString(landscape(A4)[0] / 2, landscape(A4)[1] - 1 * cm, titulo_texto)
 
@@ -478,7 +478,7 @@ class ReporteService:
         if (anio < hoy.year) or (anio == hoy.year and mes < hoy.month):
             raise HTTPException(
                 status_code=400,
-                detail=f"Solo se pueden generar reportes del mes actual ({hoy.month:02d}/{hoy.year}) o futuro."
+                detail=f"Solo se pueden generar reportes del mes actual ({hoy.month:02d}-{hoy.year}) o futuro."
             )
 
         BASE_DIR = Path(__file__).resolve().parent.parent

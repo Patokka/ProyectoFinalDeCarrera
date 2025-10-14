@@ -19,6 +19,10 @@ def listar_preciosAGD(db: Session = Depends(get_db)):
 def listar_preciosBCR(db: Session = Depends(get_db)):
     return PrecioService.listar_precios_bcr(db)
 
+@router.get("/pago/{pago_id}", response_model=list[PrecioDtoOut])
+def get_precios_pago(pago_id: int, db: Session = Depends(get_db)):
+    return PrecioService.obtener_precios_pago(db, pago_id)
+
 @router.get("/{precio_id}", response_model=PrecioDtoOut, description="Obtención de un precio por id.", dependencies=[Depends(get_current_user)])
 def obtener_precio(precio_id: int, db: Session = Depends(get_db)):
     return PrecioService.obtener_precio_por_id(db, precio_id)

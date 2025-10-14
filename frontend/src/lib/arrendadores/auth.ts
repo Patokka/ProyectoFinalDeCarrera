@@ -33,14 +33,14 @@ export async function fetchArrendadores(): Promise<ArrendadorDtoOut[]> {
 }
 
 
-export async function deleteArrendador(id: number) {
+export async function deleteArrendador(arrendador_id: number) {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/arrendadores/${id}`, {
+    const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {
     method: "DELETE",
     headers: {
         "Authorization": `Bearer ${token}`,
@@ -63,14 +63,14 @@ export async function deleteArrendador(id: number) {
     return true;
 }
 
-export async function fetchArrendadorById(id: number): Promise<ArrendadorDtoOut> {
+export async function fetchArrendadorById(arrendador_id: number): Promise<ArrendadorDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/arrendadores/${id}`, {
+    const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -139,7 +139,7 @@ export async function postArrendador(formData: ArrendadorForm): Promise<Arrendad
     return res.json();
 }
 
-export async function putArrendador(formData: ArrendadorForm, idArrendador: number): Promise<ArrendadorDtoOut> {
+export async function putArrendador(formData: ArrendadorForm, arrendador_id: number): Promise<ArrendadorDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
@@ -156,7 +156,7 @@ export async function putArrendador(formData: ArrendadorForm, idArrendador: numb
         descripcion: formData.descripcion,
     };
 
-    const res = await fetch(`${API_URL}/arrendadores/${idArrendador}`, {
+    const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,

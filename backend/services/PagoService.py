@@ -154,7 +154,7 @@ class PagoService:
             case TipoDiasPromedio.ULTIMOS_5_HABILES:
                 precios = query_base.order_by(Precio.fecha_precio.desc()).limit(5).all()
                 if not precios:
-                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen {pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
                 if len(precios) < 5:
                     faltan = 5 - len(precios)
@@ -167,7 +167,7 @@ class PagoService:
             case TipoDiasPromedio.ULTIMOS_10_HABILES:
                 precios = query_base.order_by(Precio.fecha_precio.desc()).limit(10).all()
                 if not precios:
-                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen {pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
                 if len(precios) < 10:
                     faltan = 10 - len(precios)
@@ -187,12 +187,12 @@ class PagoService:
                 ).order_by(Precio.fecha_precio).all()
 
                 if not precios:
-                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen {pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
             case TipoDiasPromedio.ULTIMO_MES:
                 precios = query_base.order_by(Precio.fecha_precio).all()
                 if not precios:
-                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen ?{pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
+                    raise HTTPException(status_code=400, detail=f"No hay precios requeridos para el origen {pago.fuente_precio.name}' en {mes_anterior}/{anio_anterior}.")
 
             case _:
                 raise HTTPException(status_code=400, detail=f"Tipo de dias_promedio '{pago.arrendamiento.dias_promedio}' no soportado.")

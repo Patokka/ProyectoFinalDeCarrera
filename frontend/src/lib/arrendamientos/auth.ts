@@ -236,3 +236,33 @@ export async function fetchArrendamientosActivos(): Promise<ArrendamientoDtoOut[
 
   return res.json();
 }
+
+export async function deleteArrendamiento(arrendamiento_id: number) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+
+    const res = await fetch(`${API_URL}/arrendamientos/${arrendamiento_id}`, {
+    method: "DELETE",
+    headers: {
+        "Authorization": `Bearer ${token}`,
+    },
+    body: undefined,
+    });
+
+    if (res.status === 401) {
+        // limpiar sesión y redirigir
+        localStorage.removeItem("token")
+        window.location.href = "/login"
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+    }
+
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "No se pudo eliminar el arrendamiento");
+    }
+
+    return true;
+}

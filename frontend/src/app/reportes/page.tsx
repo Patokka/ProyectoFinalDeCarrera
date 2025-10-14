@@ -178,6 +178,7 @@ export default function ReportesPage() {
   const [year, setYear] = useState("")
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false);
+  const [errors, setErrors] = useState<{ month?: string; year?: string }>({});
 
   // Configuration form states
   const {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, } = useConfigModal();   
@@ -188,21 +189,26 @@ export default function ReportesPage() {
     if (!reportConfig) return;
 
     const { endpoint, fileType } = reportConfig;
-
+    const newErrors: { month?: string; year?: string } = {};
     // VALIDACIONES DE CAMPOS VACÍOS
-    if (!month || !year) {
-      toast.error("Debe completar el mes y el año.");
-      return;
+    if (!month) {
+      newErrors.month = "Debe completar el mes";
+      toast.error("Debe completar el mes");
+    }
+    if (!year) {
+      newErrors.year = "Debe completar el año";
+      toast.error("Debe completar el año");
+
     }
 
-    if(parseInt(month,10) > 12) {
+    if(parseInt(month,10) > 12 || parseInt(month,10) < 1) {
+      newErrors.month = "Ingrese un mes válido";
       toast.error("Ingrese un mes válido.");
-      return;
     }
 
     if(parseInt(year,10) < 2020 || parseInt(year,10) > 2100) {
+      newErrors.year = "Año fuera de rango (2020 - 2100)";
       toast.error("Año fuera de rango (2020 - 2100).");
-      return;
     }
 
     const mes = parseInt(month, 10);
@@ -214,17 +220,19 @@ export default function ReportesPage() {
     // VALIDACIÓN SEGÚN REPORTE
     if (selectedReport === "pagos-realizados") {
       if (anio > actualAnio || (anio === actualAnio && mes >= actualMes)) {
+        newErrors.month = `Solo se pueden generar reportes hasta ${String(actualMes - 1).padStart(2,"0")}-${actualAnio}`;
         toast.error(`Solo se pueden generar reportes hasta ${String(actualMes - 1).padStart(2, "0")}-${actualAnio}.`);
-        return;
       }
     }
 
     if (selectedReport === "pagos-realizar") {
       if (anio < actualAnio || (anio === actualAnio && mes < actualMes)) {
+        newErrors.month = `Solo se pueden generar reportes del mes actual (${String(actualMes).padStart(2,"0")}-${actualAnio}) o futuro.`;
         toast.error(`Solo se pueden generar reportes del mes actual (${String(actualMes).padStart(2, "0")}-${actualAnio}) o futuro.`);
-        return;
       }
     }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     try {
       setIsGenerating(true);
@@ -237,7 +245,11 @@ export default function ReportesPage() {
       window.URL.revokeObjectURL(url);
 
       toast.success("Reporte generado con éxito");
+      setMonth("")
+      setYear("")
+      setErrors({})
       setIsReportDialogOpen(false);
+
     } catch (error) {
       toast.error("Error al generar el reporte");
       console.error(error);
@@ -337,7 +349,7 @@ export default function ReportesPage() {
                     Parámetros del Reporte
                   </h3>
                   <button
-                    onClick={() => setIsReportDialogOpen(false)}
+                    onClick={() => {setIsReportDialogOpen(false); setMonth(""); setYear(""); setErrors({})}}
                     className={`text-gray-400 hover:text-gray-600 transition-colors ${isGenerating ? "opacity-50 cursor-not-allowed" : ""}`}
                     disabled={isGenerating}
                   >
@@ -358,6 +370,7 @@ export default function ReportesPage() {
                       max={12}
                       placeholder="Ej: 09"
                       step={1}
+                      error={errors.month}
                     />
                   </div>
 
@@ -371,17 +384,17 @@ export default function ReportesPage() {
                       max={2100}
                       step={1}
                       placeholder="Ej: 2025"
+                      error={errors.year}
                     />
                   </div>
 
-                  {/* Extra info para facturación */}
+                  {/* Extra info  */}
                   {selectedReport === "facturaciones" && (
                     <div className="text-xs text-center text-blue-800 leading-snug">
                       Se generará un reporte fiscal anual desde el mes/año seleccionado (12 meses).
                     </div>
                   )}
 
-                  {/* Validaciones específicas (opcional: podrías mostrar advertencias según el tipo) */}
                   {selectedReport === "pagos-realizados" && (
                     <p className="text-xs text-center text-blue-800 leading-snug">
                       Solo se permiten reportes hasta el mes anterior al actual.
@@ -398,7 +411,7 @@ export default function ReportesPage() {
                 {/* Footer con botones */}
                 <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
                   <button
-                    onClick={() => setIsReportDialogOpen(false)}
+                    onClick={() => {setIsReportDialogOpen(false); setMonth(""); setYear(""); setErrors({})  }}
                     className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isGenerating ? "opacity-50 cursor-not-allowed" : ""} `}
                     disabled={isGenerating}
                   >

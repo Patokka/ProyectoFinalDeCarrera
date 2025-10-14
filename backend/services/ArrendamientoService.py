@@ -81,13 +81,20 @@ class ArrendamientoService:
 
     @staticmethod
     def eliminar(db: Session, arrendamiento_id: int):
-        obj = db.query(Arrendamiento).get(arrendamiento_id)
-        if not obj:
-            raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
-        verificar_relaciones_existentes(obj)
-        db.delete(obj)
+        arr = db.query(Arrendamiento).get(arrendamiento_id)
+        if arr.estado != EstadoArrendamiento.CANCELADO:
+            raise HTTPException(status_code=400, detail="No se puede eliminar el arrendamiento ya que el mismo no está CANCELADO")
+        pagos = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
+        for pago in pagos:
+            if pago.estado != EstadoPago.CANCELADO:
+                raise HTTPException(status_code=400, detail=f"No se puede eliminar el arrendamiento porque existen pagos REALIZADOS y/o PENDIENTES")
+        for pago in pagos:
+            db.delete(pago)
+        for participacion in arr.participaciones:
+            db.delete(participacion)
+        db.delete(arr)
         db.commit()
-        
+
     @staticmethod
     def cancelar_arrendamiento(db: Session, arrendamiento_id: int):
         #Verificar si existe el arrendamiento

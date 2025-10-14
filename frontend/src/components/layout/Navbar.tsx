@@ -48,7 +48,7 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
-            {navigationItems.map(item => {
+            {navigationItems.filter(item => !(item.name === 'Usuarios' && user.rol !== 'ADMINISTRADOR')).map(item => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
@@ -84,7 +84,7 @@ export default function Navbar() {
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 bg-white">
-            {navigationItems.map(item => {
+            {navigationItems.filter(item => !(item.name === 'Usuarios' && user.rol !== 'ADMINISTRADOR')).map(item => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (

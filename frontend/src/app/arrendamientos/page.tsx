@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Eye, Edit, Plus } from 'lucide-react';
+import { Eye, Edit, Plus, Trash2 } from 'lucide-react';
 import SearchInput from '@/components/ui/SearchInput';
 import SelectFilter from '@/components/ui/SelectFilter';
 import Pagination from '@/components/ui/Pagination';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ArrendadorDtoOut, ArrendamientoDtoOut } from '@/lib/type';
-import { fetchArrendamientos } from '@/lib/arrendamientos/auth';
+import { deleteArrendamiento, fetchArrendamientos } from '@/lib/arrendamientos/auth';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
@@ -82,6 +82,37 @@ export default function ArrendamientosPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, tipoFilter, estadoFilter]);
+
+  const handleDelete = (id: number) => {
+    // Confirmación
+    const confirmToastId = toast.info(
+      "¿Está seguro que desea eliminar este arrendamiento?",
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
+            
+            //Delete
+            toast.promise(
+              deleteArrendamiento(id).then(() => {
+                setArrendamientos(prev =>
+                  prev.filter((item) => item.id !== id)
+                );
+              }),
+              {
+                loading: "Eliminando arrendamiento...",
+                success: "Arrendamiento eliminado con éxito",
+                error: (err) => err.message || "Error al eliminar el arrendamiento",
+              }
+            );
+          },
+        },
+        duration: 5000, // 5 segundos
+      }
+    );
+  };
+
 
   return (
     <ProtectedRoute>
@@ -211,6 +242,9 @@ export default function ArrendamientosPage() {
                                   <Eye className="h-4 w-4" />
                                 </button>
                               </Link>
+                              <button onClick={() => handleDelete(arrendamiento.id)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
                             </div>
                         </td>
                       </tr>
