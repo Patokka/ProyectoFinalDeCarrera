@@ -80,6 +80,9 @@ export default function CrearUsuarioPage() {
                 ...formData,
                 cuil: formData.cuil.replace(/-/g, '')
             };
+            if (!payload.mail || payload.mail.trim() === "") {
+                delete payload.mail;
+            }
             await postUsuario(payload);
             toast.success('Usuario guardado con éxito, volviendo a página de usuarios...');
             router.push('/usuarios');
@@ -96,7 +99,7 @@ export default function CrearUsuarioPage() {
     };
 
     return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={["ADMINSITRADOR"]}>
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

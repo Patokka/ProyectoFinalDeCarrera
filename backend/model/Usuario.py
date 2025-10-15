@@ -10,6 +10,6 @@ class Usuario(Base):
     nombre: Mapped[str] = mapped_column(String(75),nullable=False)
     apellido: Mapped[str] = mapped_column(String(75),nullable=False)
     contrasena: Mapped[str] = mapped_column(String(255),nullable=False)
-    mail: Mapped[str] = mapped_column(String(255),nullable=False)
+    mail: Mapped[str] = mapped_column(String(255),nullable=True)
     cuil: Mapped[str] = mapped_column(String(20),nullable=False, unique=True)
     rol: Mapped[TipoRol] = mapped_column(Enum(TipoRol), nullable=False)

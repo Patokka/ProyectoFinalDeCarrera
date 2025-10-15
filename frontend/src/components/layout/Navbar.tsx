@@ -48,7 +48,7 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden lg:flex items-center space-x-1 flex-1 justify-center">
-            {navigationItems.filter(item => !(item.name === 'Usuarios' && user.rol !== 'ADMINISTRADOR')).map(item => {
+            {navigationItems.filter(item => !(item.name === 'Usuarios' && user.rol !== 'ADMINISTRADOR') && !(item.name === 'Reportes' && user.rol === 'CONSULTA')).map(item => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (

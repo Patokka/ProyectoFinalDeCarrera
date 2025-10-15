@@ -129,7 +129,7 @@ export default function CrearArrendadorPage() {
     }, [provinciaActual]);
 
     return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

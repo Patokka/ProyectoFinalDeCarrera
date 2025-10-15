@@ -11,7 +11,8 @@ import { deleteArrendamiento, fetchArrendamientos } from '@/lib/arrendamientos/a
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
-import { getEstadoBadgeColor } from '@/lib/helpers';
+import { canEditOrDelete, getEstadoBadgeColor } from '@/lib/helpers';
+import { useAuth } from '@/components/context/AuthContext';
 
 
 // Opciones para los filtros
@@ -39,7 +40,8 @@ export default function ArrendamientosPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuth();
+  const canEditEliminate = canEditOrDelete(user?.rol);
 
 
   // Traer los arrendamientos del backend
@@ -125,7 +127,8 @@ export default function ArrendamientosPage() {
                 <h1 className="text-2xl font-bold text-gray-900">Arrendamientos</h1>
               </div>
               <Link href = "/arrendamientos/post" passHref> 
-                <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                <button className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+                        disabled={!canEditEliminate}>
                   <Plus className="h-4 w-4" />
                   <span>Nuevo Arrendamiento</span>
                 </button>
@@ -242,7 +245,8 @@ export default function ArrendamientosPage() {
                                   <Eye className="h-4 w-4" />
                                 </button>
                               </Link>
-                              <button onClick={() => handleDelete(arrendamiento.id)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                              <button onClick={() => handleDelete(arrendamiento.id)} className={`p-1 rounded transition-colors ${canEditEliminate ? "text-red-600 hover:text-red-900 hover:bg-red-50 cursor-pointer": "text-gray-400 cursor-not-allowed"}`}
+                                    disabled={!canEditEliminate} title="Eliminar">
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </div>

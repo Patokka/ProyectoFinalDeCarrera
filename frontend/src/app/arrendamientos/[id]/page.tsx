@@ -6,12 +6,13 @@ import { useParams, useRouter } from "next/navigation"
 import Pagination from "@/components/ui/Pagination"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
 import { toast } from "sonner"
-import type {ArrendamientoDtoOut, PagoDtoOut, ParticipacionArrendador, EstadoArrendamiento, TipoArrendamiento, PlazoPago, TipoDiasPromedio, TipoOrigenPrecio, ParticipacionArrendadorDtoOut, } from "@/lib/type"
-import { formatCuit, formatCurrency, formatDate, formatDiasPromedio, formatEstado, formatPlazoPago, getEstadoBadgeColor, getPagoBadgeColor } from "@/lib/helpers"
+import type {ArrendamientoDtoOut, PagoDtoOut, ParticipacionArrendadorDtoOut, } from "@/lib/type"
+import { canEditOrDelete, formatCuit, formatCurrency, formatDate, formatDiasPromedio, formatEstado, formatPlazoPago, getEstadoBadgeColor, getPagoBadgeColor } from "@/lib/helpers"
 import Text from "@/components/ui/Text"
 import Link from "next/link"
 import { cancelarArrendamiento, fetchArrendamientoById, fetchParticipacionesByArrendamiento } from "@/lib/arrendamientos/auth"
 import { fetchPagosByArrendamiento } from "@/lib/pagos/auth"
+import { useAuth } from "@/components/context/AuthContext"
 
 const ITEMS_PER_PAGE = 6
 
@@ -25,6 +26,8 @@ export default function ArrendamientoDetailPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
+    const { user } = useAuth();
+    const canEditEliminate = canEditOrDelete(user?.rol);
 
     // Cargar arrendamiento + participaciones + pagos
     useEffect(() => {
@@ -347,13 +350,12 @@ export default function ArrendamientoDetailPage() {
                     <button className="btn-secondary px-4 py-2 rounded-md transition-colors">Volver</button>
                     </Link>
                     {arrendamiento.estado != 'CANCELADO' &&
-                        <div className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                            <button
-                                onClick={handleCancelarArrendamiento}
-                                className="flex items-center space-x-3 px-3 py-2 w-full text-left text-base font-medium"
-                            >
-                            <Trash className="w-5 h-5" />
-                            <span>Cancelar Arrendamiento</span>
+                        <div className={`font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${canEditEliminate? "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 cursor-pointer": "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+                            <button onClick={handleCancelarArrendamiento}
+                                    disabled={!canEditEliminate}
+                                    className={`flex items-center space-x-3 px-4 py-2 w-full text-left text-base font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2`}>
+                                <Trash className="w-5 h-5" />
+                                <span>Cancelar Arrendamiento</span>
                             </button>
                         </div>
                     }

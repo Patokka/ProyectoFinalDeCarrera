@@ -7,7 +7,7 @@ class UsuarioDto(BaseModel):
     nombre: str
     apellido: str
     contrasena: str
-    mail: Optional[EmailStr]
+    mail: Optional[EmailStr] = None
     cuil: str
     rol: TipoRol
     

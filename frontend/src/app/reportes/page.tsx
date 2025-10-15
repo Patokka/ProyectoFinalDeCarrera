@@ -264,7 +264,7 @@ export default function ReportesPage() {
   }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}

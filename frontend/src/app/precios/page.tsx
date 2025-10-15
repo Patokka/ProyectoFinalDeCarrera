@@ -7,11 +7,12 @@ import Pagination from '@/components/ui/Pagination';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { PrecioDtoOut } from '@/lib/type';
-import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
+import { canEditOrDelete, formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { deletePrecio, fetchPreciosAGD, fetchPreciosBCR } from '@/lib/precios/auth';
 import PrecioModal from '@/components/ui/PriceModal';
 import EditPrecioModal from '@/components/ui/EditPrecioModal';
+import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 6;
 
@@ -27,6 +28,8 @@ export default function PreciosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [precioSeleccionado, setPrecioSeleccionado] = useState<PrecioDtoOut | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { user } = useAuth();
+  const canEditEliminate = canEditOrDelete(user?.rol);
 
   // Filtrado de datos BCR
   const filteredBCRData = useMemo(() => {
@@ -171,12 +174,14 @@ export default function PreciosPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button 
                         onClick={() => handleEditPrecio(precio)}
-                        className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors"
-                      >
-                        <Edit className="h-4 w-4" />
+                        className={`p-1 rounded transition-colors ${canEditEliminate ? "text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 cursor-pointer": "text-gray-400  cursor-not-allowed"}`} title="Editar"
+                        disabled={!canEditEliminate}>
+                          <Edit className="h-4 w-4" />
                       </button>
-                      <button onClick={() => handleDelete(precio)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
-                        <Trash2 className="h-4 w-4" />
+                      <button onClick={() => handleDelete(precio)} 
+                              className={`p-1 rounded transition-colors ${canEditEliminate ? "text-red-600 hover:text-red-900 hover:bg-red-50 cursor-pointer": "text-gray-400 cursor-not-allowed"}`} title="Eliminar"
+                              disabled={!canEditEliminate}>
+                          <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -203,11 +208,10 @@ export default function PreciosPage() {
             <h1 className="text-2xl font-bold text-gray-900">Precios</h1>
             <button 
               onClick={handleCargarPrecio}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Nuevo Precio</span>
+              className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+              disabled={!canEditEliminate || loading}>
+                <Plus className="h-4 w-4" />
+                <span>Nuevo Precio</span>
             </button>
           </div>
 

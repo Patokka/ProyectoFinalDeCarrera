@@ -2,30 +2,39 @@
 
 import { useAuth } from "@/components/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: ReactNode;
+  allowedRoles?: string[];
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const [ready, setReady] = useState(false); // monta en cliente
+  const [authorized, setAuthorized] = useState(false);
 
   useEffect(() => {
-    setMounted(true); // marca que estamos en el cliente
-  }, []);
+    setReady(true);
 
-  useEffect(() => {
-    if (mounted && !user) {
-      router.replace('/login'); // redirige si no hay usuario
+    if (!user) {
+      router.replace('/login');
+      return;
     }
-  }, [mounted, user, router]);
 
-  if (!mounted || !user) {
-    return null; // espera hasta que client esté listo
-  }
+    // Si hay allowedRoles y el user no tiene permiso
+    if (allowedRoles && !allowedRoles.includes(user.rol)) {
+      toast.error("Acceso denegado, no posee los permisos necesarios");
+      router.replace('/dashboard');
+      return;
+    }
+
+    setAuthorized(true);
+  }, [user, allowedRoles, router]);
+
+  if (!ready || !authorized) return null;
 
   return <>{children}</>;
 }

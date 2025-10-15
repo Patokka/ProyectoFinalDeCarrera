@@ -131,7 +131,7 @@ export default function ModificarUsuarioPage() {
 
     if (loading) {
         return (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
                 <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
                 <p className="text-gray-500">Cargando datos del usuario...</p>
                 </div>
@@ -140,7 +140,7 @@ export default function ModificarUsuarioPage() {
     }
     if (error) {
         return (
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
                 <div className="min-h-screen bg-gray-50 p-6">
                 <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
                 </div>
@@ -161,7 +161,7 @@ export default function ModificarUsuarioPage() {
 
 
     return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

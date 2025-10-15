@@ -7,11 +7,12 @@ import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
 import Link from 'next/link';
 import { FacturacionDtoOut } from '@/lib/type';
-import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
+import { canEditOrDelete, formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
 import { toast } from 'sonner';
 import { fetchFacturaciones } from '@/lib/facturaciones/auth';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import FacturacionModal from '@/components/ui/FacturacionModal';
+import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -24,7 +25,9 @@ export default function FacturacionesPage() {
   const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
   const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
   const [currentPage, setCurrentPage] = useState(1);
-
+  const { user } = useAuth();
+  const canEditEliminate = canEditOrDelete(user?.rol);
+  
   // Filtrar datos
   const filteredData = useMemo(() => {
     return facturaciones.filter(item => {
@@ -74,7 +77,8 @@ export default function FacturacionesPage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Facturaciones</h1>
-            <button onClick={() => setIsFacturacionModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+            <button onClick={() => setIsFacturacionModalOpen(true)} className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+                    disabled={!canEditEliminate}>
               <Plus className="h-4 w-4" />
               <span>Nueva Facturación</span>
             </button>

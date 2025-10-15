@@ -10,7 +10,8 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { ArrendadorDtoOut } from '@/lib/type';
 import { deleteArrendador, fetchArrendadores } from '@/lib/arrendadores/auth';
 import { toast } from 'sonner';
-import { formatCuit, formatCuitDisplay, getCondicionBadgeColor } from '@/lib/helpers';
+import { canEditOrDelete, formatCuit, formatCuitDisplay, getCondicionBadgeColor } from '@/lib/helpers';
+import { useAuth } from '@/components/context/AuthContext';
 
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
@@ -25,11 +26,12 @@ export default function ArrendadoresPage() {
   const [arrendadores, setArrendadores] = useState<ArrendadorDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [searchTermNombre, setSearchTermNombre] = useState('');
   const [searchTermCuit, setSearchTermCuit] = useState('');
   const [condicionFilter, setCondicionFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { user } = useAuth();
+  const canEditEliminate = canEditOrDelete(user?.rol);
 
   // Fetch inicial
   useEffect(() => {
@@ -108,9 +110,10 @@ const handleDelete = (id: number) => {
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Arrendadores</h1>
             <Link href="/arrendadores/post" passHref>
-              <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
-                <Plus className="h-4 w-4" />
-                <span>Nuevo Arrendador</span>
+              <button className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+                  disabled={!canEditEliminate}>
+                  <Plus className="h-4 w-4" />
+                  <span>Nuevo Arrendador</span>
               </button>
             </Link>
           </div>
@@ -210,11 +213,13 @@ const handleDelete = (id: number) => {
                               </button>
                             </Link>
                             <Link href={`/arrendadores/${arrendador.id}/edit`}passHref>
-                              <button className="text-yellow-600 hover:text-yellow-900 p-1 hover:bg-yellow-50 rounded transition-colors" title="Editar">
+                              <button   className={`p-1 rounded transition-colors ${canEditEliminate ? "text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 cursor-pointer": "text-gray-400  cursor-not-allowed"}`} title="Editar"
+                                      disabled={!canEditEliminate}>
                                 <Edit className="h-4 w-4" />
                               </button>
                             </Link>
-                            <button onClick={() => handleDelete(arrendador.id)} className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors" title="Eliminar">
+                            <button onClick={() => handleDelete(arrendador.id)} className={`p-1 rounded transition-colors ${canEditEliminate ? "text-red-600 hover:text-red-900 hover:bg-red-50 cursor-pointer": "text-gray-400 cursor-not-allowed"}`} title="Eliminar"
+                                    disabled={!canEditEliminate}>
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>

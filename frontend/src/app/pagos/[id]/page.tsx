@@ -6,11 +6,12 @@ import { useParams, useRouter } from "next/navigation"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
 import { toast } from "sonner"
 import { PrecioDtoOut, type PagoDtoOut, type ParticipacionArrendadorDtoOut } from "@/lib/type"
-import { formatCurrency, formatDate, getPagoBadgeColor} from "@/lib/helpers"
+import { canEditOrDelete, formatCurrency, formatDate, getPagoBadgeColor} from "@/lib/helpers"
 import Text from "@/components/ui/Text"
 import Link from "next/link"
 import { cancelarPago, facturarPago, fetchPagoById } from "@/lib/pagos/auth"
 import { fetchPreciosPago } from "@/lib/precios/auth"
+import { useAuth } from "@/components/context/AuthContext"
 
 export default function PagoDetailPage() {
     const params = useParams()
@@ -21,6 +22,8 @@ export default function PagoDetailPage() {
     const [error, setError] = useState<string | null>(null)
     const router = useRouter()
     const [precios, setPrecios] = useState<PrecioDtoOut[]>([])
+    const { user } = useAuth();
+    const canEditEliminate = canEditOrDelete(user?.rol);
 
     // Cargar Pago y su correspondiente Participación
     useEffect(() => {
@@ -135,7 +138,7 @@ export default function PagoDetailPage() {
                                     {pago.estado}
                             </span>
                         </div>
-                        {(pago.estado == 'PENDIENTE' ||pago.estado == 'VENCIDO') &&
+                        {canEditEliminate && (pago.estado == 'PENDIENTE' ||pago.estado == 'VENCIDO') &&
                             <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
                                     onClick={handleFacturarPago}>             
                                 <FileText className="h-4 w-4" />
@@ -242,7 +245,7 @@ export default function PagoDetailPage() {
                                 Volver
                             </button>
                         </Link>
-                        {pago.estado!='REALIZADO' &&
+                        {canEditEliminate && pago.estado!='REALIZADO' && pago.estado!='CANCELADO' &&
                             <div className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                                 <button
                                     onClick={handleCancelarPago}

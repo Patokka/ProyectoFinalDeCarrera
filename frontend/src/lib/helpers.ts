@@ -2,6 +2,7 @@ import { format, parseISO, endOfMonth, startOfMonth } from 'date-fns';
 import { EstadoArrendamiento, PlazoPago, TipoDiasPromedio } from './type';
 
 // Helpers
+export const canEditOrDelete = (rol?: string) => {return rol ? ["ADMINISTRADOR", "OPERADOR"].includes(rol) : false;};
 export const formatDate = (date: string) => format(parseISO(date), 'dd/MM/yyyy');
 
 export const formatCurrency = (amount: number) =>

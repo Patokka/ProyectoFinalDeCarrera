@@ -8,169 +8,172 @@ import Pagination from '@/components/ui/Pagination';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { toast } from 'sonner';
 import { ArrendadorDtoOut, PagoDtoOut } from '@/lib/type';
-import { formatCuit, formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
+import { canEditOrDelete, formatCuit, formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
 import { facturarPagos, fetchPagosByArrendador } from '@/lib/pagos/auth';
 import Text from '@/components/ui/Text'
 import Link from 'next/link';
 import { deleteArrendador, fetchArrendadorById } from '@/lib/arrendadores/auth';
+import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 5;
 
 export default function ArrendadorDetailPage() {
-const params = useParams();
-const idArrendador = params?.id;
-const [arrendador, setArrendador] = useState<ArrendadorDtoOut>();
-const [pagos, setPagos] = useState<PagoDtoOut[]>([]);
-const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
-const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
-const [currentPage, setCurrentPage] = useState(1);
-const [selectedPagos, setSelectedPagos] = useState<number[]>([]);
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState<string | null>(null);
-const router = useRouter();
+    const params = useParams();
+    const idArrendador = params?.id;
+    const [arrendador, setArrendador] = useState<ArrendadorDtoOut>();
+    const [pagos, setPagos] = useState<PagoDtoOut[]>([]);
+    const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
+    const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedPagos, setSelectedPagos] = useState<number[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+    const { user } = useAuth();
+    const canEditEliminate = canEditOrDelete(user?.rol);
+    
+    // Cargar arrendador + pagos
+    useEffect(() => {
+        const load = async () => {
+        if (!idArrendador) {
+            setError('Id de arrendador inválido');
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            const arr = await fetchArrendadorById(Number(idArrendador));
+            const pagosArr = await fetchPagosByArrendador(Number(idArrendador));
+            setArrendador(arr);
+            setPagos(pagosArr);
+        } catch (e: any) {
+            toast.error('Error al cargar los datos del arrendador');
+            setError('Error al cargar datos');
+        } finally {
+            setLoading(false);
+        }
+        };
+        load();
+    }, [idArrendador]);
 
-// Cargar arrendador + pagos
-useEffect(() => {
-    const load = async () => {
-    if (!idArrendador) {
-        setError('Id de arrendador inválido');
-        setLoading(false);
-        return;
-    }
-    try {
-        setLoading(true);
-        const arr = await fetchArrendadorById(Number(idArrendador));
-        const pagosArr = await fetchPagosByArrendador(Number(idArrendador));
-        setArrendador(arr);
-        setPagos(pagosArr);
-    } catch (e: any) {
-        toast.error('Error al cargar los datos del arrendador');
-        setError('Error al cargar datos');
-    } finally {
-        setLoading(false);
-    }
+    // Filtrado de pagos
+    const filteredPagos = useMemo(() => {
+        return pagos.filter(pago => {
+            const venc = new Date(pago.vencimiento);
+            const desdeOk = !fechaDesde || venc >= new Date(fechaDesde);
+            const hastaOk = !fechaHasta || venc <= new Date(fechaHasta);
+            return desdeOk && hastaOk;
+        });
+    }, [pagos, fechaDesde, fechaHasta]);
+
+    // Paginación
+    const totalPages = Math.ceil(filteredPagos.length / ITEMS_PER_PAGE);
+    const paginatedPagos = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredPagos.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredPagos, currentPage]);
+
+    // Reset página al cambiar filtros
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [fechaDesde, fechaHasta]);
+
+    const handleSelectPago = (id: number) => {
+        setSelectedPagos(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
     };
-    load();
-}, [idArrendador]);
 
-// Filtrado de pagos
-const filteredPagos = useMemo(() => {
-    return pagos.filter(pago => {
-        const venc = new Date(pago.vencimiento);
-        const desdeOk = !fechaDesde || venc >= new Date(fechaDesde);
-        const hastaOk = !fechaHasta || venc <= new Date(fechaHasta);
-        return desdeOk && hastaOk;
-    });
-}, [pagos, fechaDesde, fechaHasta]);
+    const handleSelectAll = () => {
+        const validIds = paginatedPagos
+            .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
+            .map(p => p.id);
+        const allSelected = validIds.every(i => selectedPagos.includes(i));
+        if (allSelected) {
+            setSelectedPagos(prev => prev.filter(i => !validIds.includes(i)));
+        } else {
+            setSelectedPagos(prev => Array.from(new Set([...prev, ...validIds])));
+        }
+    };
 
-  // Paginación
-const totalPages = Math.ceil(filteredPagos.length / ITEMS_PER_PAGE);
-const paginatedPagos = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredPagos.slice(start, start + ITEMS_PER_PAGE);
-}, [filteredPagos, currentPage]);
-
-  // Reset página al cambiar filtros
-useEffect(() => {
-    setCurrentPage(1);
-}, [fechaDesde, fechaHasta]);
-
-const handleSelectPago = (id: number) => {
-    setSelectedPagos(prev =>
-        prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-};
-
-const handleSelectAll = () => {
-    const validIds = paginatedPagos
-        .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
-        .map(p => p.id);
-    const allSelected = validIds.every(i => selectedPagos.includes(i));
-    if (allSelected) {
-        setSelectedPagos(prev => prev.filter(i => !validIds.includes(i)));
-    } else {
-        setSelectedPagos(prev => Array.from(new Set([...prev, ...validIds])));
-    }
-};
-
-const handleFacturarSeleccionados = () => {
-    if (selectedPagos.length === 0) return;
-    const toastId = toast.info(`¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`, {
-    action: {
-        label: 'Confirmar',
-        onClick: async () => {
-        toast.dismiss(toastId);
-        try {
-            await facturarPagos(selectedPagos);
-            // recargar pagos
-            if (idArrendador) {
-                const nuevos = await fetchPagosByArrendador(Number(idArrendador));
-                setPagos(nuevos);
+    const handleFacturarSeleccionados = () => {
+        if (selectedPagos.length === 0) return;
+        const toastId = toast.info(`¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`, {
+        action: {
+            label: 'Confirmar',
+            onClick: async () => {
+            toast.dismiss(toastId);
+            try {
+                await facturarPagos(selectedPagos);
+                // recargar pagos
+                if (idArrendador) {
+                    const nuevos = await fetchPagosByArrendador(Number(idArrendador));
+                    setPagos(nuevos);
+                }
+                setSelectedPagos([]);
+                toast.success('Facturaciones realizadas con éxito');
+            } catch (e: any) {
+                toast.error('Error al facturar pagos');
             }
-            setSelectedPagos([]);
-            toast.success('Facturaciones realizadas con éxito');
-        } catch (e: any) {
-            toast.error('Error al facturar pagos');
-        }
-        }
-    },
-    duration: 5000
-    });
-};
+            }
+        },
+        duration: 5000
+        });
+    };
 
-const allOnPageSelected = paginatedPagos.length > 0 && paginatedPagos
-    .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
-    .every(p => selectedPagos.includes(p.id));
+    const allOnPageSelected = paginatedPagos.length > 0 && paginatedPagos
+        .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
+        .every(p => selectedPagos.includes(p.id));
 
-  // Renderizado estados de UI
-if (loading) {
-    return (
-        <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-            <p className="text-gray-500">Cargando datos del arrendador...</p>
-            </div>
-        </ProtectedRoute>
-    );
-}
-if (error) {
-    return (
-        <ProtectedRoute>
+    // Renderizado estados de UI
+    if (loading) {
+        return (
+            <ProtectedRoute>
+                <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <p className="text-gray-500">Cargando datos del arrendador...</p>
+                </div>
+            </ProtectedRoute>
+        );
+    }
+    if (error) {
+        return (
+            <ProtectedRoute>
+                <div className="min-h-screen bg-gray-50 p-6">
+                <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
+                </div>
+            </ProtectedRoute>
+        );
+    }
+    if (!arrendador) {
+        return (
+            <ProtectedRoute>
             <div className="min-h-screen bg-gray-50 p-6">
-            <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
+                <div className="text-center py-12 font-semibold text-gray-700">
+                    No se encontró el arrendador
+                </div>
             </div>
-        </ProtectedRoute>
-    );
-}
-if (!arrendador) {
-    return (
-        <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="text-center py-12 font-semibold text-gray-700">
-                No se encontró el arrendador
-            </div>
-        </div>
-        </ProtectedRoute>
-    );
-}
+            </ProtectedRoute>
+        );
+    }
 
-function handleDeleteArrendador(){
-    const toastId = toast.info(`¿Está seguro que desea eliminar el arrendador?`, {
-    action: {
-        label: 'Confirmar',
-        onClick: async () => {
-        toast.dismiss(toastId);
-        try {
-            await deleteArrendador(Number(idArrendador));
-            toast.success('Arrendador eliminado con éxito, volviendo a la página de arrendadores...');
-            setTimeout(() => router.push('/arrendadores'), 1000);
-        } catch (e: any) {
-            toast.error(e.message);
-        }
-        }
-    },
-    duration: 5000
-    });
-}
+    function handleDeleteArrendador(){
+        const toastId = toast.info(`¿Está seguro que desea eliminar el arrendador?`, {
+        action: {
+            label: 'Confirmar',
+            onClick: async () => {
+            toast.dismiss(toastId);
+            try {
+                await deleteArrendador(Number(idArrendador));
+                toast.success('Arrendador eliminado con éxito, volviendo a la página de arrendadores...');
+                setTimeout(() => router.push('/arrendadores'), 1000);
+            } catch (e: any) {
+                toast.error(e.message);
+            }
+            }
+        },
+        duration: 5000
+        });
+    }
 
 return (
     <ProtectedRoute>
@@ -182,7 +185,8 @@ return (
                     <h1 className="text-2xl font-bold text-gray-900">Detalle de Arrendador</h1>
                 </div>
                 <Link href = {`/arrendadores/${arrendador.id}/edit`} passHref> 
-                    <button className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                    <button className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+                            disabled={!canEditEliminate}>
                         <Edit className="h-4 w-4" />
                         <span>Editar Arrendador</span>
                     </button>
@@ -392,11 +396,14 @@ return (
                         Volver
                     </button>
                 </Link>
-                <div className="bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                <button onClick={handleDeleteArrendador} className="flex items-center space-x-3 px-3 py-2 w-full text-left text-base font-medium">
-                    <Trash className="w-5 h-5" />
-                    <span>Eliminar Arrendador</span>
-                </button>
+                <div className={`font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${canEditEliminate? "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 cursor-pointer": "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
+                    <button
+                    onClick={handleDeleteArrendador}
+                    disabled={!canEditEliminate}
+                    className={`flex items-center space-x-3 px-4 py-2 w-full text-left text-base font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2`}>
+                        <Trash className="w-5 h-5" />
+                        <span>Eliminar Arrendador</span>
+                    </button>
                 </div>
             </div>
         </div>

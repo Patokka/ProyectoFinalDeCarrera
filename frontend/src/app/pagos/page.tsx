@@ -10,9 +10,10 @@ import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { toast } from 'sonner';
 import { facturarPagos, fetchPagos } from '@/lib/pagos/auth';
 import { PagoDtoOut } from '@/lib/type';
-import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getPagoBadgeColor } from '@/lib/helpers';
+import { canEditOrDelete, formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, getPagoBadgeColor } from '@/lib/helpers';
 import PagoParticularModal from '@/components/ui/PagoParticularModal';
 import AsignarPrecioModal from '@/components/ui/AsignarPrecioPagoModal';
+import { useAuth } from '@/components/context/AuthContext';
 
 // Opciones para los filtros
 const estadoOptions = [
@@ -37,7 +38,9 @@ export default function PagosPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPagoModalOpen, setIsPagoModalOpen] = useState(false);
   const [isAsignarPrecioPagoModalOpen, setIsAsignarPrecioPagoModalOpen] = useState(false);
-
+  const { user } = useAuth();
+  const canEditEliminate = canEditOrDelete(user?.rol);
+  
   const loadPagos = async () => {
     try {
       setLoading(true);
@@ -141,11 +144,13 @@ export default function PagosPage() {
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
               <div className='flex justify-around gap-3'>
-                <button onClick={() => setIsAsignarPrecioPagoModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                <button onClick={() => setIsAsignarPrecioPagoModalOpen(true)} className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+                        disabled={!canEditEliminate}>
                   <Calculator className="h-4 w-4" />
                   <span>Calcular Precio de Pago</span>
                 </button>
-                <button onClick={() => setIsPagoModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                <button onClick={() => setIsPagoModalOpen(true)} className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
+                        disabled={!canEditEliminate}>
                   <Plus className="h-4 w-4" />
                   <span>Nuevo Pago Particular</span>
                 </button>
@@ -199,17 +204,19 @@ export default function PagosPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={allCurrentPageSelected}
-                            onChange={handleSelectAll}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span>Facturar</span>
-                        </div>
-                      </th>
+                      {canEditEliminate &&  
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={allCurrentPageSelected}
+                              onChange={handleSelectAll}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span>Facturar</span>
+                          </div>
+                        </th>
+                      }
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Número
                       </th>
@@ -239,17 +246,19 @@ export default function PagosPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {paginatedData.map((pago) => (
                       <tr key={pago.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex justify-center items-center">
-                            <input
-                              type="checkbox"
-                              checked={selectedPagos.includes(pago.id)}
-                              onChange={() => handleSelectPago(pago.id)}
-                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                              disabled= {pago.estado === "CANCELADO" || pago.estado === "REALIZADO" || (pago.estado === "PENDIENTE" && !pago.precio_promedio && !!pago.quintales)}
-                            />
-                          </div>
-                        </td>
+                        {canEditEliminate &&
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex justify-center items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedPagos.includes(pago.id)}
+                                onChange={() => handleSelectPago(pago.id)}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                disabled= {pago.estado === "CANCELADO" || pago.estado === "REALIZADO" || (pago.estado === "PENDIENTE" && !pago.precio_promedio && !!pago.quintales)}
+                              />
+                            </div>
+                          </td>
+                        }
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {pago.id}
                         </td>
@@ -319,7 +328,7 @@ export default function PagosPage() {
           </div>
 
           {/* Botón Facturar Seleccionados */}
-          {selectedPagos.length > 0 && (
+          {canEditEliminate && selectedPagos.length > 0 && (
             <div className="mb-4 py-3">
               <button
                 onClick={handleFacturarSeleccionados}
