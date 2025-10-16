@@ -144,7 +144,7 @@ export default function FacturacionDetailPage() {
                                 readOnly={true}
                                 disabled={false}/>
                             <Text
-                                label="Monto Imponible Retención:"
+                                label="Mínimo Imponible Retención:"
                                 value={formatCurrency(retencion.monto_imponible)}
                                 readOnly={true}
                                 disabled={false}/>

@@ -182,7 +182,7 @@ export default function ArrendamientoDetailPage() {
                         readOnly={true} 
                         disabled={false} />
                     <Text
-                        label="Plazo de Pago:"
+                        label="Período de Pago:"
                         value={formatPlazoPago(arrendamiento.plazo_pago)}
                         readOnly={true}
                         disabled={false}/>
@@ -254,7 +254,7 @@ export default function ArrendamientoDetailPage() {
                                 {participacion.hectareas_asignadas > 0 ? participacion.hectareas_asignadas+' ha' : '-'} 
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {participacion.quintales_asignados > 0 ? participacion.hectareas_asignadas + ' qq' : '-'}
+                                {participacion.quintales_asignados > 0 ? participacion.quintales_asignados + ' qq' : '-'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {participacion.porcentaje}%

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from model.Usuario import Usuario
 from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDtoOut
+from util.permisosUser import canEditDelete
 from util.database import get_db
 from dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 from services.ArrendamientoService import ArrendamientoService
@@ -23,23 +25,23 @@ def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
 def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
     return ArrendamientoService.obtener_por_id(db, arrendamiento_id)
 
-@router.post("/", response_model=ArrendamientoDtoOut, description="Actualización de un arrendamiento por id.")
-def crear_arrendamiento(dto: ArrendamientoDto, db: Session = Depends(get_db)):
+@router.post("/", response_model=ArrendamientoDtoOut, description="Creación de un arrendamiento.")
+def crear_arrendamiento(dto: ArrendamientoDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.crear(db, dto)
 
-@router.put("/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Creación de un arrendamiento.")
-def actualizar_arrendamiento(arrendamiento_id: int, dto: ArrendamientoDtoModificacion, db: Session = Depends(get_db)):
+@router.put("/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Actualización de un arrendamiento por id.")
+def actualizar_arrendamiento(arrendamiento_id: int, dto: ArrendamientoDtoModificacion, db: Session = Depends(get_db) , current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.actualizar(db, arrendamiento_id, dto)
 
 @router.delete("/{arrendamiento_id}", description="Eliminación de un arrendamiento por id.")
-def eliminar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
+def eliminar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db) , current_user: Usuario = Depends(canEditDelete)):
     ArrendamientoService.eliminar(db, arrendamiento_id)
     return {"mensaje": "Arrendamiento eliminado correctamente."}
 
 @router.post("/cancelar/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Cancelación de un arrendamiento por id.")
-def cancelar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
+def cancelar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.cancelar_arrendamiento(db, arrendamiento_id)
 
 @router.post("/finalizar/{arrendamiento_id}", response_model=ArrendamientoDtoOut, description="Finalizar un arrendamiento por id.")
-def finalizar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
+def finalizar_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.finalizar_arrendamiento(db, arrendamiento_id)

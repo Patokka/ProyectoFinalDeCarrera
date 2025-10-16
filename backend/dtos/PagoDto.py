@@ -56,3 +56,7 @@ class PagoResumenDto(BaseModel):
     arrendatario: str
     cantidad: int
     monto: float
+    
+class PagoFechaEstado(BaseModel):
+    fecha: str
+    estado: str

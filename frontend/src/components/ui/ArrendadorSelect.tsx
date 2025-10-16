@@ -49,11 +49,11 @@ export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({ arrendadores
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border rounded-md"
+        className={`w-full px-3 py-2 text-sm rounded-md shadow-sm border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
         onFocus={() => setShowDropdown(true)}
       />
       {showDropdown && filtered.length > 0 && (
-        <ul className="absolute z-10 bg-white border rounded-md mt-1 max-h-60 overflow-y-auto w-full">
+        <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
           {filtered.map((a) => (
             <li
               key={a.label}
@@ -64,7 +64,7 @@ export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({ arrendadores
                 setShowDropdown(false);
                 inputRef.current?.blur(); // Quita el foco del input
               }}
-              className="px-3 py-2 hover:bg-blue-100 cursor-pointer"
+              className={`${a.value === value ? 'bg-blue-50 text-blue-700' : 'text-gray-900'}  px-3 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 cursor-pointer`}
             >
               {a.label}
             </li>

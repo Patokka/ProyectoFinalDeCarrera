@@ -38,3 +38,10 @@ def admin_required(current_user: UsuarioLogueado = Depends(get_current_user), db
     if usuario.rol != TipoRol.ADMINISTRADOR:
         raise HTTPException(status_code=403, detail="No tienes permisos de Administrador.")
     return current_user
+
+#Función para otorgar permisos a determinados roles de usuarios
+def canEditDelete(current_user: UsuarioLogueado = Depends(get_current_user), db: Session = Depends(get_db)):
+    usuario = db.query(Usuario).get(current_user.id)
+    if usuario.rol == TipoRol.CONSULTA:
+        raise HTTPException(status_code=403, detail="No tienes permisos para realizar esta acción.")
+    return current_user

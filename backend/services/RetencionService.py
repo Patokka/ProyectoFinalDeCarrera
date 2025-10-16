@@ -114,7 +114,7 @@ class RetencionService:
         """
         arrendamiento = ArrendamientoService.obtener_por_id(db, pago.arrendamiento_id)
         #Obtener monto imponible actual desde la config
-        monto_imponible_actual = float(RetencionService.obtener_configuracion(db, "MONTO_IMPONIBLE"))
+        minimo_imponible_actual = float(RetencionService.obtener_configuracion(db, "MINIMO_IMPONIBLE"))
 
         periodos = {
             PlazoPago.MENSUAL: 1,
@@ -127,14 +127,14 @@ class RetencionService:
         meses_por_cuota = periodos.get(arrendamiento.plazo_pago)
 
         #Calcular base de la retención
-        base_retencion = monto_imponible_actual * meses_por_cuota
+        base_retencion = minimo_imponible_actual * meses_por_cuota
 
         monto_retencion = (pago.monto_a_pagar -Decimal(base_retencion))* Decimal(0.06)
 
         #Crear objeto retención
         retencion = Retencion(
             fecha_retencion=fecha or date.today(),
-            monto_imponible=monto_imponible_actual,
+            monto_imponible=minimo_imponible_actual,
             total_retencion=monto_retencion,
             arrendador_id=arrendador_id,
             facturacion_id=None

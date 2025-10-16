@@ -9,6 +9,11 @@ export interface Recipient {
     valor: string;
 }
 
+export interface PagoDia {
+  fecha: string;
+  estado: "PENDIENTE" | "VENCIDO" | "REALIZADO";
+}
+
 export interface ReportCard {
   id: string;
   title: string;

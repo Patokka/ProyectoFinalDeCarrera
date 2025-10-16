@@ -1,6 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from model.Usuario import Usuario
+from util.permisosUser import canEditDelete
 from util.database import get_db
 from dtos.ParticipacionArrendadorDto import ParticipacionArrendadorDto, ParticipacionArrendadorDtoOut, ParticipacionArrendadorDtoModificacion
 from services.ArrendamientoService import ArrendamientoService
@@ -16,14 +18,14 @@ def obtener_participacion(participacion_id: int, db: Session = Depends(get_db)):
     return ArrendamientoService.obtener_participacion_por_id(db, participacion_id)
 
 @router.post("/", response_model=ParticipacionArrendadorDtoOut, description="Creación de una participación.")
-def crear_participacion(dto: ParticipacionArrendadorDto, db: Session = Depends(get_db)):
+def crear_participacion(dto: ParticipacionArrendadorDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.crear_participacion(db, dto)
 
 @router.put("/{participacion_id}", response_model=ParticipacionArrendadorDtoOut, description="Modificación de una participación por id.")
-def actualizar_participacion(participacion_id: int, dto: ParticipacionArrendadorDtoModificacion, db: Session = Depends(get_db)):
+def actualizar_participacion(participacion_id: int, dto: ParticipacionArrendadorDtoModificacion, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.actualizar_participacion(db, participacion_id, dto)
 
 @router.delete("/{participacion_id}", description="Eliminación de una participación por id.")
-def eliminar_participacion(participacion_id: int, db: Session = Depends(get_db)):
+def eliminar_participacion(participacion_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     ArrendamientoService.eliminar_participacion(db, participacion_id)
     return {"mensaje": "Participación eliminada correctamente."}

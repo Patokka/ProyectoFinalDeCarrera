@@ -1,4 +1,4 @@
-import { PagoDtoOut, PagoForm, PaymentSummaryResponse } from "../type";
+import { PagoDia, PagoDtoOut, PagoForm, PaymentSummaryResponse } from "../type";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -29,11 +29,11 @@ export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
     return res.json()
 }
 
-export async function fetchPaymentDates(month: number, year: number): Promise<Date[]> {
+export async function fetchPaymentDates(month: number, year: number): Promise<PagoDia[]> {
     const token = localStorage.getItem("token")
     if (!token) {
-        window.location.href = "/login";
-        throw new Error("No hay sesión activa");
+        window.location.href = "/login"
+        throw new Error("No hay sesión activa")
     }
 
     const res = await fetch(`${API_URL}/pagos/vencimientos-mes?mes=${month}&anio=${year}`, {
@@ -43,17 +43,18 @@ export async function fetchPaymentDates(month: number, year: number): Promise<Da
         },
     })
     if (res.status === 401) {
-        // limpiar sesión y redirigir
         localStorage.removeItem("token")
         window.location.href = "/login"
-        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión")
+        throw new Error("Se perdió la sesión")
     }
     if (!res.ok) {
-            throw new Error("Error al obtener resumen de pagos")
+        throw new Error("Error al obtener vencimientos")
     }
-    const data: string[] = await res.json()
-    return data.map(d => new Date(d))
+
+    const data: PagoDia[] = await res.json()
+    return data
 }
+
 
 export async function generarCuotas(arrendamientoId: number): Promise<void> {
     const token = localStorage.getItem("token");

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from model.Usuario import Usuario
+from util.permisosUser import canEditDelete
 from util.database import get_db
 from dtos.LocalidadDto import LocalidadDto, LocalidadDtoOut, LocalidadDtoModificacion
 from services.UbicacionService import UbicacionService
@@ -15,14 +17,14 @@ def obtener_localidad(localidad_id: int, db: Session = Depends(get_db)):
     return UbicacionService.obtener_localidad_por_id(db, localidad_id)
 
 @router.post("/", response_model=LocalidadDtoOut, description="Creación de una localidad.")
-def crear_localidad(dto: LocalidadDto, db: Session = Depends(get_db)):
+def crear_localidad(dto: LocalidadDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return UbicacionService.crear_localidad(db, dto)
 
 @router.put("/{localidad_id}", response_model=LocalidadDtoOut, description="Actualización de una localidad por id.")
-def actualizar_localidad(localidad_id: int, dto: LocalidadDtoModificacion, db: Session = Depends(get_db)):
+def actualizar_localidad(localidad_id: int, dto: LocalidadDtoModificacion, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return UbicacionService.actualizar_localidad(db, localidad_id, dto)
 
 @router.delete("/{localidad_id}", description="Eliminación de una localida por id.")
-def eliminar_localidad(localidad_id: int, db: Session = Depends(get_db)):
+def eliminar_localidad(localidad_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     UbicacionService.eliminar_localidad(db, localidad_id)
     return {"mensaje": "Localidad eliminada correctamente."}

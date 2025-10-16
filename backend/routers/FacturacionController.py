@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from model.Usuario import Usuario
+from util.permisosUser import canEditDelete
 from util.database import get_db
 from dtos.FacturacionDto import  FacturacionDtoOut, FacturacionDtoModificacion
 from services.FacturacionService import FacturacionService
@@ -15,15 +17,15 @@ def obtener_facturacion(facturacion_id: int, db: Session = Depends(get_db)):
     return FacturacionService.obtener_por_id(db, facturacion_id)
 
 @router.post("/crear/{pago_id}", response_model=FacturacionDtoOut, description="Creación de una facturación.")
-def crear_facturacion(pago_id: int, db: Session = Depends(get_db)):
+def crear_facturacion(pago_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return FacturacionService.crear(db, pago_id)
 
 @router.put("/{facturacion_id}", response_model=FacturacionDtoOut, description="Actualización de una facturación por id.")
-def actualizar_facturacion(facturacion_id: int, dto: FacturacionDtoModificacion, db: Session = Depends(get_db)):
+def actualizar_facturacion(facturacion_id: int, dto: FacturacionDtoModificacion, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return FacturacionService.actualizar(db, facturacion_id, dto)
 
 @router.delete("/{facturacion_id}", description="Eliminación de una facturación por id.")
-def eliminar_facturacion(facturacion_id: int, db: Session = Depends(get_db)):
+def eliminar_facturacion(facturacion_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     FacturacionService.eliminar(db, facturacion_id)
     return {"mensaje": "Facturación eliminada correctamente."}
 

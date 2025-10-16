@@ -221,9 +221,10 @@ class PagoService:
         
         precio_promedio, precios_en_rango = PagoService._obtener_precios_promedio(db, pago)
         
-        pago.precio_promedio = float(precio_promedio / Decimal("10"))
+        pago.precio_promedio = (precio_promedio / Decimal("10"))
+        
         if pago.quintales is not None:
-            pago.monto_a_pagar = float(pago.precio_promedio * Decimal(pago.quintales))
+            pago.monto_a_pagar = pago.precio_promedio * Decimal(str(pago.quintales))
 
         #Asignar precios a la relación many-to-many
         pago.precios.extend(precios_en_rango)
@@ -364,14 +365,21 @@ class PagoService:
     @staticmethod
     def obtener_vencimientos_mes(db: Session, mes: int, anio: int):
         results = (
-            db.query(Pago.vencimiento)
+            db.query(Pago.vencimiento, Pago.estado)
             .filter(extract("month", Pago.vencimiento) == mes)
             .filter(extract("year", Pago.vencimiento) == anio)
-            .filter(Pago.estado.in_(["PENDIENTE", "VENCIDO", "REALIZADO"]))
             .all()
-            )
-        return [r.vencimiento.isoformat() for r in results]
-    
+        )
+        response = []
+        for r in results:
+            if r.vencimiento is None:
+                continue  # o poner una fecha por defecto
+            response.append({
+                "fecha": r.vencimiento.strftime("%Y-%m-%d"),
+                "estado": r.estado
+            })
+        return response
+
     @staticmethod
     def obtener_pendientes_arrendador(db:Session, arrendador_id: int):
         pagos = (

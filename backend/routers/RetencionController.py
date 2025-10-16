@@ -2,8 +2,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from dtos.ConfiguracionDto import ConfiguracionDtoModificacion
+from model.Usuario import Usuario
 from util.database import get_db
+from util.permisosUser import canEditDelete
+from dtos.ConfiguracionDto import ConfiguracionDtoModificacion
 from dtos.RetencionDto import RetencionDto, RetencionDtoOut, RetencionDtoModificacion
 from services.RetencionService import RetencionService
 
@@ -19,15 +21,15 @@ def obtener_retencion(retencion_id: int, db: Session = Depends(get_db)):
     return RetencionService.obtener_por_id(db, retencion_id)
 
 @router.post("/", response_model=RetencionDtoOut, description="Creación de una retención.")
-def crear_retencion(dto: RetencionDto, db: Session = Depends(get_db)):
+def crear_retencion(dto: RetencionDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return RetencionService.crear(db, dto)
 
 @router.put("/{retencion_id}", response_model=RetencionDtoOut, description="Actualización de una retención por id.")
-def actualizar_retencion(retencion_id: int, dto: RetencionDtoModificacion, db: Session = Depends(get_db)):
+def actualizar_retencion(retencion_id: int, dto: RetencionDtoModificacion, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return RetencionService.actualizar(db, retencion_id, dto)
 
 @router.delete("/{retencion_id}", description="Eliminación de una retención por id.")
-def eliminar_retencion(retencion_id: int, db: Session = Depends(get_db)):
+def eliminar_retencion(retencion_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     RetencionService.eliminar(db, retencion_id)
     return {"mensaje": "Retención eliminada correctamente."}
 
@@ -40,7 +42,7 @@ def listar_retenciones(facturacion_id: int,db: Session = Depends(get_db)):
     return RetencionService.obtener_por_factura_id(db, facturacion_id)
 
 @router.post("/configuracion")
-def actualizar_configuracion(config_update: ConfiguracionDtoModificacion, db: Session = Depends(get_db)):
+def actualizar_configuracion(config_update: ConfiguracionDtoModificacion, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return RetencionService.actualizar_configuracion(db, config_update.clave, config_update.valor)
 
 @router.get("/configuracion/destinatarios", response_model= list[str])
@@ -55,5 +57,5 @@ def obtener_configuracion(clave: str, db: Session = Depends(get_db)):
     return {"clave": clave, "valor": valor}
 
 @router.delete("/configuracion/{clave}")
-def eliminar_configuracion(clave: str, db: Session = Depends(get_db)):
+def eliminar_configuracion(clave: str, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return RetencionService.eliminar_configuracion(db, clave)

@@ -17,6 +17,8 @@ from model.Facturacion import Facturacion
 from model.Arrendamiento import Arrendamiento
 from model.Pago import Pago
 from dtos.FacturacionDto import FacturacionDtoModificacion
+from dtos.ArrendadorDto import  ArrendadorDtoOut
+from dtos.PagoDto import  PagoDtoOut
 
 class FacturacionService:
 
@@ -49,14 +51,14 @@ class FacturacionService:
             db.commit()
             ArrendamientoService.finalizar_arrendamiento(db, pago.arrendamiento_id)
             # Crear objeto Facturacion "dummy" en memoria
-            return {
-                "id": 0,
-                "tipo_factura": TipoFactura.A,
-                "fecha_facturacion": hoy,
-                "monto_facturacion": 0,
-                "arrendador_id": pago.participacion_arrendador.arrendador_id,
-                "pago_id": pago.id,
-            }
+            return Facturacion(
+                id= 0,
+                tipo_factura= TipoFactura.A,
+                fecha_facturacion= hoy,
+                monto_facturacion= 0,
+                arrendador=ArrendadorDtoOut.model_validate(arrendador),
+                pago=PagoDtoOut.model_validate(pago)
+            )
         
         #Verifica si el pago ya tiene asignado el precio promedio por quintal, sino devuelve error
         if not (pago.precio_promedio or pago.monto_a_pagar or pago.precio_promedio == 0 or pago.monto_a_pagar == 0):

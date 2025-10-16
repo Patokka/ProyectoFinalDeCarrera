@@ -80,6 +80,16 @@ export const getPagoBadgeColor = (estado: string) => {
         return colors[estado] || "bg-gray-100 text-gray-800"
 }
 
+export const getPagoBadgeColorCalendar = (estado: string) => {
+    const colors: Record<string, string> = {
+        PENDIENTE: "bg-yellow-400 text-yellow-800",
+        REALIZADO: "bg-green-400 text-green-800",
+        VENCIDO: "bg-red-400 text-red-800",
+        CANCELADO: "bg-gray-400 text-gray-800",
+        }
+        return colors[estado] || "bg-gray-400 text-gray-800"
+}
+
 export const getCondicionBadgeColor = (condicion: string) => {
     switch (condicion) {
         case 'MONOTRIBUTISTA':

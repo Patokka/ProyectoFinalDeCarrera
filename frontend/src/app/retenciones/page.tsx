@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Eye, Edit, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import SearchInput from '@/components/ui/SearchInput';
 import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
@@ -11,7 +11,7 @@ import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurr
 import { toast } from 'sonner';
 import { fetchRetenciones } from '@/lib/retenciones/auth';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
-import MontoImponibleModal from '@/components/ui/MontoImponibleModal';
+import MinimoImponibleModal from '@/components/ui/MinimoImponibleModal';
 
 
 const ITEMS_PER_PAGE = 8;
@@ -20,7 +20,7 @@ export default function RetencionesPage() {
   const [retenciones, setRetenciones] = useState<RetencionDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMontoImponibleModalOpen, setIsMontoImponibleModalOpen] = useState(false);
+  const [isMinimoImponibleModalOpen, setIsMinimoImponibleModalOpen] = useState(false);
   const [searchTermArrendador, setSearchTermArrendador] = useState('');
   const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
   const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
@@ -129,7 +129,7 @@ export default function RetencionesPage() {
                         Facturación Asociada
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Monto Imponible
+                        Mínimo Imponible
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Monto Retención
@@ -176,9 +176,9 @@ export default function RetencionesPage() {
             </Link>
             
             
-            <button onClick={() => setIsMontoImponibleModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+            <button onClick={() => setIsMinimoImponibleModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
             <Settings className="h-4 w-4 mr-1" />
-              Configuración Monto Imponible
+              Configuración Mínimo Imponible
             </button>
             
             {totalPages > 1 && (
@@ -193,11 +193,11 @@ export default function RetencionesPage() {
           </div>
         </div>
       </div>
-      <MontoImponibleModal
-        isOpen={isMontoImponibleModalOpen}
-        onClose={() => setIsMontoImponibleModalOpen(false)}
+      <MinimoImponibleModal
+        isOpen={isMinimoImponibleModalOpen}
+        onClose={() => setIsMinimoImponibleModalOpen(false)}
         onSuccess={() => {
-          setIsMontoImponibleModalOpen(false);
+          setIsMinimoImponibleModalOpen(false);
         }}
       />
     </ProtectedRoute>

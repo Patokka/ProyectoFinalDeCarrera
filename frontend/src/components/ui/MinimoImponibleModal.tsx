@@ -6,15 +6,15 @@ import { RotateCcw, X } from "lucide-react";
 import { NumberInput } from "./NumberInput";
 import { fetchConfiguracion, actualizarConfiguracion } from "@/lib/configuracion/auth";
 
-interface MontoImponibleModalProps {
+interface MinimoImponibleModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
 }
 
-const CLAVE_MONTO = "MONTO_IMPONIBLE";
+const CLAVE_MONTO = "MINIMO_IMPONIBLE";
 
-const MontoImponibleModal: React.FC<MontoImponibleModalProps> = ({ isOpen, onClose, onSuccess }) => {
+const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [monto, setMonto] = useState<number | undefined>(undefined);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +27,7 @@ const MontoImponibleModal: React.FC<MontoImponibleModalProps> = ({ isOpen, onClo
                     setMonto(Number(res));
                 })
                 .catch(() => {
-                    toast.error("No se pudo obtener el monto imponible actual");
+                    toast.error("No se pudo obtener el mínimo imponible actual");
                     setMonto(undefined);
                 });
         }
@@ -63,11 +63,11 @@ const MontoImponibleModal: React.FC<MontoImponibleModalProps> = ({ isOpen, onClo
         ? monto.toFixed(2).replace(',', '.')
         : '0.00';
 
-        await actualizarConfiguracion("MONTO_IMPONIBLE", valorString);
-        toast.success("Monto imponible actualizado correctamente");
+        await actualizarConfiguracion("MINIMO_IMPONIBLE", valorString);
+        toast.success("Mínimo imponible actualizado correctamente");
         handleClose();
     } catch (error: any) {
-        const msg = error.message || "Error al actualizar el monto imponible";
+        const msg = error.message || "Error al actualizar el mínimo imponible";
         toast.error(msg);
     } finally {
         setIsSubmitting(false);
@@ -82,7 +82,7 @@ const MontoImponibleModal: React.FC<MontoImponibleModalProps> = ({ isOpen, onClo
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b">
                     <h3 className="text-lg font-semibold text-center text-gray-900">
-                        Configurar Monto Imponible
+                        Configurar Mínimo Imponible
                     </h3>
                     <button
                         onClick={handleClose}
@@ -101,7 +101,7 @@ const MontoImponibleModal: React.FC<MontoImponibleModalProps> = ({ isOpen, onClo
                         min={0}
                         step={0.01}
                         onChange={(val) => setMonto(Math.floor(Number(val) * 100) / 100)}
-                        placeholder="Ingrese el monto imponible"
+                        placeholder="Ingrese el mínimo imponible"
                         error={errors.monto}
                     />
                 </div>
@@ -129,4 +129,4 @@ const MontoImponibleModal: React.FC<MontoImponibleModalProps> = ({ isOpen, onClo
     );
 };
 
-export default MontoImponibleModal;
+export default MinimoImponibleModal;

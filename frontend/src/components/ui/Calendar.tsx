@@ -5,25 +5,42 @@ import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Calendar as Calendar
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { fetchPaymentDates } from '@/lib/pagos/auth'
+import { PagoDia } from '@/lib/type'
+import { getPagoBadgeColorCalendar } from "@/lib/helpers";
 
 interface CalendarProps {}
 
 export default function Calendar({}: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [paymentDates, setPaymentDates] = useState<Date[]>([])
+  const [paymentDates, setPaymentDates] = useState<PagoDia[]>([])
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(true)
-
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  const PRIORITY = ["VENCIDO", "PENDIENTE", "REALIZADO", "CANCELADO"]
 
+  function getHighestPriority(diaEstados: string[]) {
+    for (const p of PRIORITY) {
+      if (diaEstados.includes(p)) return p
+    }
+    return null
+  }
+  const getDayStatus = (date: Date) => {
+    const dayStr = format(date, "yyyy-MM-dd")
+    const estadosEnDia = paymentDates
+      .filter(p => p.fecha === dayStr) 
+      .map(p => p.estado)
+
+    return getHighestPriority(estadosEnDia)
+  }
   const loadPayments = async () => {
     setLoading(true)
     try {
       const month = currentDate.getMonth() + 1
       const year = currentDate.getFullYear()
       const dates = await fetchPaymentDates(month, year)
+      console.log(dates)
       setPaymentDates(dates)
     } catch (error) {
       console.error(error)
@@ -39,11 +56,7 @@ export default function Calendar({}: CalendarProps) {
 
   const previousMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
-  const hasPayment = (date: Date) =>
-    paymentDates.some(
-      (d) => d.getDate() === date.getDate() && d.getMonth() === date.getMonth() && d.getFullYear() === date.getFullYear()
-    )
-
+  
   const weekDays = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
 
   return (
@@ -92,19 +105,25 @@ export default function Calendar({}: CalendarProps) {
 
             {days.map((day) => {
               const isCurrentDay = isToday(day)
-              const hasPaymentToday = hasPayment(day)
+              const status = getDayStatus(day)
+              const colorClass = status ? getPagoBadgeColorCalendar(status) : ""
+
               return (
                 <div
                   key={day.toISOString()}
                   className={`
-                    h-8 flex flex-col items-center justify-center text-sm relative cursor-pointer
-                    transition-colors duration-200 rounded
-                    ${isCurrentDay ? 'bg-primary-100 text-primary-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'}
-                    ${!isSameMonth(day, currentDate) ? 'text-gray-300' : ''}
+                    h-8 flex flex-col items-center justify-center text-sm relative rounded cursor-pointer
+                    transition-colors duration-200
+                    ${isCurrentDay ? "bg-primary-100 text-primary-700 font-semibold" : "text-gray-700 hover:bg-gray-100"}
+                    ${!isSameMonth(day, currentDate) ? "text-gray-300" : ""}
                   `}
                 >
                   <span>{day.getDate()}</span>
-                  {hasPaymentToday && <div className="w-1.5 h-1.5 bg-red-500 rounded-full absolute bottom-0.5"></div>}
+                  {status && (
+                    <div
+                      className={`w-full h-1 absolute bottom-0 left-0 rounded-b ${colorClass}`}
+                    ></div>
+                  )}
                 </div>
               )
             })}

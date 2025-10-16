@@ -127,15 +127,22 @@ export default function CrearArrendamientoPage() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const guardarArrendamiento = async () => {
     // Validaciones
+      console.log(formData)
       const newErrors: { [key: string]: string } = {};
       if (!provinciaActual) newErrors.provincia = "Campo obligatorio";
       if (!formData.arrendatario_id) newErrors.arrendatario = "Campo obligatorio";
       if (!formData.localidad_id) newErrors.localidad = "Campo obligatorio";
       if (!formData.fecha_inicio) newErrors.fechaInicio = "Campo obligatorio";
       if (!formData.fecha_fin) newErrors.fechaFin = "Campo obligatorio";
-      if (!formData.hectareas) newErrors.hectareas = "Campo obligatorio";
-      if (!formData.quintales) newErrors.quintalesPorHectarea = "Campo obligatorio";
       if (!formData.porcentaje_aparceria && formData.tipo == "A_PORCENTAJE") newErrors.porcentajeProduccion = "Campo obligatorio"
+      if (formData.tipo !== "FIJO") {
+        if (formData.hectareas === undefined || formData.hectareas === null)  newErrors.hectareas = "Campo obligatorio";
+        if (formData.quintales === undefined || formData.quintales === null) newErrors.quintalesPorHectarea = "Campo obligatorio";
+      }
+      if (formData.tipo === "FIJO") {
+        if (!formData.hectareas || formData.hectareas <= 0) newErrors.hectareas = "Campo obligatorio";
+        if (!formData.quintales || formData.quintales <= 0) newErrors.quintalesPorHectarea = "Campo obligatorio";
+      }
       if (formData.fecha_inicio && formData.fecha_fin) {
         const inicio = new Date(formData.fecha_inicio);
         const fin = new Date(formData.fecha_fin);
@@ -158,9 +165,8 @@ export default function CrearArrendamientoPage() {
       }
     if (formData.tipo === 'FIJO') {
       const hectareasArrendamiento = formData.hectareas || 0;
-      const quintalesArrendamiento = formData.quintales || 0;
-      if (Math.abs(totalHectareas - hectareasArrendamiento) > 0.01 || Math.abs(totalQuintales - quintalesArrendamiento) > 0.01) {
-        toast.error(`La suma de hectáreas y quintales de los arrendadores (${totalHectareas}) debe ser igual a las hectáreas y quintales del arrendamiento (${hectareasArrendamiento})`)
+      if (Math.abs(totalHectareas - hectareasArrendamiento) > 0.01) {
+        toast.error(`La suma de hectáreas  de los arrendadores (${totalHectareas}) debe ser igual a las hectáreas  del arrendamiento (${hectareasArrendamiento})`)
         return;
       }
     }
@@ -175,6 +181,13 @@ export default function CrearArrendamientoPage() {
       const respuesta = await postArrendamiento(formData);
 
       let participacionesAEnviar = participaciones;
+
+      if (formData.tipo === "FIJO") {
+        participacionesAEnviar = participaciones.map((p) => ({
+          ...p,
+          quintales_asignados: formData.quintales, // <- aquí se asigna el valor del arrendamiento
+        }));
+      }
 
       if (formData.tipo === "A_PORCENTAJE" && formData.porcentaje_aparceria) {
         const porcentajePorArrendador = formData.porcentaje_aparceria / participaciones.length;
@@ -370,7 +383,7 @@ export default function CrearArrendamientoPage() {
                 <NumberInput
                   label="Hectáreas para Arrendador"
                   value={formData.hectareas}
-                  min = {1}
+                  min = {0}
                   max = {1000000}
                   onChange={(e) => handleNumberChange('hectareas', e)}
                   placeholder='Ej: 99.9'
@@ -382,7 +395,7 @@ export default function CrearArrendamientoPage() {
               <NumberInput
                   label="Quintales por Hectárea"
                   value={formData.quintales}
-                  min = {1}
+                  min = {0}
                   max = {1000000}
                   onChange={(e) => handleNumberChange('quintales', e)}
                   placeholder='Ej: 99.9'
@@ -395,7 +408,7 @@ export default function CrearArrendamientoPage() {
                   options={plazoOptions}
                   value={formData.plazo_pago}
                   onChange={(val) => handleInputChange('plazo_pago', val)}
-                  label="Plazo de Pago"
+                  label="Período de Pago"
                 />
               </div>
 
@@ -481,7 +494,6 @@ export default function CrearArrendamientoPage() {
               </div>
 
               {formData.tipo === 'FIJO' && (
-                <>
                   <div> 
                     <NumberInput
                         label="Hectáreas para Arrendador"
@@ -492,18 +504,6 @@ export default function CrearArrendamientoPage() {
                         placeholder='Ej: 99.9'
                     />
                   </div>
-
-                  <div>
-                    <NumberInput
-                        label="Quintales por Hectárea para Arrendador"
-                        value={nuevoArrendador.quintales_asignados}
-                        min = {1}
-                        max = {10000}
-                        onChange={(e) => setNuevoArrendador({...nuevoArrendador, quintales_asignados: Number(e)})}
-                        placeholder='Ej: 99.9'
-                    />
-                  </div>
-                </>
               )}
 
               <div className="flex items-end">
@@ -573,7 +573,7 @@ export default function CrearArrendamientoPage() {
                               {participacion.hectareas_asignadas}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                              {participacion.quintales_asignados}
+                              {formData.quintales}
                             </td>
                           </>
                         )}
@@ -605,9 +605,7 @@ export default function CrearArrendamientoPage() {
                         <td className="px-6 py-3 text-sm text-gray-900 text-center">
                           {totalHectareas.toFixed(2)}
                         </td>
-                        <td className="px-6 py-3 text-sm text-gray-900 text-center">
-                          {totalQuintales.toFixed(1)}
-                        </td>
+                        <td></td>
                         <td></td>
                         <td></td>
                       </tr>
