@@ -1,3 +1,4 @@
+from decimal import Decimal
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -23,6 +24,7 @@ from openpyxl.utils import get_column_letter
 from sqlalchemy import func
 from util import Configuracion
 from enums.TipoCondicion import TipoCondicion
+from model.Precio import Precio
 from model.Arrendador import Arrendador
 from model.Arrendatario import Arrendatario
 from model.Arrendamiento import Arrendamiento
@@ -167,13 +169,12 @@ class ReporteService:
     @staticmethod
     def generar_reporte_mensual_pdf(db, anio: int, mes: int, logo_path: str = None):
         """
-        Genera un reporte mensual,
-        agrupado por arrendatario, en formato tabla horizontal.
-        Incluye título centrado, logo y totales por arrendatario.
+        Genera un reporte mensual, agrupado por arrendatario.
+        Incluye columna totales por arrendatario,
+        título centrado, logo y márgenes visibles.
         """
         hoy = date.today()
 
-        # Calculamos el último mes permitido (mes anterior al actual)
         if hoy.month == 1:
             ultimo_anio = hoy.year - 1
             ultimo_mes = 12
@@ -181,15 +182,14 @@ class ReporteService:
             ultimo_anio = hoy.year
             ultimo_mes = hoy.month - 1
 
-        # Si el año/mes pedido es mayor al último permitido => error
         if (anio > ultimo_anio) or (anio == ultimo_anio and mes > ultimo_mes):
             raise HTTPException(
                 status_code=400,
                 detail=f"Solo se pueden generar reportes hasta {ultimo_mes:02d}-{ultimo_anio}. "
                     f"El mes actual ({hoy.month:02d}-{hoy.year}) y meses futuros no están permitidos."
             )
-        
-        BASE_DIR = Path(__file__).resolve().parent.parent  # apunta a /backend
+
+        BASE_DIR = Path(__file__).resolve().parent.parent
         logo_path = BASE_DIR / "util" / "logo.png"
 
         fecha_inicio = date(anio, mes, 1)
@@ -207,7 +207,6 @@ class ReporteService:
 
         elements = []
         styles = getSampleStyleSheet()
-
         arrendatarios = db.query(Arrendatario).all()
 
         for idx, arr in enumerate(arrendatarios):
@@ -215,91 +214,92 @@ class ReporteService:
             elements.append(titulo)
             elements.append(Spacer(1, 0.5 * cm))
 
-            data = [["Arrendador", "Vencimiento", "Monto a Pagar", "Retención", "Monto Factura", "Tipo Factura"]]
+            data = [["Arrendador", "Vencimiento", "Quintales / Porcentaje", "Monto a Pagar", "Retención", "Monto Factura", "Tipo Factura"]]
 
-            # acumuladores de totales
             total_pagos = 0
             total_retenciones = 0
             total_facturas = 0
+            total_quintales = 0
 
-            arrendamientos = db.query(Arrendamiento).filter(
-                Arrendamiento.arrendatario_id == arr.id
-            ).all()
+            # Join completo para evitar duplicados
+            resultados = (
+                db.query(Pago, ParticipacionArrendador, Arrendador, Facturacion, Retencion)
+                .join(ParticipacionArrendador, Pago.participacion_arrendador_id == ParticipacionArrendador.id)
+                .join(Arrendador, Arrendador.id == ParticipacionArrendador.arrendador_id)
+                .outerjoin(Facturacion, Facturacion.pago_id == Pago.id)
+                .outerjoin(Retencion, Retencion.facturacion_id == Facturacion.id)
+                .filter(Pago.arrendamiento.has(arrendatario_id=arr.id))
+                .filter(Pago.vencimiento >= fecha_inicio, Pago.vencimiento < fecha_fin, Pago.estado == "REALIZADO")
+                .all()
+            )
 
-            for arrendamiento in arrendamientos:
-                pagos = db.query(Pago).filter(
-                    Pago.arrendamiento_id == arrendamiento.id,
-                    Pago.vencimiento >= fecha_inicio,
-                    Pago.vencimiento < fecha_fin,
-                ).all()
+            processed_rows = set()  # (pago_id, arrendador_id, facturacion_id, retencion_id)
 
-                for pago in pagos:
-                    participaciones = db.query(ParticipacionArrendador).filter(
-                        ParticipacionArrendador.arrendamiento_id == arrendamiento.id
-                    ).all()
+            for pago, participacion, arrendador, fac, ret in resultados:
+                pago_id = getattr(pago, "id", id(pago))
+                arr_id = getattr(arrendador, "id", id(arrendador))
+                fac_id = getattr(fac, "id", None)
+                ret_id = getattr(ret, "id", None)
 
-                    for participacion in participaciones:
-                        arrendador = db.query(Arrendador).filter(Arrendador.id == participacion.arrendador_id).first()
-                        nombre_arrendador = arrendador.nombre_o_razon_social if arrendador else "-"
+                row_key = (pago_id, arr_id, fac_id, ret_id)
+                if row_key in processed_rows:
+                    continue
+                processed_rows.add(row_key)
 
-                        facturas = db.query(Facturacion).filter(Facturacion.pago_id == pago.id).all()
+                # Quintales / Porcentaje
+                if getattr(pago, "quintales", None) is not None:
+                    valor_quintales_row = f"{pago.quintales} qq"
+                    try:
+                        total_quintales += float(pago.quintales)
+                    except Exception:
+                        pass
+                elif getattr(pago, "porcentaje", None) is not None:
+                    valor_quintales_row = f"{pago.porcentaje}%"
+                else:
+                    valor_quintales_row = "-"
 
-                        # acumula monto pago
-                        total_pagos += pago.monto_a_pagar or 0
+                nombre_arrendador = arrendador.nombre_o_razon_social if arrendador else "-"
 
-                        if not facturas:
-                            data.append([
-                                nombre_arrendador,
-                                formato_fecha(pago.vencimiento),
-                                formato_moneda(pago.monto_a_pagar),
-                                "-",
-                                "-",
-                                "-"
-                            ])
-                        else:
-                            for fac in facturas:
-                                total_facturas += fac.monto_facturacion or 0
+                monto_pago = pago.monto_a_pagar or 0
+                total_pagos += monto_pago
 
-                                retenciones = db.query(Retencion).filter(Retencion.facturacion_id == fac.id).all()
-                                if not retenciones:
-                                    data.append([
-                                        nombre_arrendador,
-                                        formato_fecha(pago.vencimiento),
-                                        formato_moneda(pago.monto_a_pagar),
-                                        "-",
-                                        formato_moneda(fac.monto_facturacion),
-                                        fac.tipo_factura.name
-                                    ])
-                                else:
-                                    for r in retenciones:
-                                        total_retenciones += r.total_retencion or 0
-                                        data.append([
-                                            nombre_arrendador,
-                                            formato_fecha(pago.vencimiento),
-                                            formato_moneda(pago.monto_a_pagar),
-                                            formato_moneda(r.total_retencion),
-                                            formato_moneda(fac.monto_facturacion),
-                                            fac.tipo_factura.name
-                                        ])
+                monto_factura = fac.monto_facturacion if fac else "-"
+                if fac:
+                    total_facturas += fac.monto_facturacion or 0
+
+                retencion_valor = ret.total_retencion if ret else "-"
+                if ret:
+                    total_retenciones += ret.total_retencion or 0
+
+                tipo_factura = fac.tipo_factura.name if fac else "-"
+
+                data.append([
+                    nombre_arrendador,
+                    formato_fecha(pago.vencimiento),
+                    valor_quintales_row,
+                    formato_moneda(monto_pago),
+                    formato_moneda(retencion_valor) if retencion_valor != "-" else "-",
+                    formato_moneda(monto_factura) if monto_factura != "-" else "-",
+                    tipo_factura
+                ])
 
             if len(data) == 1:
-                data.append(["-", "-", "-", "-", "-", "-"])
+                data.append(["-", "-", "-", "-", "-", "-", "-"])
             else:
-                # fila de totales
+                total_quintales_str = f"{int(total_quintales) if total_quintales.is_integer() else total_quintales} qq"
                 data.append([
                     "TOTAL",
                     "-",
+                    total_quintales_str,
                     formato_moneda(total_pagos),
                     formato_moneda(total_retenciones) if total_retenciones else "-",
                     formato_moneda(total_facturas) if total_facturas else "-",
                     "-"
                 ])
 
-            table = Table(
-                data,
-                colWidths=[7 * cm, 4 * cm, 4 * cm, 4 * cm, 4 * cm, 4 * cm]
-            )
-
+            # Mantener márgenes, no estirar tabla
+            table_widths = [6 * cm, 4 * cm, 3.5 * cm, 4 * cm, 4 * cm, 4 * cm, 4 * cm]
+            table = Table(data, colWidths=table_widths)
             table.setStyle(TableStyle([
                 ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
                 ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
@@ -308,13 +308,11 @@ class ReporteService:
                 ("FONTSIZE", (0, 0), (-1, -1), 10),
                 ("BOTTOMPADDING", (0, 0), (-1, 0), 10),
                 ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
-                # estilos fila de totales
                 ("FONTNAME", (0, -1), (-1, -1), "Times-Roman"),
                 ("BACKGROUND", (0, -1), (-1, -1), colors.lightgrey),
             ]))
 
             elements.append(table)
-
             if idx < len(arrendatarios) - 1:
                 elements.append(PageBreak())
 
@@ -323,14 +321,12 @@ class ReporteService:
             titulo_texto = f"Reporte de pagos {mes:02d}-{anio}"
             canvas.setFont("Times-BoldItalic", 20)
             canvas.drawCentredString(landscape(A4)[0] / 2, landscape(A4)[1] - 1 * cm, titulo_texto)
-
             if logo_path and os.path.exists(logo_path):
                 try:
                     img = Image(logo_path, width=5 * cm, height=2 * cm)
                     img.drawOn(canvas, landscape(A4)[0] - 6 * cm, landscape(A4)[1] - 2.5 * cm)
                 except Exception:
                     pass
-
             canvas.restoreState()
 
         doc.build(elements, onFirstPage=encabezado, onLaterPages=encabezado)
@@ -464,8 +460,7 @@ class ReporteService:
         wb.save(buffer)
         buffer.seek(0)
         return buffer
-    
-    
+
     @staticmethod
     def generar_reporte_pagos_pendientes_pdf(db, anio: int, mes: int, logo_path: str = None):
         """
@@ -486,6 +481,20 @@ class ReporteService:
 
         fecha_inicio = date(anio, mes, 1)
         fecha_fin = date(anio + (mes // 12), (mes % 12) + 1, 1)
+        
+        hoy = date.today()
+        primer_dia_mes_actual = date(hoy.year, hoy.month, 1)
+
+        precios_mes_actual = db.query(Precio.precio_obtenido).filter(
+            Precio.fecha_precio >= primer_dia_mes_actual,
+            Precio.fecha_precio <= hoy,
+            Precio.origen == "BCR"
+        ).all()
+
+        if precios_mes_actual:
+            precio_guia_mes = (sum([p[0] for p in precios_mes_actual]) / len(precios_mes_actual)) / 10
+        else:
+            precio_guia_mes = 0
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
@@ -503,7 +512,7 @@ class ReporteService:
         # Traer arrendatarios
         arrendatarios = db.query(Arrendatario).all()
 
-        # ---- Estilo tabla centralizado ----
+        # Estilo tabla centralizado
         table_style = TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
@@ -521,65 +530,104 @@ class ReporteService:
             elements.append(titulo)
             elements.append(Spacer(1, 0.5 * cm))
 
-            data = [["Arrendador", "Vencimiento", "Monto a Pagar", "Consulta precio de", "Tiene Retención"]]
+            # Encabezado de tabla
+            data = [["Arrendador", "Vencimiento", "Quintales / Porcentaje", "Monto a Pagar", "Consulta precio de", "Tiene Retención"]]
 
-            total_pagos = 0
+            total_pagos = Decimal("0.0")
+            total_quintales = 0
+            processed_pagos_for_quintales = set()  # para no sumar quintales varias veces
 
-            # Traer arrendamientos y pagos de una vez
-            arrendamientos = (
-                db.query(Arrendamiento)
-                .filter(Arrendamiento.arrendatario_id == arr.id)
-                .all()
-            )
+            # Traer arrendamientos
+            arrendamientos = db.query(Arrendamiento).filter(Arrendamiento.arrendatario_id == arr.id).all()
 
             for arrendamiento in arrendamientos:
-                pagos = (
-                    db.query(Pago)
+                # Traer pagos pendientes junto con sus participaciones y arrendadores en un solo query
+                pagos_con_arrendadores = (
+                    db.query(Pago, ParticipacionArrendador, Arrendador)
+                    .join(ParticipacionArrendador, Pago.participacion_arrendador_id == ParticipacionArrendador.id)
+                    .join(Arrendador, Arrendador.id == ParticipacionArrendador.arrendador_id)
                     .filter(
                         Pago.arrendamiento_id == arrendamiento.id,
                         Pago.vencimiento >= fecha_inicio,
                         Pago.vencimiento < fecha_fin,
-                        Pago.estado == "Pendiente"
-                    ).all()
-                )
-
-                if not pagos:
-                    continue
-
-                # Participaciones + arrendadores (evita buscar 1x1)
-                participaciones = (
-                    db.query(ParticipacionArrendador, Arrendador)
-                    .join(Arrendador, Arrendador.id == ParticipacionArrendador.arrendador_id)
-                    .filter(ParticipacionArrendador.arrendamiento_id == arrendamiento.id)
+                        Pago.estado == "PENDIENTE"
+                    )
                     .all()
                 )
 
-                for pago in pagos:
-                    for participacion, arrendador in participaciones:
-                        nombre_arrendador = arrendador.nombre_o_razon_social
-                        fuente_precio = pago.fuente_precio.name if pago.fuente_precio else "-"
-                        tiene_retencion = "NO" if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA else "SI"
+                if not pagos_con_arrendadores:
+                    continue
 
-                        total_pagos += pago.monto_a_pagar or 0
+                for pago, participacion, arrendador in pagos_con_arrendadores:
+                    # formateo del campo quintales/porcentaje por fila
+                    if getattr(pago, "quintales", None) is not None:
+                        valor_quintales_row = f"{pago.quintales} qq"
+                    elif getattr(pago, "porcentaje", None) is not None:
+                        valor_quintales_row = f"{pago.porcentaje}%"
+                    else:
+                        valor_quintales_row = "-"
 
-                        data.append([
-                            nombre_arrendador,
-                            formato_fecha(pago.vencimiento),
-                            formato_moneda(pago.monto_a_pagar),
-                            fuente_precio,
-                            tiene_retencion
-                        ])
+                    nombre_arrendador = arrendador.nombre_o_razon_social
+                    fuente_precio = pago.fuente_precio.name if pago.fuente_precio else "-"
+                    tiene_retencion = "NO" if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA else "SI"
 
+                    # Sumar monto
+                    if pago.monto_a_pagar is not None:
+                        monto_a_sumar = pago.monto_a_pagar
+                        monto_a_mostrar = formato_moneda(monto_a_sumar)
+                    elif getattr(pago, "quintales", None) is not None:
+                        monto_a_sumar = precio_guia_mes * Decimal(pago.quintales)
+                        monto_a_mostrar = formato_moneda(monto_a_sumar) + " *"
+                    else:
+                        monto_a_sumar = 0
+                        monto_a_mostrar = formato_moneda(0)
+
+                    total_pagos += Decimal(monto_a_sumar)
+                    
+                    # Sumar quintales: solo una vez por pago
+                    pago_id = getattr(pago, "id", id(pago))
+                    if pago_id not in processed_pagos_for_quintales:
+                        if getattr(pago, "quintales", None) is not None:
+                            try:
+                                total_quintales += float(pago.quintales)
+                            except Exception:
+                                pass
+                        processed_pagos_for_quintales.add(pago_id)
+
+                    data.append([
+                        nombre_arrendador,
+                        formato_fecha(pago.vencimiento),
+                        valor_quintales_row,
+                        monto_a_mostrar,
+                        fuente_precio,
+                        tiene_retencion
+                    ])
+
+            # Si no agregamos filas (solo cabecera), agregamos fila vacía
             if len(data) == 1:
-                data.append(["-", "-", "-", "-", "-"])
+                data.append(["-", "-", "-", "-", "-", "-"])
             else:
+                # Formatear total de quintales
+                if total_quintales == 0:
+                    total_quintales_str = "0 qq"
+                else:
+                    if total_quintales.is_integer():
+                        total_quintales_str = f"{int(total_quintales)} qq"
+                    else:
+                        total_quintales_str = f"{total_quintales} qq"
+
                 data.append([
-                    "TOTAL", "-", formato_moneda(total_pagos), "-", "-"
+                    "TOTAL",
+                    "-",
+                    total_quintales_str,
+                    formato_moneda(float(total_pagos)),
+                    "-",
+                    "-"
                 ])
 
             table = Table(
                 data,
-                colWidths=[7 * cm, 4 * cm, 6 * cm, 4 * cm, 4 * cm]
+                colWidths=[7 * cm, 4 * cm, 4 * cm, 6 * cm, 4 * cm, 4 * cm]
             )
             table.setStyle(table_style)
 
@@ -587,8 +635,7 @@ class ReporteService:
 
             # Nota aclaratoria al final de cada hoja
             nota = Paragraph(
-                '<font size="9" color="grey"><i>Nota: Los pagos que no tienen monto corresponden a pagos a porcentaje '
-                'o pagos donde su precio se obtiene el día 16 de este mes.</i></font>',
+                f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía {formato_moneda(precio_guia_mes)} (promedio del mes actual).</i></font>',
                 styles["Normal"]
             )
             elements.append(Spacer(1, 0.4 * cm))
