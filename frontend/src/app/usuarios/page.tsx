@@ -97,7 +97,7 @@ const handleDelete = (id: number) => {
 };
   return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="bg-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Usuarios</h1>

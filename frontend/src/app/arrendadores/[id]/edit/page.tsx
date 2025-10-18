@@ -183,7 +183,7 @@ export default function ModificarArrendadorPage() {
     if (loading) {
         return (
             <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
-                <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="bg-gray-50 p-6 flex items-center justify-center">
                 <p className="text-gray-500">Cargando datos del arrendador...</p>
                 </div>
             </ProtectedRoute>
@@ -192,7 +192,7 @@ export default function ModificarArrendadorPage() {
     if (error) {
         return (
             <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
-                <div className="min-h-screen bg-gray-50 p-6">
+                <div className="bg-gray-50 p-6">
                 <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
                 </div>
             </ProtectedRoute>
@@ -201,7 +201,7 @@ export default function ModificarArrendadorPage() {
     if (!arrendador) {
         return (
             <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="bg-gray-50 p-6">
                 <div className="text-center py-12 font-semibold text-gray-700">
                     No se encontró el arrendador
                 </div>
@@ -213,7 +213,7 @@ export default function ModificarArrendadorPage() {
 
     return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                         <div className="flex items-center justify-between mb-6">

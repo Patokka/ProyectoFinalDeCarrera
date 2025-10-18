@@ -200,7 +200,7 @@ scheduler.start()
 
 
 #Ruta de login para usuarios
-@app.post("/login", response_model = dict, description=" 20443072684,clave123")
+@app.post("/login", response_model = dict)
 def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
 

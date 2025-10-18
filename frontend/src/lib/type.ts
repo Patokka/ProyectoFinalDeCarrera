@@ -5,9 +5,16 @@ export interface ReportConfig {
   inputFields: Array<"month" | "year">;
 }
 export interface Recipient {
-    clave: string;
-    valor: string;
+  clave: string;
+  valor: string;
 }
+
+export interface QuintalesSummaryResponse {
+  arrendatario: string;
+  cantidad: number;
+  quintales: number;
+}
+
 
 export interface PagoDia {
   fecha: string;

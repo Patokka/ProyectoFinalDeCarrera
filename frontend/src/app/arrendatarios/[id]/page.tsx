@@ -79,7 +79,7 @@ export default function ArrendatarioDetailPage() {
     if (loading) {
         return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+            <div className="bg-gray-50 p-6 flex items-center justify-center">
             <p className="text-gray-500">Cargando datos del arrendatario...</p>
             </div>
         </ProtectedRoute>
@@ -89,7 +89,7 @@ export default function ArrendatarioDetailPage() {
     if (error) {
         return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="bg-gray-50 p-6">
             <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
             </div>
         </ProtectedRoute>
@@ -99,7 +99,7 @@ export default function ArrendatarioDetailPage() {
     if (!arrendatario) {
         return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="bg-gray-50 p-6">
             <div className="text-center py-12 font-semibold text-gray-700">No se encontró el arrendatario</div>
             </div>
         </ProtectedRoute>
@@ -127,7 +127,7 @@ export default function ArrendatarioDetailPage() {
 
     return (
         <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="bg-gray-50 p-6">
                 <div className="max-w-7xl mx-auto space-y-6">
                     {/* Header */}
                     <div className="flex items-center justify-between">
@@ -154,7 +154,7 @@ export default function ArrendatarioDetailPage() {
                             readOnly={true}
                             disabled={false}
                         />
-                        <Text label="Mail:" value={arrendatario.mail} readOnly={true} disabled={false} />
+                        <Text label="Mail:" value={arrendatario.mail? arrendatario.mail : '-'} readOnly={true} disabled={false} />
                         <Text
                             label="Localidad:"
                             value={`${arrendatario.localidad.nombre_localidad}, ${arrendatario.localidad.provincia.nombre_provincia}`}

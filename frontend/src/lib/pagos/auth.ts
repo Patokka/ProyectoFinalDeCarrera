@@ -1,4 +1,4 @@
-import { PagoDia, PagoDtoOut, PagoForm, PaymentSummaryResponse } from "../type";
+import { PagoDia, PagoDtoOut, PagoForm, PaymentSummaryResponse, QuintalesSummaryResponse } from "../type";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -341,6 +341,35 @@ export async function asignarPrecioPago(idPago: number): Promise<PagoDtoOut> {
     if (!res.ok) {
         const err = await res.json();
         throw new Error(err.detail || "Error al asignarle el precio al pago");
+    }
+
+    return res.json();
+}
+export async function fetchNextMonthQuintalesSummary(): Promise<QuintalesSummaryResponse[]> {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+
+    // 2. Apuntar al endpoint que corresponde a tu método de FastAPI
+    // La URL debe coincidir con la que definas en tu router de FastAPI.
+    const res = await fetch(`${API_URL}/pagos/resumen-quintales-proximo-mes`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+        }
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (!res.ok) {
+        throw new Error("Error al obtener el resumen de quintales del próximo mes.");
     }
 
     return res.json();

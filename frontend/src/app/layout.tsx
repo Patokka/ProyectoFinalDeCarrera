@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="es">
       <body>
         <AuthProvider>
-          <div className="min-h-screen bg-slate-200">
+          <div className="bg-slate-200">
             <Navbar/>
             <main className="pt-16">
               <SideBar>

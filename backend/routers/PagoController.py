@@ -4,10 +4,17 @@ from sqlalchemy.orm import Session
 from model.Usuario import Usuario
 from util.permisosUser import canEditDelete
 from util.database import get_db
-from dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion, PagoFechaEstado, PagoResumenDto
+from dtos.PagoDto import PagoDto, PagoDtoOut, PagoDtoModificacion, PagoFechaEstado, PagoResumenDto, QuintalesResumenDto
 from services.PagoService import PagoService
 
 router = APIRouter()
+
+@router.get("/resumen-quintales-proximo-mes", response_model=list[QuintalesResumenDto], description="Obtiene la suma total de quintales a entregar el próximo mes, agrupados por arrendatario.")
+def obtener_resumen_quintales_proximo_mes(db: Session = Depends(get_db)):
+    try:
+        return PagoService.obtener_resumen_quintales_proximo_mes(db)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/resumen-mes", response_model= list[PagoResumenDto] ,description="Obtención de resumen mensual de pagos, con la cantidad por arrendatario y el precio total.")
 def obtener_pagos_agrupados_mes(db:Session = Depends(get_db)):

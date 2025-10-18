@@ -1,22 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
+import { DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
 import { fetchPaymentSummary } from '@/lib/pagos/auth'
-
-interface PaymentSummaryItem {
-  arrendatario: string
-  cantidad: number
-  monto: number
-}
-
+import { PaymentSummaryResponse } from '@/lib/type'
 
 export default function PaymentSummary() {
-  const [payments, setPayments] = useState<PaymentSummaryItem[]>([])
+  const [payments, setPayments] = useState<PaymentSummaryResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(true)
+  const today = new Date();
+  const nextMonthDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  const month = String(nextMonthDate.getMonth() + 1).padStart(2, '0');
+  const year = nextMonthDate.getFullYear();
 
-  // Datos de ejemplo - en producción vendrían de la API
   useEffect(() => {
     async function loadPayments() {
       try {
@@ -66,7 +63,7 @@ export default function PaymentSummary() {
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center space-x-2">
           <DollarSign className="w-5 h-5 text-green-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Pagos del Mes</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Pagos del Mes {month}/{year}</h3>
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}

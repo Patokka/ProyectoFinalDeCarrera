@@ -363,6 +363,41 @@ class PagoService:
         return response
     
     @staticmethod
+    def obtener_resumen_quintales_proximo_mes(db: Session):
+        #Calcular el año y mes del próximo mes
+        today = date.today()
+        proximo_mes_fecha = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
+        
+        proximo_mes = proximo_mes_fecha.month
+        proximo_mes_ano = proximo_mes_fecha.year
+
+        results = (
+            db.query(
+                Arrendatario.razon_social.label("arrendatario"),
+                func.count(Pago.id).label("cantidad"),
+                func.sum(Pago.quintales).label("quintales")
+            )
+            .join(Arrendamiento, Pago.arrendamiento_id == Arrendamiento.id)
+            .join(Arrendatario, Arrendamiento.arrendatario_id == Arrendatario.id)
+            .filter(extract("year", Pago.vencimiento) == proximo_mes_ano)
+            .filter(extract("month", Pago.vencimiento) == proximo_mes)
+            .filter(Pago.estado.in_(["PENDIENTE"]))
+            .group_by(Arrendatario.razon_social)
+            .all()
+        )
+        
+        response = [
+            {
+                "arrendatario": r.arrendatario,
+                "cantidad": int(r.cantidad) if r.cantidad is not None else 0,
+                "quintales": float(r.quintales) if r.quintales is not None else 0
+            }
+            for r in results
+        ]
+
+        return response
+    
+    @staticmethod
     def obtener_vencimientos_mes(db: Session, mes: int, anio: int):
         results = (
             db.query(Pago.vencimiento, Pago.estado)

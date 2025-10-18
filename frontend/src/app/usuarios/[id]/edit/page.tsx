@@ -132,7 +132,7 @@ export default function ModificarUsuarioPage() {
     if (loading) {
         return (
             <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
-                <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="bg-gray-50 p-6 flex items-center justify-center">
                 <p className="text-gray-500">Cargando datos del usuario...</p>
                 </div>
             </ProtectedRoute>
@@ -141,7 +141,7 @@ export default function ModificarUsuarioPage() {
     if (error) {
         return (
             <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
-                <div className="min-h-screen bg-gray-50 p-6">
+                <div className="bg-gray-50 p-6">
                 <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
                 </div>
             </ProtectedRoute>
@@ -150,7 +150,7 @@ export default function ModificarUsuarioPage() {
     if (!usuario) {
         return (
             <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="bg-gray-50 p-6">
                 <div className="text-center py-12 font-semibold text-gray-700">
                     No se encontró el usuario
                 </div>
@@ -162,7 +162,7 @@ export default function ModificarUsuarioPage() {
 
     return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                         <div className="flex items-center justify-between mb-6">

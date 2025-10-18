@@ -129,7 +129,7 @@ export default function ArrendadorDetailPage() {
     if (loading) {
         return (
             <ProtectedRoute>
-                <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+                <div className="bg-gray-50 p-6 flex items-center justify-center">
                 <p className="text-gray-500">Cargando datos del arrendador...</p>
                 </div>
             </ProtectedRoute>
@@ -138,7 +138,7 @@ export default function ArrendadorDetailPage() {
     if (error) {
         return (
             <ProtectedRoute>
-                <div className="min-h-screen bg-gray-50 p-6">
+                <div className="bg-gray-50 p-6">
                 <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
                 </div>
             </ProtectedRoute>
@@ -147,7 +147,7 @@ export default function ArrendadorDetailPage() {
     if (!arrendador) {
         return (
             <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50 p-6">
+            <div className="bg-gray-50 p-6">
                 <div className="text-center py-12 font-semibold text-gray-700">
                     No se encontró el arrendador
                 </div>
@@ -177,7 +177,7 @@ export default function ArrendadorDetailPage() {
 
 return (
     <ProtectedRoute>
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
             <div className="flex items-center justify-between">

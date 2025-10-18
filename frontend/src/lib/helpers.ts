@@ -140,3 +140,10 @@ export function validarCuilCuit(cuil: string): boolean {
 
     return numeros[10] === digitoVerificador;
 }
+
+export const formatQuintales = (amount: number) => {
+    return new Intl.NumberFormat('es-AR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount) + ' qq'
+}
