@@ -239,7 +239,7 @@ export default function PreciosPage() {
               <h4 className="text-sm font-medium text-blue-900 mb-1">Nota:</h4>
               <p className="text-sm text-blue-800 leading-snug">
                 El precio diario de la Bolsa de Comercio de Rosario es actualizado de 
-                forma automática todos los días a las 11 a.m.
+                forma automática todos los días.
               </p>
             </div>
 

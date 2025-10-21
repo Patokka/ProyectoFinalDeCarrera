@@ -228,7 +228,7 @@ class PrecioService:
         if existe:
             return JSONResponse(
                 status_code=409,  # Conflicto, ya existe
-                content={"status": "ya existe", "valor": existe.precio_obtenido}
+                content={"status": "ya existe", "valor": str(existe.precio_obtenido)}
             )
 
         # Crear nuevo precio

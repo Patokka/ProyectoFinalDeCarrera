@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from dtos.UsuarioDto import UsuarioLogin
 from routers import ArrendadorController, ArrendamientoController, ArrendatarioController, FacturacionController, LocalidadController, PagoController, ParticipacionArrendadorController, PrecioController, ProvinciaController, ReporteController, RetencionController, UsuarioController
-from util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, verify_password
+from util.jwtYPasswordHandler import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, hash_password, verify_password
 from util.permisosUser import get_current_user
 from dtos.JobUpdateRequest import JobUpdateRequest 
 
@@ -43,31 +43,35 @@ from util.database import SessionLocal
 import logging
 logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
-#Importación del bot de escucha de mensajes para actualizar precios de AGD
-from util.botPrecioAGD import BotPrecioAGD
+# Zona horaria de Argentina
+argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")
 
-###############################################################################bot = BotPrecioAGD()
+# Scheduler
+scheduler = BackgroundScheduler(timezone=argentina_tz)  
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gestionar el ciclo de vida de la aplicación"""
-    # Startup: crear las tablas
     print("🚀 Iniciando aplicación...")
     try:
+        #Crear las tablas
         create_tables()
-        print("✅ Tablas creadas exitosamente")
+        print("✅ Tablas creadas/verificadas exitosamente")
+        #Inicializar los jobs desde la BD
+        inicializar_jobs_desde_db()
+        print("✅ Jobs inicializados")
+        #Iniciar el scheduler
+        scheduler.start()
+        print("✅ Scheduler iniciado y corriendo")
+
     except Exception as e:
-        print(f"❌ Error al crear las tablas: {e}")
-    
-    ###############################################################################print("🤖 Iniciando BotPrecioAGD...")
-    ###############################################################################bot.start()
-    
+        print(f"❌ Error fatal durante el inicio: {e}")  
     yield
-    # Shutdown: limpiar recursos si es necesario
+    
+    #CÓDIGO DE CIERRE (Shutdown)
     print("🔄 Cerrando aplicación...")
-    ###############################################################################print("🛑 Deteniendo BotPrecioAGD...")
-    ###############################################################################bot.stop()
-    ###############################################################################bot.esperar_hilo()
+    scheduler.shutdown()
+    print("🛑 Scheduler detenido")
 
 # Crear la aplicación FastAPI con lifespan
 app = FastAPI(
@@ -187,18 +191,6 @@ def job_actualizar_arrendamientos_vencidos():
     finally:
         db.close()
         
-# Zona horaria de Argentina
-argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")
-
-# Scheduler
-scheduler = BackgroundScheduler(timezone=argentina_tz)
-
-# Crear jobs desde la base
-inicializar_jobs_desde_db()
-scheduler.start()
-
-
-
 #Ruta de login para usuarios
 @app.post("/login", response_model = dict)
 def login(dto: UsuarioLogin, db: Session = Depends(get_db)):

@@ -1,0 +1,90 @@
+services:
+  #Base de Datos (MySQL)
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Snordesan2025
+      MYSQL_DATABASE: sistema_arrendamientos
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s # Revisa cada 10 segundos
+      timeout: 5s   # Si tarda más de 5s, falla
+      retries: 5    # Intenta 5 veces antes de marcarlo como "no saludable"
+    networks:
+      - mi-red
+
+  #Backend (FastAPI)
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    # 'env_file' carga TODAS las variables de .env (BCR, SMTP, etc.)
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: "mysql+pymysql://root:Snordesan2025@db:3306/sistema_arrendamientos"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/docs"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5 
+      start_period: 15s
+    depends_on:
+          db:
+            condition: service_healthy
+    networks:
+      - mi-red
+
+  #Frontend (Next.js)
+  frontend:
+
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - mi-red
+
+  #Bot (Python + Selenium)
+  bot:
+    build: ./bot
+    restart: unless-stopped
+    shm_size: '2g'
+    environment:
+      BACKEND_LOGIN_URL: "http://backend:8080/login"
+      BACKEND_PRECIOS_URL: "http://backend:8080/precios/consultarAGD"
+      CHROME_PROFILE_PATH: "/app/chrome_profile_agd"   
+      # El bot también usa la URL de MySQL
+      DATABASE_URL: "mysql+pymysql://root:Snordesan2025@db:3306/sistema_arrendamientos"
+    volumes:
+      - chrome_session_agd:/app/bot/chrome_profile_agd
+    depends_on:
+          backend: 
+            condition: service_healthy
+          db:
+            condition: service_healthy
+    networks:
+      - mi-red
+
+#Red interna
+networks:
+  mi-red:
+    driver: bridge
+
+#Volúmenes persistentes
+volumes:
+  mysql_data:
+    driver: local
+  chrome_session_agd:
+    driver: local

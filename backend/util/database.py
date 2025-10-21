@@ -1,6 +1,8 @@
 import os
+import time  # <-- NUEVO IMPORT
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.exc import OperationalError  # <-- NUEVO IMPORT
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -27,6 +29,30 @@ def get_db():
     finally:
         db.close()
 
-# Función para crear las tablas
+# --- FUNCIÓN MODIFICADA CON REINTENTOS ---
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    """
+    Crea las tablas, pero reintenta 10 veces si la base de datos no está lista.
+    """
+    print("Intentando conectar a la base de datos para crear tablas...")
+    intentos = 10
+    
+    for i in range(intentos):
+        try:
+            # 1. Intentamos la operación que falla (crear tablas)
+            Base.metadata.create_all(bind=engine)
+            
+            # 2. Si tiene éxito, salimos del bucle
+            print("¡Conexión exitosa! Tablas creadas/verificadas.")
+            return  # <-- Salimos de la función
+            
+        except OperationalError as e:
+            # 3. Si falla, es (probablemente) porque la BD no está lista
+            print(f"Intento {i + 1}/{intentos}: La BD no está lista.")
+            
+            if i < intentos - 1:
+                print("Reintentando en 5 segundos...")
+                time.sleep(5) # Esperamos 5 segundos
+            else:
+                print("Error: No se pudo conectar a la base de datos después de varios intentos.")
+                raise  # Lanza la última excepción para que el log la muestre
