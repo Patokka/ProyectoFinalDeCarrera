@@ -1,3 +1,4 @@
+name: sistema-arrendamientos
 services:
   #Base de Datos (MySQL)
   db:
@@ -6,6 +7,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: Snordesan2025
       MYSQL_DATABASE: sistema_arrendamientos
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci  
     ports:
       - "3307:3306"
     volumes:
@@ -29,7 +33,8 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: "mysql+pymysql://root:Snordesan2025@db:3306/sistema_arrendamientos"
+      DATABASE_URL: "mysql+pymysql://root:Snordesan2025@db:3306/sistema_arrendamientos?charset=utf8mb4"
+      TZ: "America/Argentina/Buenos_Aires"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/docs"] 
       interval: 10s
@@ -53,27 +58,6 @@ services:
       NEXT_PUBLIC_API_URL: http://backend:8080
     depends_on:
       - backend
-    networks:
-      - mi-red
-
-  #Bot (Python + Selenium)
-  bot:
-    build: ./bot
-    restart: unless-stopped
-    shm_size: '2g'
-    environment:
-      BACKEND_LOGIN_URL: "http://backend:8080/login"
-      BACKEND_PRECIOS_URL: "http://backend:8080/precios/consultarAGD"
-      CHROME_PROFILE_PATH: "/app/chrome_profile_agd"   
-      # El bot también usa la URL de MySQL
-      DATABASE_URL: "mysql+pymysql://root:Snordesan2025@db:3306/sistema_arrendamientos"
-    volumes:
-      - chrome_session_agd:/app/bot/chrome_profile_agd
-    depends_on:
-          backend: 
-            condition: service_healthy
-          db:
-            condition: service_healthy
     networks:
       - mi-red
 

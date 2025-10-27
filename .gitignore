@@ -4,6 +4,12 @@ __pycache__/
 *.py[cod]
 chrome_profile_agd/
 .vscode
+venv_bot_build/
+chrome_profile_agd_local/
+build/
+WhatsAppBotAGD.spec
+bot_whatsapp.log
+dist/
 
 #Para frontend
 node_modules/

@@ -1,23 +1,52 @@
-# botPrecioAGD.py
 import os
+import sys
 import time
 import requests
 import shutil
+import traceback
+import platform # Para detectar OS
+import logging 
+import subprocess
+
+if getattr(sys, 'frozen', False):
+    #.exe (PyInstaller)
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    #.py script
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+#Configuración del Logging
+log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+log_file = os.path.join(BASE_DIR, 'bot_whatsapp.log')
+logger = logging.getLogger('WhatsAppBot')
+logger.setLevel(logging.INFO)
+if logger.hasHandlers(): logger.handlers.clear()
+try:
+    file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
+    file_handler.setFormatter(log_formatter)
+    logger.addHandler(file_handler)
+except Exception as e: print(f"Error log file: {e}")
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(log_formatter)
+logger.addHandler(console_handler)
+#Fin Configuración Logging
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (
-    NoSuchElementException, StaleElementReferenceException, TimeoutException
+    NoSuchElementException, StaleElementReferenceException, TimeoutException, WebDriverException, ElementClickInterceptedException
 )
 
 class BotPrecioAGD:
-    CONTACTO = "Fran" 
+    CONTACTO = "Fran"
     URL_LOGIN = os.environ.get("BACKEND_LOGIN_URL", "http://localhost:8080/login")
     URL_DESTINO = os.environ.get("BACKEND_PRECIOS_URL", "http://localhost:8080/precios/consultarAGD")
     USERNAME_LOGIN = "27221028940"
     PASSWORD_LOGIN = "clave123"
+    QR_CODE_SELECTOR = 'div[data-ref]'
+    CHAT_LIST_SELECTOR = '#pane-side'
 
     def __init__(self):
         self.contacto = self.CONTACTO
@@ -27,281 +56,368 @@ class BotPrecioAGD:
         self.api_token = None
         self.driver = None
         self.chat_abierto = None
-        
-        self.perfil_chrome = os.environ.get("CHROME_PROFILE_PATH", "/app/bot/chrome_profile_agd")
+        default_profile_path = os.path.join(BASE_DIR, "chrome_profile_agd_local")
+        self.perfil_chrome = os.environ.get("CHROME_PROFILE_PATH", default_profile_path)
+        logger.info(f"Usando perfil: {self.perfil_chrome}")
+        try: os.makedirs(self.perfil_chrome, exist_ok=True)
+        except Exception as e: logger.error(f"No se pudo crear dir perfil: {e}")
         self.flag_mensaje_path = os.path.join(self.perfil_chrome, "ultimo_mensaje.txt")
         self.ultimo_mensaje_enviado = self.cargar_ultimo_mensaje()
-        
-        # Opcional: Forzar una sesión limpia cada vez, borrando el perfil
-        # self.limpiar_perfil() 
-        
         self._realizar_login()
 
     def limpiar_perfil(self):
-        """
-        Borra la carpeta del perfil de Chrome para forzar un inicio de sesión
-        con QR limpio cada vez. Útil para depuración.
-        """
         try:
-            if os.path.exists(self.perfil_chrome):
-                print(f"🧹 Limpiando perfil de Chrome antiguo en: {self.perfil_chrome}")
-                shutil.rmtree(self.perfil_chrome)
-        except Exception as e:
-            print(f"⚠️ No se pudo limpiar el perfil: {e}")
+            if os.path.exists(self.perfil_chrome): logger.info(f"Limpiando perfil..."); shutil.rmtree(self.perfil_chrome)
+        except Exception as e: logger.warning(f"No se pudo limpiar perfil: {e}")
 
     def _realizar_login(self):
-        if not self.api_username or not self.api_password:
-            print("❌ No se puede hacer login: Faltan credenciales.")
-            return False
-        
-        print("🔑 Intentando iniciar sesión en el backend...")
+        if not self.api_username or not self.api_password: logger.error("Faltan credenciales."); return False
+        logger.info("Login backend...")
         try:
             payload = {"cuil": self.api_username, "contrasena": self.api_password}
-            response = requests.post(self.URL_LOGIN, json=payload)
-
-            if response.status_code in [200, 201]:
-                token = response.json().get("access_token") 
-                if token:
-                    self.api_token = token
-                    print("✅ Login exitoso. Token JWT obtenido.")
-                    return True
-                else:
-                    print("❌ Error de login: La respuesta del backend no contiene un 'access_token'.")
-                    return False
-            else:
-                print(f"❌ Falló el login: {response.status_code} - {response.text}")
-                return False
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Error de conexión durante el login: {e}")
-            return False
+            response = requests.post(self.URL_LOGIN, json=payload, timeout=10)
+            if response.status_code in [200, 201]: 
+                token = response.json().get("access_token")
+                if token: self.api_token = token; logger.info("Login OK."); return True
+                else: logger.error("Login OK, sin token."); return False
+            else: logger.error(f"Falló login: {response.status_code}"); return False
+        except requests.exceptions.Timeout: logger.error(f"Timeout login."); return False
+        except requests.exceptions.RequestException as e: logger.error(f"Error conexión login: {e}"); return False
 
     def cargar_ultimo_mensaje(self):
         try:
             with open(self.flag_mensaje_path, "r", encoding="utf-8") as f:
-                contenido = f.read().strip().split("||")
-                return contenido if len(contenido) == 2 else [None, None]
-        except FileNotFoundError:
-            return [None, None]
+                contenido = f.read().strip().split("||"); return contenido if len(contenido) == 2 else [None, None]
+        except FileNotFoundError: logger.info(f"No se encontró {os.path.basename(self.flag_mensaje_path)}."); return [None, None]
+        except Exception as e: logger.warning(f"Error cargando último msg: {e}"); return [None, None]
 
     def guardar_ultimo_mensaje(self, mensaje):
-        hoy = time.strftime("%Y-%m-%d")
-        os.makedirs(self.perfil_chrome, exist_ok=True)
-        with open(self.flag_mensaje_path, "w", encoding="utf-8") as f:
-            f.write(f"{mensaje.strip()}||{hoy}")
-    
+        try:
+            hoy = time.strftime("%Y-%m-%d"); os.makedirs(os.path.dirname(self.flag_mensaje_path), exist_ok=True)
+            with open(self.flag_mensaje_path, "w", encoding="utf-8") as f: f.write(f"{mensaje.strip()}||{hoy}")
+            logger.info(f"Último mensaje guardado ({hoy}).")
+        except Exception as e: logger.warning(f"Error guardando último msg: {e}")
+
     def enviar_mensaje_al_backend(self, mensaje, is_retry=False):
         if not self.api_token:
-            if not self._realizar_login():
-                print("❌ No se pudo re-autenticar. Envío cancelado.")
-                return False
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_token}",
-            "Content-Type": "application/json"
-        }
-        
+            if not self._realizar_login(): return False
+        headers = {"Authorization": f"Bearer {self.api_token}", "Content-Type": "application/json"}
         try:
-            response = requests.post(self.url_destino, json={"mensaje": mensaje}, headers=headers)
-            if response.status_code == 200:
-                print(f"📡 Mensaje enviado al backend correctamente (código {response.status_code}).")
-                return True
+            response = requests.post(self.url_destino, json={"mensaje": mensaje}, headers=headers, timeout=10)
+            if response.status_code in [200, 201, 204]: return True
             elif response.status_code == 401 and not is_retry:
-                print("⚠️ Token expirado o inválido (401). Intentando re-autenticar...")
-                if self._realizar_login():
-                    print("🔄 Re-autenticación exitosa. Reintentando enviar mensaje...")
-                    return self.enviar_mensaje_al_backend(mensaje, is_retry=True)
-                else:
-                    print("❌ Falló la re-autenticación. No se pudo enviar el mensaje.")
-                    return False
-            else:
-                print(f"⚠️ Respuesta inesperada del backend: {response.status_code} - {response.text}")
-                return False
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Error de conexión al enviar al backend: {e}")
-            return False
+                logger.warning("Token expirado (401). Re-autenticando..."); self.api_token = None
+                if self._realizar_login(): return self.enviar_mensaje_al_backend(mensaje, is_retry=True)
+                else: logger.error("Falló re-autenticación post-401."); return False
+            else: logger.warning(f"Error backend: {response.status_code}"); return False
+        except requests.exceptions.Timeout: logger.error(f"Timeout enviando msg."); return False
+        except requests.exceptions.RequestException as e: logger.error(f"Error conexión enviando msg: {e}"); return False
 
-    def iniciar_driver(self, forzar_visible=False):
+    def iniciar_driver(self, headless=False):
+        """Inicia el driver de Chrome, visible o headless."""
+        self._force_kill_drivers()
+        lockfile_path = os.path.join(self.perfil_chrome, "SingletonLock")
+        if os.path.exists(lockfile_path):
+            logger.info(f"Limpiando {lockfile_path}...")
+            try: os.remove(lockfile_path)
+            except OSError as e: logger.warning(f"No se pudo: {e}.")
+        # Asegurar que no haya driver activo ANTES de intentar iniciar
         if self.driver:
-            try:
-                self.driver.quit()
-            except Exception:
-                pass
-            
+            logger.warning("Driver aún activo al llamar a iniciar_driver. Intentando cerrar...")
+            self.shutdown_driver() # Llama a quit() y pausa
+        mode = "Headless" if headless else "Visible"
+        logger.info(f"Configurando Chrome ({mode})...")
         chrome_options = Options()
         chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument(f"--user-data-dir={self.perfil_chrome}")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
-        
-        if not forzar_visible:
+        chrome_options.add_argument("--window-size=1280,800")
+        if headless:
             chrome_options.add_argument("--headless=new")
-        
-        self.driver = webdriver.Chrome(options=chrome_options)
-
-    #LÓGICA DE SESIÓN
-    def sesion_activa(self):
-        """
-        Verifica si la sesión está activa buscando el panel lateral de chats.
-        """
+            chrome_options.add_argument("--disable-gpu")
+            chrome_options.add_argument("--disable-extensions")
+            chrome_options.add_argument("--disable-in-process-stack-traces")
+            chrome_options.add_argument("--disable-logging")
+            chrome_options.add_argument("--log-level=3")
+            chrome_options.add_argument("--disable-crash-reporter")
+        else:
+            chrome_options.add_argument("--start-maximized")
         try:
-            # Si existe el panel lateral, la sesión está iniciada.
-            self.driver.find_element(By.ID, "pane-side")
-            return True
-        except Exception:
+            logger.info(f"Iniciando webdriver.Chrome() ({mode})...")
+            self.driver = webdriver.Chrome(options=chrome_options)
+            logger.info(f"Webdriver ({mode}) iniciado.")
+            return True # Éxito
+        except WebDriverException as e:
+            error_msg = str(e).split('\n')[0]
+            logger.error(f"Error WebDriverException iniciando Chrome ({mode}): {error_msg}")
+            if "cannot find chrome binary" in error_msg.lower(): logger.error("¡Google Chrome no parece estar instalado!")
+            elif "unable to obtain driver" in error_msg.lower(): logger.error("Selenium Manager no pudo descargar/encontrar chromedriver.")
+            elif "session not created: Chrome failed to start: crashed" in error_msg:
+                logger.error(f"Chrome ({mode}) CRASHEÓ al iniciar. ¿Perfil corrupto o problema con modo headless?")
+            else: logger.exception("Error detallado:") # Imprime traceback completo si es otro error
+            self.driver = None
             return False
+        except Exception as e:
+            logger.critical(f"ERROR FATAL iniciando webdriver ({mode}):", exc_info=True)
+            self.driver = None
+            return False
+
+    def sesion_activa(self):
+        if not self.driver: return False
+        try: WebDriverWait(self.driver, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, self.CHAT_LIST_SELECTOR))); return True
+        except: return False
+
+    def monitorear_en_bucle(self):
+        """Bucle de monitoreo una vez que el driver está activo."""
+        logger.info(f"Iniciando bucle de monitoreo...")
+        sesion_activa = True
+        self.chat_abierto = None 
+        while sesion_activa:
+            monitor_result = self._monitorear_mensajes()            
+            if not monitor_result: 
+                logger.warning("Sesión perdida detectada por _monitorear_mensajes().")
+                sesion_activa = False
+            else:
+                time.sleep(15) # Espera normal
+        logger.info("Fin de bucle de monitoreo. Cerrando driver actual...")
+        self.shutdown_driver()
 
     def _manejar_sesion_whatsapp(self):
-        """
-        Gestiona el inicio de sesión. Espera el QR o la lista de chats.
-        Si aparece el QR, cambia a modo visible y espera el escaneo.
-        """
-        print("🔄 Verificando sesión de WhatsApp...")
-        self.iniciar_driver(forzar_visible=True) # Iniciar sin headless
-        self.driver.get("https://web.whatsapp.com/")
-
-        try:
-            # Esperamos 60 seg a que aparezca UNO de los dos:
-            # 1. El QR ('div[data-ref]')
-            # 2. La lista de chats ('#pane-side')
-            WebDriverWait(self.driver, 60).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-ref], #pane-side"))
-            )
-        except TimeoutException:
-            print("❌ WhatsApp Web no cargó. Ni QR ni chat list encontrados. Reintentando...")
-            return False
-
-        #verificamos si la sesión ya está activa
-        if self.sesion_activa():
-            print("✅ Sesión de WhatsApp activa detectada.")
-            return True
-
-        # Si no está activa, significa que el QR está visible.
-        # Cambiamos a modo visible para el escaneo.
-        print("⚠️ Se requiere iniciar sesión. Cambiando a modo visible.")
-        self.iniciar_driver(forzar_visible=True)
-        self.driver.get("https://web.whatsapp.com/")
-        print("👉 Escanea el QR de WhatsApp Web (tienes ~60 segundos)...")
+        """Gestiona sesión. USA SIEMPRE MODO VISIBLE para login/QR."""
+        logger.info("Verificando sesión WhatsApp (Siempre Visible para Login/QR)...")
         
+        if not self.driver:
+            if not self.iniciar_driver(headless=False):
+                logger.error("Fallo crítico al iniciar driver VISIBLE.")
+                return False
         try:
-            # Esperamos (hasta 60 seg) a que el usuario escanee
-            # y aparezca la lista de chats ('#pane-side').
+            logger.info("Abriendo WhatsApp Web...")
+            self.driver.set_page_load_timeout(60)
+            self.driver.get("https://web.whatsapp.com/")
+        except Exception as e: logger.error(f"Error cargando WA Web: {e}"); return False
+        finally:
+            try: self.driver.set_page_load_timeout(300)
+            except: pass
+        try:
+            logger.info("Esperando carga inicial (QR o Chats)...")
+            # Espera QR O la lista de chats
             WebDriverWait(self.driver, 60).until(
-                EC.presence_of_element_located((By.ID, "pane-side"))
+                EC.presence_of_element_located((By.CSS_SELECTOR, f"{self.QR_CODE_SELECTOR}, {self.CHAT_LIST_SELECTOR}"))
             )
-            print("✅ Sesión de WhatsApp iniciada correctamente.")
+        except TimeoutException: logger.error("WhatsApp Web no cargó (ni QR ni Chats)."); return False
+        if self.sesion_activa():
+            logger.info("Sesión activa detectada (en modo visible).")
             return True
-        except TimeoutException:
-            print("⏳ Tiempo de espera agotado. No se detectó inicio de sesión.")
-            return False
-    
+        logger.info("QR visible en navegador."); logger.info("👉 Escanea el QR..."); logger.info("   (~2 minutos)")
+        try:
+            WebDriverWait(self.driver, 120).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, self.CHAT_LIST_SELECTOR))
+            )
+            logger.info("Escaneo detectado! Sesión iniciada (en modo visible).")
+            return True
+        except TimeoutException: logger.error("Timeout escaneo."); return False
+        except Exception as e: logger.exception(f"Error esperando escaneo:"); return False
+
     def _monitorear_mensajes(self):
-            """
-            Busca, lee y procesa los nuevos mensajes del contacto definido.
-            """
+            if not self.driver: return False
             try:
+                try:
+                    #Si está el qr es que se deslogueó
+                    qr_elements = self.driver.find_elements(By.CSS_SELECTOR, self.QR_CODE_SELECTOR)
+                    if qr_elements: # Si la lista NO está vacía, el QR está visible.
+                        logger.warning("¡Sesión CERRADA! (QR detectado). Reiniciando...")
+                        return False
+                    #Si el panel de chat existe entonces estamos logueados
+                    self.driver.find_element(By.CSS_SELECTOR, self.CHAT_LIST_SELECTOR)
+                except NoSuchElementException:
+                    logger.warning("¡Sesión PERDIDA! (No se encontró el panel de chats). Reiniciando...")
+                    return False
+                except WebDriverException as e:
+                    logger.error(f"Error WebDriver durante chequeo de sesión: {e}")
+                    return False 
                 if self.chat_abierto != self.contacto:
-                    chat = None
-                    intentos = 0
-                    max_intentos_scroll = 10 # Intentará scrollear 10 veces como máximo
-
+                    chat = None; intentos = 0; max_intentos_scroll=10 #Busca el chat con el contacto scrolleando si hace falta
                     while not chat and intentos < max_intentos_scroll:
-                        try:
-                            chat = self.driver.find_element(By.XPATH, f'//span[@title="{self.contacto}"]')
+                        try: chat = self.driver.find_element(By.XPATH, f'//span[@title="{self.contacto}"]')
                         except NoSuchElementException:
-                            print(f"🔄 Contacto '{self.contacto}' no visible. Scrolleando lista... (Intento {intentos + 1}/{max_intentos_scroll})")
-                            try:
-                                panel_chats = self.driver.find_element(By.ID, "pane-side")
-                                self.driver.execute_script("arguments[0].scrollTop += 500;", panel_chats)
-                            except NoSuchElementException:
-                                print("❌ No se encontró el panel de chats '#pane-side' para scrollear.")
-                                break
-                            time.sleep(1)
-                            intentos += 1
-
-                    if not chat:
-                        print(f"❌ No se pudo encontrar el chat de '{self.contacto}' después de {max_intentos_scroll} intentos de scroll.")
-                        raise TimeoutException(f"No se pudo encontrar el chat de '{self.contacto}'.")
-                    self.driver.execute_script("arguments[0].scrollIntoView(true);", chat)
-                    time.sleep(0.5)
-                    chat.click()
-                    
-                    self.chat_abierto = self.contacto
-                    print(f"💬 Chat con '{self.contacto}' abierto.")
-                    time.sleep(2)
-
-                mensajes = self.driver.find_elements(By.CSS_SELECTOR, "div.message-in")
-                if not mensajes: return
-
-                ultimo_msg_spans = mensajes[-1].find_elements(By.CSS_SELECTOR, "span.selectable-text")
-                ultimo_msg_texto = "\n".join([span.text for span in ultimo_msg_spans]).strip()
-
-                if not ultimo_msg_texto: return
-
-                mensaje_guardado, fecha_guardada = self.ultimo_mensaje_enviado
+                            if intentos == 0: logger.info(f"'{self.contacto}' no visible, scrolleando...")
+                            try: panel=self.driver.find_element(By.CSS_SELECTOR, self.CHAT_LIST_SELECTOR); self.driver.execute_script("arguments[0].scrollTop += 500;", panel)
+                            except: break
+                            time.sleep(1); intentos += 1
+                        except Exception as e: logger.error(f"Error buscando: {e}"); return True
+                    if not chat: logger.warning(f"No se encontró '{self.contacto}'."); return True
+                    try:
+                        clicked = False
+                        try: chat.click(); clicked = True
+                        except ElementClickInterceptedException:
+                            try: chat.find_element(By.XPATH, './ancestor::div[@role="listitem"]').click(); clicked = True
+                            except Exception as e_cont: logger.warning(f" Falló click contenedor: {e_cont}")
+                        except WebDriverException as e_click: logger.error(f" Error WebDriver click: {e_click}")
+                        if not clicked: logger.error(" No se pudo clickear."); self.chat_abierto = None; return True
+                        self.chat_abierto = self.contacto
+                        logger.info(" Chat abierto.")
+                        time.sleep(0.5)
+                    except Exception as e_open: logger.error(f" Error abriendo chat: {e_open}"); self.chat_abierto = None; return True
+                # Leer mensajes
+                mensajes_in = self.driver.find_elements(By.CSS_SELECTOR, "div.message-in")
+                if not mensajes_in: return True
+                ultimo_msg_div = mensajes_in[-1]
+                try:
+                    spans = ultimo_msg_div.find_elements(By.CSS_SELECTOR, "span.selectable-text span")
+                    ultimo_msg_texto = "\n".join([s.text for s in spans if s.text]).strip()
+                except: return True
+                if not ultimo_msg_texto: return True
+                mensaje_guardado, fecha_guardada = self.cargar_ultimo_mensaje() # Releer siempre
                 hoy = time.strftime("%Y-%m-%d")
-
                 if "Los precios en disponible para el mercado de AGD" in ultimo_msg_texto:
                     if ultimo_msg_texto != mensaje_guardado or fecha_guardada != hoy:
-                        print(f"⚡ Mensaje de precios detectado:\n{ultimo_msg_texto}")
-                        if self.enviar_mensaje_al_backend(ultimo_msg_texto):
-                            self.guardar_ultimo_mensaje(ultimo_msg_texto)
-                            self.ultimo_mensaje_enviado = [ultimo_msg_texto, hoy]
-
-            except (NoSuchElementException, StaleElementReferenceException):
-                print("🔄 Elemento no encontrado (DOM cambió). Forzando reapertura de chat...")
-                self.chat_abierto = None
-            except TimeoutException:
-                print(f"⏳ No se pudo encontrar el chat de '{self.contacto}'. Verifica que el contacto exista.")
-            except Exception as e:
-                print(f"❌ Error inesperado en el monitoreo: {e}")
+                        logger.info(f"Mensaje AGD:\n{ultimo_msg_texto[:100]}...")
+                        if self.enviar_mensaje_al_backend(ultimo_msg_texto): self.guardar_ultimo_mensaje(ultimo_msg_texto)
+            except (NoSuchElementException, StaleElementReferenceException): logger.warning("Elemento desapareció."); self.chat_abierto = None
+            except WebDriverException as e: logger.error(f"Error WebDriver monitoreo: {e}"); return False
+            except Exception as e: logger.exception(f"Error inesperado monitoreo:"); return True
+            return True
 
     def run(self):
-        """
-        Bucle principal del bot. Gestiona la sesión y monitorea mensajes.
-        """
-        print("▶️ Bot iniciado.")
-        while True:
-            try:
-                if not self._manejar_sesion_whatsapp():
-                    print("❌ No se pudo iniciar la sesión de WhatsApp. Saliendo.")
+            logger.info("Bot iniciado.")
+            # Define la ruta para saber si existe un perfil
+            local_storage_path = os.path.join(self.perfil_chrome, "Default", "Local Storage", "leveldb")
+            while True:
+                try:
+                    #REVISAR EL PERFIL
+                    logger.info(f"Revisando existencia de perfil en: ...{os.path.join(os.path.basename(self.perfil_chrome), 'Default', 'Local Storage', 'leveldb')}")
+                    sesion_posible = os.path.exists(local_storage_path)
+                    if sesion_posible:
+                        #INTENTO HEADLESS (Porque el perfil existe)
+                        logger.info("Perfil con datos encontrado. Intentando HEADLESS...")
+                        driver_iniciado_ok = self.iniciar_driver(headless=True) 
+                        if driver_iniciado_ok:
+                            logger.info("Abriendo WhatsApp Web (headless)...")
+                            self.driver.set_page_load_timeout(45)
+                            try:
+                                self.driver.get("https://web.whatsapp.com/")
+                                # Esperar la lista de chats. Si aparece, estamos logueados.
+                                WebDriverWait(self.driver, 30).until(
+                                    EC.presence_of_element_located((By.CSS_SELECTOR, self.CHAT_LIST_SELECTOR))
+                                )
+                                
+                                logger.info("¡Sesión activa en HEADLESS detectada! Monitoreando...")
+                                self.driver.set_page_load_timeout(300)
+                                self.monitorear_en_bucle()
+                            except (TimeoutException, WebDriverException) as e:
+                                # Falló: El perfil existía, pero la sesión expiró (pide QR).
+                                logger.warning(f"Perfil encontrado, pero sesión inválida (necesita QR). Fallback a Visible.")
+                                self.shutdown_driver() # Cerrar el driver headless fallido
+                                sesion_posible = False # Forzar que entre al siguiente bloque
+                            finally:
+                                try: self.driver.set_page_load_timeout(300)
+                                except: pass
+                        else:
+                            logger.error("Fallo crítico al iniciar driver HEADLESS. Forzando modo Visible...")
+                            sesion_posible = False
+                    #INTENTO VISIBLE (Porque el perfil NO existe o Headless falló)
+                    if not sesion_posible:
+                        logger.info("Perfil vacío o sesión headless fallida. Iniciando en VISIBLE...")
+                        # Esta función ya inicia el driver visible Y maneja el QR
+                        session_visible_ok = self._manejar_sesion_whatsapp() 
+                        if session_visible_ok:
+                            logger.info("Sesión iniciada en modo VISIBLE. Monitoreando...")
+                            self.monitorear_en_bucle()
+                        else:
+                            logger.error("Falló el inicio de sesión VISIBLE (ej. timeout QR). Reintentando ciclo en 15s...")
+                            self.shutdown_driver()
+                            time.sleep(15)
+                except KeyboardInterrupt: 
+                    logger.info("\nDetención por usuario (KeyboardInterrupt).")
                     break
-
-                print(" M o n i t o r e a n d o  💬")
-                # Bucle interno: monitorea mientras la sesión esté activa
-                while self.sesion_activa():
-                    self._monitorear_mensajes()
+                except Exception as e:
+                    logger.critical(f"Error catastrófico en run():", exc_info=True)
+                    self.shutdown_driver()
+                    logger.info("Reiniciando en 15s...")
                     time.sleep(15)
-                
-                print("⚠️ Se ha perdido la sesión de WhatsApp. Intentando reconectar...")
-                self.chat_abierto = None
-                time.sleep(5)
-            
-            except Exception as e:
-                print(f"❌ Error catastrófico en el bucle principal: {e}")
-                print("🔄 Reiniciando el bucle en 30 segundos...")
-                time.sleep(30)
+            logger.info("Saliendo de run()... Llamando a shutdown() final.")
+            self.shutdown()
+
+    def shutdown_driver(self):
+        if self.driver:
+            logger.info("Cerrando driver...")
+            try: self.driver.quit()
+            except Exception as e: logger.warning(f"Error cerrando: {e}")
+            finally: 
+                self._force_kill_drivers()
+                self.driver = None; time.sleep(3)
 
     def shutdown(self):
-        """
-        Detiene el bot y cierra el navegador de forma segura.
-        """
-        print("🛑 Deteniendo el bot...")
-        if self.driver:
+        logger.info("\nDeteniendo el bot...")
+        self.shutdown_driver()
+        logger.info("Bot detenido.")
+
+    def _force_kill_drivers(self):
+            """
+            Intenta forzar el cierre de chromedriver Y de los procesos
+            chrome.exe ESPECÍFICOS de este perfil, SIN ABRIR VENTANAS DE CONSOLA.
+            """
+            logger.info("Intentando forzar cierre de drivers Y chrome (solo de este perfil)...")
+            system = platform.system()
+            
+            # --- Configuración para ocultar ventanas en Windows ---
+            startupinfo = None
+            kwargs = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "shell": True}
+            if system == "Windows":
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                # startupinfo.wShowWindow = subprocess.SW_HIDE # Otra forma
+                kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+                kwargs["startupinfo"] = startupinfo
+
             try:
-                self.driver.quit()
-                self.driver = None
-                print("✅ Driver de Selenium cerrado correctamente.")
+                # 1. Matar chromedriver (esto es seguro y rápido)
+                if system == "Windows":
+                    cmd_driver = "taskkill /F /IM chromedriver.exe /T"
+                    subprocess.run(cmd_driver, **kwargs)
+                else: # Linux/macOS
+                    cmd_driver = "pkill -9 -f 'chromedriver'"
+                    subprocess.run(cmd_driver, **kwargs)
+                    
+                logger.info("Comando kill (chromedriver) ejecutado.")
+                time.sleep(0.5) # Pequeña pausa
+
+                # 2. Matar chrome.exe (solo el que usa nuestro perfil)
+                profile_dir_name = os.path.basename(self.perfil_chrome) # "chrome_profile_agd_local"
+
+                if system == "Windows":
+                    # Usamos '%' normal, ya que subprocess no necesita el escape '%%' de os.system
+                    command = f'wmic process where "name=\'chrome.exe\' and commandline like \'%{profile_dir_name}%\'" delete'
+                    logger.info(f"Ejecutando: wmic ... like '%{profile_dir_name}%'...")
+                    subprocess.run(command, **kwargs)
+                else: # Linux/macOS
+                    command = f"pkill -9 -f \"chrome.*{profile_dir_name}\""
+                    logger.info(f"Ejecutando: pkill -f ...{profile_dir_name}...")
+                    subprocess.run(command, **kwargs)
+                
+                logger.info("Comando kill (chrome específico del perfil) ejecutado.")
+
             except Exception as e:
-                print(f"❌ Error al cerrar el driver: {e}")
+                logger.warning(f"Error al ejecutar comando kill quirúrgico: {e}")
 
 if __name__ == "__main__":
-    bot = BotPrecioAGD()
+    logger.info("="*30 + " INICIO EJECUCIÓN BOT " + "="*30)
+    bot = None
     try:
+        bot = BotPrecioAGD()
         bot.run()
-    except KeyboardInterrupt:
-        print("\n🛑 Detención solicitada por el usuario (Ctrl+C).")
+    except KeyboardInterrupt: 
+        logger.info("\nDetención por KeyboardInterrupt (detectado en __main__).")
+    except Exception as e: 
+        logger.critical(f"Error fatal __main__:", exc_info=True)
     finally:
-        bot.shutdown() # Asegura que el driver se cierre al salir
+        logger.info("Bloque __main__ finally alcanzado.")
+        if bot: 
+            logger.info("Llamando a bot.shutdown() desde __main__ finally...")
+            bot.shutdown()
+        else: 
+            logger.info("Limpieza final (sin instancia de bot).")
+        logging.shutdown()
+        logger.info("="*30 + " FIN EJECUCIÓN BOT " + "="*30)

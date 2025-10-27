@@ -29,7 +29,7 @@ from util.Configuracion import Configuracion
 from util.jobConfiguration import jobConfiguration
 
 # Importación de elementos necesarios para consultar los precios automaticamente a las 11 todos los días
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 import pytz
@@ -47,7 +47,7 @@ logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 argentina_tz = pytz.timezone("America/Argentina/Buenos_Aires")
 
 # Scheduler
-scheduler = BackgroundScheduler(timezone=argentina_tz)  
+scheduler = AsyncIOScheduler(timezone=argentina_tz)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

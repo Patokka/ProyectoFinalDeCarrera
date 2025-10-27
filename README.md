@@ -16,8 +16,12 @@ Este proyecto implementa un sistema completo para la gestión de arrendamientos 
 Antes de levantar los contenedores, necesitas configurar algunas variables de entorno y preparar los datos iniciales.
 
 **Contenido mínimo requerido:**
-Acordate de poner la llave de gmail del correode la organización, en .env del backend , para que ellos sean los que envian los reportes.
-Configurá la ip privada del servidor en next.config y env.local.
+Acordate de poner la llave de gmail del correode la organización, en .env del backend , para que ellos sean los que envian los reportes!!!!!!!!!.
+Configurá la ip privada del servidor en next.config y env.local!!!!!!!!!!!!!.
+Cambiar el nombre de contacto de Fran al que tienen agendado a AGD!!!!!!!!!.
+El bot se ejecutará directamente en el servidor ya que no puede ser dockerizado, hay que crear la tarea o el proceso y mandarle la ruta completa al ejecutable, este genera el exe, ejecutar en entorno con requirements:
+    - pyinstaller --onefile --name WhatsAppBotAGD botPrecioAGD.py es el comando
+    - pyinstaller --onefile --windowed --name WhatsAppBotAGD botPrecioAGD.py para que al ejecutar no tenga consola.
 
 **Tips**
 Algunos comandos que te pueden servir (todo en /ProyectoFinal):
@@ -26,3 +30,29 @@ Algunos comandos que te pueden servir (todo en /ProyectoFinal):
 - docker-compose down para finalizar contenedores, después de este si o sí tenés que hacer un build de nuevo (generalmente usas este para cambiar código y rebuildear).
 - docker volume ls lista los volumenes o persistencias, de acá te interesa el del bot o  la base de datos.
 - docker volume rm proyectofinal_mysql_data para eliminar los datos de la base de datos (OJO CON ESTO).
+
+**Configurar Tarea programada bot**
+Windows y buscar programador de tareas.
+Panel lateral -> Crear tarea (no tarea básica).
+    *Pestaña General*
+Nombre: BotWhatsappAGD
+Configurar para: Windows 10
+    *Desencadenadores*
+Nuevo
+Iniciar la tarea: Al iniciar sesión
+Usuario Específico -> El que se use en el pc
+Retrasar durante: 1 minuto, para que le de tiempo a la conexión si hace falta
+    *Acciones*
+Iniciar un progarma
+Browse la ubicación del .exe
+IMPORTANTE: iniciar en -> /bot
+    *Condiciones*
+Desmarcar Detener si el equipo comienza a usar batería (aunque sea de escritorio)
+(Opcional) Iniciar solo si la siguiente red está disponible -> red oficina, creo que está bueno porque si es otra red que no es la del backend no va a andar
+    *Configuración (si te deja hacerla sin poner contraseña)*
+Marcar: Si la tarea no se ejecuta, reiniciarla cada: 10 minutos -> máximo: 3 veces
+Destildar si la tarea se ejecuta por más de x días seguidos detenerla
+
+**Backup**
+Tenés que ejecutar el script que está en /backup con powershell, y si queres programar una tarea para que la realice una vez por mes, ver archivo para cambiar llaves y destinatarios.
+-NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\Ruta\Completa\A\Tu\run_backup.ps1" editando eso en la pestaña de acciones de la tarea, en donde dice agregar argumentos poner esa línea para que ejecute en modo hidden. Iniciar en puede quedar en vacío en esta pestaña
