@@ -55,7 +55,7 @@ class UbicacionService:
     #############################
     @staticmethod
     def listar_provincias(db: Session):
-        return db.query(Provincia).all()
+        return db.query(Provincia).order_by(Provincia.nombre_provincia).all()
 
     @staticmethod
     def obtener_provincia_por_id(db: Session, provincia_id: int):
@@ -94,5 +94,5 @@ class UbicacionService:
         
     @staticmethod
     def obtener_localidades_provincia(db:Session, provincia_id: int):
-        localidades = db.query(Localidad).filter(Localidad.provincia_id == provincia_id).all()
+        localidades = db.query(Localidad).filter(Localidad.provincia_id == provincia_id).order_by(Localidad.nombre_localidad).all()
         return localidades

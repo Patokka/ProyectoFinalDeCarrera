@@ -172,7 +172,7 @@ export default function PagoDetailPage() {
                             disabled={false}/>
                         <Text
                             label="Condición Fiscal arrendador:"
-                            value={participacion?.arrendador.condicion_fiscal ? participacion.arrendador.condicion_fiscal.replace('_', ' ') : '-'}
+                            value={participacion?.arrendador.condicion_fiscal ? participacion.arrendador.condicion_fiscal.replace(/_/g, ' ') : '-'}
                             readOnly={true}
                             disabled={false}/>
                         <Text

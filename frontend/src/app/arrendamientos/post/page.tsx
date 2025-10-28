@@ -150,10 +150,10 @@ export default function CrearArrendamientoPage() {
           newErrors.fechaInicio = "La fecha de inicio debe ser anterior a la fecha de fin";
         } else {
           const minimoFin = new Date(inicio);
-          minimoFin.setFullYear(minimoFin.getFullYear() + 1);
+          minimoFin.setMonth(minimoFin.getMonth() + 6);
 
           if (fin < minimoFin) {
-            newErrors.fechaFin = `La fecha de fin debe ser al menos 1 año posterior a la fecha de inicio`;
+            newErrors.fechaFin = `La fecha de fin debe ser al menos 6 meses posterior a la fecha de inicio`;
           }
         }
       }
@@ -204,7 +204,7 @@ export default function CrearArrendamientoPage() {
       toast.error("Error al guardar el arrendamiento");
     }
     toast.success("Arrendamiento guardado con éxito, volviendo a página de arrendamientos...")
-    router.push("/arrendamientos")
+    setTimeout(() => {window.location.href = "/arrendamientos";}, 1500);
   };
 
   useEffect(() => {   
@@ -393,7 +393,7 @@ export default function CrearArrendamientoPage() {
 
               <div>
               <NumberInput
-                  label="Quintales por Hectárea"
+                  label="Quintales por Hectárea por año"
                   value={formData.quintales}
                   min = {0}
                   max = {1000000}

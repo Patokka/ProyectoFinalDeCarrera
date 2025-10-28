@@ -75,7 +75,8 @@ class PagoService:
         - FIJO: genera cuotas completas con quintales calculados.
         - A_PORCENTAJE: genera cuotas con vencimientos iguales pero sin quintales.
         """
-        arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id= arrendamiento_id)
+        hoy = date.today()
+        arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id=arrendamiento_id)
         
         # Obtener participaciones
         participaciones = db.query(ParticipacionArrendador).filter_by(arrendamiento_id=arrendamiento.id).all()
@@ -98,31 +99,44 @@ class PagoService:
         cuotas = []
 
         for participacion in participaciones:
-            # Calcular cuántas cuotas se van a generar para este arrendamiento
-            fecha_actual = PagoService._sumar_meses(arrendamiento.fecha_inicio, meses_por_cuota)
+            fecha_actual = arrendamiento.fecha_inicio
             fechas_cuotas = []
+            
+            # El bucle ahora incluye la fecha de inicio
             while fecha_actual <= arrendamiento.fecha_fin:
                 fechas_cuotas.append(fecha_actual)
                 fecha_actual = PagoService._sumar_meses(fecha_actual, meses_por_cuota)
 
             cantidad_cuotas = len(fechas_cuotas)
+            if cantidad_cuotas == 0:
+                continue # Evitar división por cero si el período es muy corto
 
-            # Reiniciar fecha_actual para generar los pagos
-            for fecha_actual in fechas_cuotas:
+            # Iterar sobre las fechas de vencimiento pre-calculadas
+            for fecha_vencimiento in fechas_cuotas:
                 if arrendamiento.tipo == TipoArrendamiento.FIJO:
-                    quintales_pago = participacion.hectareas_asignadas * participacion.quintales_asignados
+                    # En 'FIJO', cada cuota tiene el mismo valor
+                    # 1. Calcular el total ANUAL de quintales
+                    quintales_anuales = (participacion.hectareas_asignadas * participacion.quintales_asignados)
+                    # 2. Calcular el equivalente MENSUAL
+                    quintales_mensuales = quintales_anuales / 12
+                    # 3. Multiplicar el mensual por los meses del período
+                    quintales_pago = quintales_mensuales * meses_por_cuota
                     dias_promedio_pago = arrendamiento.dias_promedio
                     porcentaje_pago = None
                 else:  # A_PORCENTAJE
                     quintales_pago = None
+                    # El porcentaje se divide entre la cantidad de cuotas
                     porcentaje_pago = participacion.porcentaje / cantidad_cuotas
                     dias_promedio_pago = None
-
+                if(hoy > fecha_vencimiento):
+                    estado_pago = EstadoPago.VENCIDO
+                else:
+                    estado_pago = EstadoPago.PENDIENTE
                 cuotas.append(Pago(
-                    estado=EstadoPago.PENDIENTE,
+                    estado=estado_pago,
                     quintales=quintales_pago,
                     precio_promedio=None,
-                    vencimiento=fecha_actual,
+                    vencimiento=fecha_vencimiento, # Usamos la fecha calculada
                     fuente_precio=arrendamiento.origen_precio,
                     monto_a_pagar=None,
                     arrendamiento_id=arrendamiento.id,
@@ -130,8 +144,6 @@ class PagoService:
                     dias_promedio = dias_promedio_pago,
                     porcentaje = porcentaje_pago
                 ))
-                fecha_actual = PagoService._sumar_meses(fecha_actual, meses_por_cuota)
-
         db.add_all(cuotas)
         db.commit()
         return cuotas

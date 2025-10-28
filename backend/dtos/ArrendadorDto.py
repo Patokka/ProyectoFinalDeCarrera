@@ -51,7 +51,7 @@ class ArrendadorDtoModificacion(BaseModel):
     nombre_o_razon_social: Optional[str]
     cuil: Optional[str]
     condicion_fiscal: Optional[TipoCondicion]
-    mail: Optional[EmailStr]
+    mail: Optional[EmailStr] = None
     telefono: Optional[str]
     localidad_id: Optional[int]
     descripcion: Optional[str]

@@ -190,14 +190,14 @@ const handleDelete = (id: number) => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCondicionBadgeColor(arrendatario.condicion_fiscal)}`}>
-                            {arrendatario.condicion_fiscal.replace('_', ' ')}
+                            {arrendatario.condicion_fiscal.replace(/_/g, ' ')}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                           {arrendatario.mail || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendatario.localidad?.nombre_localidad + ' - ' + arrendatario.localidad.provincia.nombre_provincia}
+                          {arrendatario.localidad?.nombre_localidad + ', ' + arrendatario.localidad.provincia.nombre_provincia}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">

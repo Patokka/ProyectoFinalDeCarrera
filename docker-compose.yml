@@ -1,4 +1,4 @@
-name: sistema-arrendamientos
+#name: sistema-arrendamientos
 services:
   #Base de Datos (MySQL)
   db:

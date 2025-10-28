@@ -79,7 +79,6 @@ class FacturacionService:
             tipo = TipoFactura.A
             # delegamos la creación de la retención al service
             retencion = RetencionService.crear_para_factura(db, arrendador.id, pago, hoy)
-
             nuevo = Facturacion(
                 tipo_factura=tipo,
                 fecha_facturacion=hoy,
@@ -89,10 +88,8 @@ class FacturacionService:
             )
             db.add(nuevo)
             db.flush()
-
-            # relacionamos la retención con la factura creada
             retencion.facturacion_id = nuevo.id
-            
+            db.add(retencion)   
         pago.estado = EstadoPago.REALIZADO
         db.commit()
         db.refresh(nuevo)

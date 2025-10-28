@@ -116,7 +116,7 @@ export default function PagosPage() {
             toast.promise(
               facturarPagos(selectedPagos).then(() => {
                 // Recargar la página al finalizar con éxito para actualizar sidebar
-                window.location.reload();
+                setTimeout(() => {window.location.href = "/pagos";}, 1500);
               }),
               {
                 loading: "Facturando pagos...",

@@ -86,34 +86,36 @@ export default function ArrendamientosPage() {
   }, [searchTerm, tipoFilter, estadoFilter]);
 
   const handleDelete = (id: number) => {
-    // Confirmación
-    const confirmToastId = toast.info(
-      "¿Está seguro que desea eliminar este arrendamiento?",
-      {
-        action: {
-          label: "Confirmar",
-          onClick: () => {
-            toast.dismiss(confirmToastId);
-            
-            //Delete
-            toast.promise(
-              deleteArrendamiento(id).then(() => {
-                setArrendamientos(prev =>
-                  prev.filter((item) => item.id !== id)
-                );
-              }),
-              {
-                loading: "Eliminando arrendamiento...",
-                success: "Arrendamiento eliminado con éxito",
-                error: (err) => err.message || "Error al eliminar el arrendamiento",
-              }
-            );
+      // Confirmación
+      const confirmToastId = toast.info(
+        "¿Está seguro que desea eliminar este arrendamiento?",
+        {
+          action: {
+            label: "Confirmar",
+            onClick: () => {
+              toast.dismiss(confirmToastId);
+              const deletePromise = deleteArrendamiento(id);
+              toast.promise(
+                deletePromise, 
+                {
+                  loading: "Eliminando arrendamiento...",
+                  success: "Arrendamiento eliminado con éxito",
+                  error: (err) => err.message || "Error al eliminar el arrendamiento",
+                }
+              );
+              deletePromise.then(() => {
+                // Espera 1.5 segundos para que el toast sea legible
+                setTimeout(() => {window.location.reload();}, 1500); 
+              })
+              .catch(() => {
+                // evita un 'unhandled rejection' en la consola.
+              });
+            },
           },
-        },
-        duration: 5000, // 5 segundos
-      }
-    );
-  };
+          duration: 5000, // 5 segundos
+        }
+      );
+    };
 
 
   return (

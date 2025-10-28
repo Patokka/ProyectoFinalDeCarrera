@@ -40,10 +40,8 @@ export default function Calendar({}: CalendarProps) {
       const month = currentDate.getMonth() + 1
       const year = currentDate.getFullYear()
       const dates = await fetchPaymentDates(month, year)
-      console.log(dates)
       setPaymentDates(dates)
     } catch (error) {
-      console.error(error)
       setPaymentDates([])
     } finally {
       setLoading(false)

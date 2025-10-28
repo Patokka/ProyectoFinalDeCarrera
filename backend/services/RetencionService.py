@@ -139,9 +139,6 @@ class RetencionService:
             arrendador_id=arrendador_id,
             facturacion_id=None
         )
-        db.add(retencion)
-        db.flush()
-
         return retencion
     
     @staticmethod

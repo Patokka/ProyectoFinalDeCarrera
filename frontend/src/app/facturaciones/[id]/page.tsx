@@ -117,7 +117,7 @@ export default function FacturacionDetailPage() {
                             disabled={false}/>
                         <Text
                             label="Condición Fiscal del arrendador:"
-                            value={arrendador?.condicion_fiscal ? arrendador.condicion_fiscal.replace('_', ' ') : '-'}
+                            value={arrendador?.condicion_fiscal ? arrendador.condicion_fiscal.replace(/_/g, ' ') : '-'}
                             readOnly={true}
                             disabled={false}/>
                         <Text

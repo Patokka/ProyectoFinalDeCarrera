@@ -1,7 +1,7 @@
 #CONFIGURACIÓN
 $ProyectoRuta = "C:\Users\Usuario\Desktop\ProyectoFinal"
 $BackupCarpeta = "C:\Users\Usuario\Desktop\ProyectoFinal\backup" # Muevo la carpeta de backup a la raíz
-$DbContenedorNombre = "proyectofinal-db-1" # Capaz cambie a sistema-arrendamientos-db-1
+$DbContenedorNombre = "sistema-arrendamientos-db-1" # ver con docker ps
 $DbUsuario = "root"
 $DbPassword = "Snordesan2025" 
 $DbNombre = "sistema_arrendamientos"

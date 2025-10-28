@@ -207,7 +207,7 @@ return (
                         disabled={false}
                     /> 
                     <Text label="Condición Fiscal:"
-                        value={arrendador.condicion_fiscal.replace('_', ' ')}
+                        value={arrendador.condicion_fiscal.replace(/_/g, ' ')}
                         readOnly={true}
                         disabled={false}
                     /> 

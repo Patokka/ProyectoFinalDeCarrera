@@ -146,7 +146,7 @@ export async function putArrendatario(formData: ArrendatarioForm, idArrendatario
         razon_social: formData.razon_social,
         cuit: formData.cuit,
         condicion_fiscal: formData.condicion_fiscal,
-        mail: formData.mail,
+        mail: formData.mail || null,
         localidad_id: formData.localidad_id,
     };
 

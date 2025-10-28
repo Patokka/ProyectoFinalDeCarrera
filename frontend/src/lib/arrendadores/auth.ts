@@ -150,10 +150,10 @@ export async function putArrendador(formData: ArrendadorForm, arrendador_id: num
         nombre_o_razon_social: formData.nombre_o_razon_social,
         cuil: formData.cuil,
         condicion_fiscal: formData.condicion_fiscal,
-        mail: formData.mail,
-        telefono: formData.telefono,
+        mail: formData.mail || null,
+        telefono: formData.telefono || null,
         localidad_id: formData.localidad_id,
-        descripcion: formData.descripcion,
+        descripcion: formData.descripcion || null,
     };
 
     const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {

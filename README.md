@@ -16,10 +16,10 @@ Este proyecto implementa un sistema completo para la gestión de arrendamientos 
 Antes de levantar los contenedores, necesitas configurar algunas variables de entorno y preparar los datos iniciales.
 
 **Contenido mínimo requerido:**
-Acordate de poner la llave de gmail del correode la organización, en .env del backend , para que ellos sean los que envian los reportes!!!!!!!!!.
+Acordate de poner la llave de gmail del correo de la organización, en .env del backend , para que ellos sean los que envian los reportes!!!!!!!!!.
 Configurá la ip privada del servidor en next.config y env.local!!!!!!!!!!!!!.
 Cambiar el nombre de contacto de Fran al que tienen agendado a AGD!!!!!!!!!.
-El bot se ejecutará directamente en el servidor ya que no puede ser dockerizado, hay que crear la tarea o el proceso y mandarle la ruta completa al ejecutable, este genera el exe, ejecutar en entorno con requirements:
+El bot se ejecutará directamente en el servidor ya que no puede ser dockerizado, hay que crear la tarea o el proceso y mandarle la ruta completa al ejecutable, este genera el exe, ejecutar en entorno (.\venv_bot_build\Scripts\activate) con requirements:
     - pyinstaller --onefile --name WhatsAppBotAGD botPrecioAGD.py es el comando
     - pyinstaller --onefile --windowed --name WhatsAppBotAGD botPrecioAGD.py para que al ejecutar no tenga consola.
 

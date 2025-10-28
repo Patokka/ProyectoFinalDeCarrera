@@ -111,7 +111,7 @@ export default function ArrendamientoDetailPage() {
             try {
                 await cancelarArrendamiento(Number(idArrendamiento));
                 toast.success("Arrendamiento cancelado con éxito, volviendo a la página de arrendamientos...")
-                setTimeout(() => router.push("/arrendamientos"), 1000)
+                setTimeout(() => {window.location.href = "/arrendamientos";}, 1500);
             } catch (e: any) {
                 toast.error(e.message)
             }

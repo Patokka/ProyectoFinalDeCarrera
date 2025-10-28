@@ -39,7 +39,7 @@ class ArrendatarioDtoOut(BaseModel):
     }
 
 class ArrendatarioDtoModificacion(BaseModel):
-    mail: Optional[str]
+    mail: Optional[EmailStr] = None
     razon_social: Optional[str]
     cuit: Optional[str]
     condicion_fiscal: Optional[TipoCondicion]
