@@ -33,7 +33,10 @@ class PagoService:
     @staticmethod
     def crear(db: Session, dto: PagoDto):
         nuevo = Pago(**dto.model_dump())
-        nuevo.estado = EstadoPago.PENDIENTE
+        if(dto.vencimiento <= date.today()):
+            nuevo.estado = EstadoPago.VENCIDO            
+        else:
+            nuevo.estado = EstadoPago.PENDIENTE
         db.add(nuevo)
         db.commit()
         db.refresh(nuevo)
@@ -46,6 +49,10 @@ class PagoService:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
         for campo, valor in dto.model_dump(exclude_unset=True).items():
             setattr(obj, campo, valor)
+        if(dto.vencimiento < date.today()):
+            obj.estado = EstadoPago.VENCIDO
+        else:
+            obj.estado = EstadoPago.PENDIENTE
         db.commit()
         db.refresh(obj)
         return obj

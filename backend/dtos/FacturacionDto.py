@@ -27,10 +27,7 @@ class FacturacionDtoOut(BaseModel):
     
 class FacturacionDtoModificacion(BaseModel):
     fecha_facturacion: Optional[date]
-    tipo_factura: Optional[TipoFactura]
-    monto_facturacion: Optional[float]
-    arrendador_id: Optional[int]
-    
+
     model_config = {
         "from_attributes": True,     
         "use_enum_values": True   

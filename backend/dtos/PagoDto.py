@@ -40,12 +40,13 @@ class PagoDtoOut(BaseModel):
     }
     
 class PagoDtoModificacion(BaseModel):
-    estado: Optional[EstadoPago]
-    quintales: Optional[float]
-    precio_promedio: Optional[float]
+    quintales: Optional[float] = None
     vencimiento: Optional[date]
     fuente_precio: Optional[TipoOrigenPrecio]
-    monto_a_pagar: Optional[float]
+    arrendamiento_id: int
+    participacion_arrendador_id: int
+    dias_promedio: TipoDiasPromedio
+    porcentaje: Optional[float] = None
     
     model_config = {
         "from_attributes": True,

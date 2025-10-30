@@ -98,15 +98,11 @@ const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => 
     // validación
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
-        const hoy = new Date();
-        const fechaSeleccionada = new Date(fecha);
 
         if (!arrendamientoSeleccionado) newErrors.arrendamiento = "Campo obligatorio";
         if (!participacionSeleccionada) newErrors.participacion = "Campo obligatorio";
         if (!fecha) {
             newErrors.fecha = "Campo obligatorio";
-        } else if (fechaSeleccionada <= hoy) {
-            newErrors.fecha = "Debe seleccionar una fecha posterior a hoy";
         }
         if (!fuentePrecio) newErrors.fuentePrecio = "Campo obligatorio";
         if (!promedio) newErrors.promedio = "Campo obligatorio";

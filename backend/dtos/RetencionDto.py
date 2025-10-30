@@ -31,10 +31,6 @@ class RetencionDtoOut(BaseModel):
 
 class RetencionDtoModificacion(BaseModel):
     fecha_retencion: Optional[date]
-    monto_imponible: Optional[float]
-    total_retencion: Optional[float]
-    arrendador_id: Optional[int]
-    facturacion_id: Optional[int]
     
     model_config = {
         "from_attributes": True,     

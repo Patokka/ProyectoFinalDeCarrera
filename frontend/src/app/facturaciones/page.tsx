@@ -13,6 +13,7 @@ import { fetchFacturaciones } from '@/lib/facturaciones/auth';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import FacturacionModal from '@/components/ui/FacturacionModal';
 import { useAuth } from '@/components/context/AuthContext';
+import EditFacturacionModal from '@/components/ui/EditFacturacionModal';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -27,6 +28,8 @@ export default function FacturacionesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
   const canEditEliminate = canEditOrDelete(user?.rol);
+  const [isEditFacturacionModalOpen, setIsEditFacturacionModalOpen] = useState(false);
+  const [selectedFacturacion, setSelectedFacturacion] = useState<FacturacionDtoOut | null>(null);
   
   // Filtrar datos
   const filteredData = useMemo(() => {
@@ -177,6 +180,15 @@ export default function FacturacionesPage() {
                                 <Eye className="h-4 w-4" />
                               </button>
                             </Link>
+                            <button
+                              onClick={() => {
+                                setSelectedFacturacion(facturacion);
+                                setIsEditFacturacionModalOpen(true);}}
+                              className={`p-1 rounded transition-colors ${canEditEliminate ? "text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 cursor-pointer": "text-gray-400  cursor-not-allowed"}`} title="Editar"
+                              disabled={!canEditEliminate}
+                            >
+                            <Edit className="h-4 w-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -188,21 +200,26 @@ export default function FacturacionesPage() {
           </div>
 
           {/* Paginación y botones */}
-          <div className="mt-6 flex justify-between items-center">
-            <Link href="/dashboard" passHref>
-              <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                Volver
-              </button>
-            </Link>
-            {totalPages > 1 && (
-              <div className="flex-1 flex justify-center mx-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+          <div className="mt-6 grid grid-cols-3 items-center">            
+            <div className="justify-self-start">
+              <Link href="/dashboard" passHref> 
+                <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
+                  Volver
+                </button>
+              </Link>
+            </div>
+            <div className="justify-self-center">
+              {totalPages > 1 && (
+                <div className="flex justify-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </div>
+            <div></div>
           </div>
         </div>
       </div>
@@ -214,6 +231,15 @@ export default function FacturacionesPage() {
           loadFacturaciones();
           window.location.reload();
         }}
+      />
+      <EditFacturacionModal
+        isOpen={isEditFacturacionModalOpen}
+        onClose={() => setIsEditFacturacionModalOpen(false)}
+        onSuccess={() => {
+            setIsEditFacturacionModalOpen(false);
+            loadFacturaciones();
+        }}
+        factura={selectedFacturacion}
       />
     </ProtectedRoute>
   );

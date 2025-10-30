@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Eye, Plus, FileText, Calculator } from 'lucide-react';
+import { Eye, Plus, FileText, Calculator, Edit } from 'lucide-react';
 import SelectFilter from '@/components/ui/SelectFilter';
 import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
@@ -14,6 +14,7 @@ import { canEditOrDelete, formatCurrency, formatDate, getFirstDayOfCurrentMonth,
 import PagoParticularModal from '@/components/ui/PagoParticularModal';
 import AsignarPrecioModal from '@/components/ui/AsignarPrecioPagoModal';
 import { useAuth } from '@/components/context/AuthContext';
+import EditPagoModal from '@/components/ui/EditPagoModal';
 
 // Opciones para los filtros
 const estadoOptions = [
@@ -40,6 +41,8 @@ export default function PagosPage() {
   const [isAsignarPrecioPagoModalOpen, setIsAsignarPrecioPagoModalOpen] = useState(false);
   const { user } = useAuth();
   const canEditEliminate = canEditOrDelete(user?.rol);
+  const [isEditPagoModalOpen, setIsEditPagoModalOpen] = useState(false);
+  const [selectedPago, setSelectedPago] = useState<PagoDtoOut | null>(null);
   
   const loadPagos = async () => {
     try {
@@ -289,6 +292,15 @@ export default function PagosPage() {
                                 <Eye className="h-4 w-4" />
                               </button>
                             </Link>
+                            <button
+                              onClick={() => {
+                                setSelectedPago(pago);
+                                setIsEditPagoModalOpen(true);}}
+                              className={`p-1 rounded transition-colors ${canEditEliminate && (pago.estado === 'PENDIENTE' || pago.estado === 'VENCIDO') ? "text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 cursor-pointer": "text-gray-400  cursor-not-allowed"}`} title="Editar"
+                              disabled={pago.estado === 'REALIZADO' || pago.estado === 'CANCELADO' || !canEditEliminate}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -305,7 +317,7 @@ export default function PagosPage() {
                               ? acc + (p.quintales ?? 0)
                               : acc,
                           0
-                        ) + ' qq'}
+                        ).toFixed(2) + ' qq'}
                       </td>
                       <td className="px-6 py-4"></td>
                       <td className="px-6 py-4 text-sm text-gray-900">
@@ -381,6 +393,15 @@ export default function PagosPage() {
           loadPagos(); 
           window.location.reload();
         }}
+      />
+      <EditPagoModal
+        isOpen={isEditPagoModalOpen}
+        onClose={() => setIsEditPagoModalOpen(false)}
+        onSuccess={() => {
+          setIsEditPagoModalOpen(false);
+          setTimeout(() => {window.location.reload();}, 1000);
+        }}
+        pago={selectedPago}
       />
     </ProtectedRoute>
   );

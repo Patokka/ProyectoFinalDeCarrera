@@ -635,7 +635,7 @@ class ReporteService:
 
             # Nota aclaratoria al final de cada hoja
             nota = Paragraph(
-                f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía {formato_moneda(precio_guia_mes)} (promedio del mes actual).</i></font>',
+                f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía de BCR{formato_moneda(precio_guia_mes)} (promedio del mes actual).</i></font>',
                 styles["Normal"]
             )
             elements.append(Spacer(1, 0.4 * cm))

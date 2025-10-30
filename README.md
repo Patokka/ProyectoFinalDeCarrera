@@ -53,6 +53,8 @@ Desmarcar Detener si el equipo comienza a usar batería (aunque sea de escritori
 Marcar: Si la tarea no se ejecuta, reiniciarla cada: 10 minutos -> máximo: 3 veces
 Destildar si la tarea se ejecuta por más de x días seguidos detenerla
 
+Get-Content -Path "C:\ruta\tu_archivo.txt" -Wait, ubicate en ruta de log y pone el nombre, para ver logs en tiempo real 
+
 **Backup**
 Tenés que ejecutar el script que está en /backup con powershell, y si queres programar una tarea para que la realice una vez por mes, ver archivo para cambiar llaves y destinatarios.
 -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\Ruta\Completa\A\Tu\run_backup.ps1" editando eso en la pestaña de acciones de la tarea, en donde dice agregar argumentos poner esa línea para que ejecute en modo hidden. Iniciar en puede quedar en vacío en esta pestaña

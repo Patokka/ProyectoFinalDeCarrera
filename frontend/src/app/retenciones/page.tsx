@@ -1,18 +1,19 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Settings } from 'lucide-react';
+import { Edit, Settings } from 'lucide-react';
 import SearchInput from '@/components/ui/SearchInput';
 import DateInput from '@/components/ui/DateInput';
 import Pagination from '@/components/ui/Pagination';
 import Link from 'next/link';
 import { RetencionDtoOut } from '@/lib/type';
-import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth } from '@/lib/helpers';
+import { formatCurrency, formatDate, getFirstDayOfCurrentMonth, getLastDayOfCurrentMonth, canEditOrDelete } from '@/lib/helpers';
 import { toast } from 'sonner';
 import { fetchRetenciones } from '@/lib/retenciones/auth';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import MinimoImponibleModal from '@/components/ui/MinimoImponibleModal';
-
+import EditRetencionModal from '@/components/ui/EditRetencionModal';
+import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -25,6 +26,10 @@ export default function RetencionesPage() {
   const [fechaDesde, setFechaDesde] = useState(getFirstDayOfCurrentMonth());
   const [fechaHasta, setFechaHasta] = useState(getLastDayOfCurrentMonth());
   const [currentPage, setCurrentPage] = useState(1);
+  const [isEditRetencionModalOpen, setIsEditRetencionModalOpen] = useState(false);
+  const [selectedRetencion, setSelectedRetencion] = useState<RetencionDtoOut | null>(null);
+  const { user } = useAuth();
+  const canEditEliminate = canEditOrDelete(user?.rol);
 
   // Filtrar datos
   const filteredData = useMemo(() => {
@@ -51,19 +56,20 @@ export default function RetencionesPage() {
     setCurrentPage(1);
   }, [searchTermArrendador, fechaDesde, fechaHasta]);
 
-  useEffect(()=> {
-    const loadRetenciones = async () =>{
-      try{
-        setLoading(true);
-        const dataRetenciones = await fetchRetenciones();
-        setRetenciones(dataRetenciones);
-      }catch(e){
-        toast.error("Error al cargar las retenciones");
-        setError("Error al cargar las retenciones");
-      }finally{
-        setLoading(false);
-      }
+  const loadRetenciones = async () =>{
+    try{
+      setLoading(true);
+      const dataRetenciones = await fetchRetenciones();
+      setRetenciones(dataRetenciones);
+    }catch(e){
+      toast.error("Error al cargar las retenciones");
+      setError("Error al cargar las retenciones");
+    }finally{
+      setLoading(false);
     }
+  }
+
+  useEffect(()=> {
     loadRetenciones();
   },[]);
 
@@ -134,6 +140,9 @@ export default function RetencionesPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Monto Retención
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Acciones
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -159,6 +168,17 @@ export default function RetencionesPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                           {formatCurrency(retencion.total_retencion)}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button
+                              onClick={() => {
+                                setSelectedRetencion(retencion);
+                                setIsEditRetencionModalOpen(true);}}
+                              className={`p-1 rounded transition-colors ${canEditEliminate ? "text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 cursor-pointer": "text-gray-400  cursor-not-allowed"}`} title="Editar"
+                              disabled={!canEditEliminate}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -168,28 +188,31 @@ export default function RetencionesPage() {
           </div>
 
           {/* Paginación y botones */}
-          <div className="mt-6 flex justify-between items-center">
-            <Link href="/dashboard" passHref>
-              <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                Volver
+          <div className="mt-6 grid grid-cols-3 items-center">  
+            <div className="justify-self-start">
+              <Link href="/dashboard" passHref>
+                <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
+                  Volver
+                </button>
+              </Link>
+            </div>
+            <div className="justify-self-center">
+              {totalPages > 1 && (
+                <div className="flex justify-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="justify-self-end">
+              <button 
+                onClick={() => setIsMinimoImponibleModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
+                <Settings className="h-4 w-4 mr-1" />Configuración Mínimo Imponible
               </button>
-            </Link>
-            
-            
-            <button onClick={() => setIsMinimoImponibleModalOpen(true)} className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors">
-            <Settings className="h-4 w-4 mr-1" />
-              Configuración Mínimo Imponible
-            </button>
-            
-            {totalPages > 1 && (
-              <div className="flex-1 flex justify-center mx-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
@@ -199,6 +222,14 @@ export default function RetencionesPage() {
         onSuccess={() => {
           setIsMinimoImponibleModalOpen(false);
         }}
+      />
+      <EditRetencionModal
+        isOpen={isEditRetencionModalOpen}
+        onClose={() => setIsEditRetencionModalOpen(false)}
+        onSuccess={() => {
+          setIsEditRetencionModalOpen(false);
+          loadRetenciones();}}
+        retencion={selectedRetencion}
       />
     </ProtectedRoute>
   );

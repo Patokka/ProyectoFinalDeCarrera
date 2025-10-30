@@ -351,9 +351,6 @@ export async function fetchNextMonthQuintalesSummary(): Promise<QuintalesSummary
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-
-    // 2. Apuntar al endpoint que corresponde a tu método de FastAPI
-    // La URL debe coincidir con la que definas en tu router de FastAPI.
     const res = await fetch(`${API_URL}/pagos/resumen-quintales-proximo-mes`, {
         method: "GET",
         headers: {
@@ -370,6 +367,51 @@ export async function fetchNextMonthQuintalesSummary(): Promise<QuintalesSummary
 
     if (!res.ok) {
         throw new Error("Error al obtener el resumen de quintales del próximo mes.");
+    }
+
+    return res.json();
+}
+
+export async function putPago(pago_id: number, formData: PagoForm): Promise<PagoDtoOut> {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+
+    const body = {
+        quintales: formData.quintales,
+        vencimiento: formData.vencimiento,
+        fuente_precio: formData.fuente_precio,
+        arrendamiento_id: formData.arrendamiento_id,
+        participacion_arrendador_id: formData.participacion_arrendador_id,
+        dias_promedio: formData.dias_promedio,
+        porcentaje: formData.porcentaje,
+    };
+    const res = await fetch(`${API_URL}/pagos/${pago_id}`, {
+        method: "PUT",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al modificar el pago");
     }
 
     return res.json();

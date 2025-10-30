@@ -8,7 +8,7 @@ class ArrendadorService:
 
     @staticmethod
     def listar_todos(db: Session):
-        return db.query(Arrendador).all()
+        return db.query(Arrendador).order_by(Arrendador.nombre_o_razon_social).all()
 
     @staticmethod
     def obtener_por_id(db: Session, arrendador_id: int):

@@ -35,22 +35,15 @@ class FacturacionService:
 
     @staticmethod
     def crear(db: Session, pago_id: int):
-        #verifica si existe el pago y si no existe retorna un 404
-        pago = PagoService.obtener_por_id(db, pago_id)
-        
+        pago = PagoService.obtener_por_id(db, pago_id)        
         if pago.estado == EstadoPago.REALIZADO or pago.estado == EstadoPago.CANCELADO:
             raise HTTPException(status_code=500, detail= "El pago ya fue facturado o está cancelado.")
-        
-        #verifica si existe el arrendador y si no existe retorna un 404
         arrendador = ArrendadorService.obtener_por_id(db, pago.participacion_arrendador.arrendador_id)
         hoy = date.today()
-        
-        # Caso especial de pago a porcentaje
         if pago.porcentaje and pago.porcentaje > 0:
             pago.estado = EstadoPago.REALIZADO
             db.commit()
             ArrendamientoService.finalizar_arrendamiento(db, pago.arrendamiento_id)
-            # Crear objeto Facturacion "dummy" en memoria
             return Facturacion(
                 id= 0,
                 tipo_factura= TipoFactura.A,
@@ -59,38 +52,39 @@ class FacturacionService:
                 arrendador=ArrendadorDtoOut.model_validate(arrendador),
                 pago=PagoDtoOut.model_validate(pago)
             )
-        
-        #Verifica si el pago ya tiene asignado el precio promedio por quintal, sino devuelve error
         if not (pago.precio_promedio or pago.monto_a_pagar or pago.precio_promedio == 0 or pago.monto_a_pagar == 0):
             raise HTTPException(status_code=500, detail= "El pago no tiene un precio y/o monto asignado.")
-        
+        monto_bruto = pago.monto_a_pagar
+        monto_neto_pago = monto_bruto
         if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA:
             tipo = TipoFactura.C
             nuevo = Facturacion(
                 tipo_factura = tipo,
                 fecha_facturacion = hoy,
-                monto_facturacion = pago.monto_a_pagar,
+                monto_facturacion = monto_bruto,
                 arrendador_id = arrendador.id,
                 pago_id = pago_id
             )
             db.add(nuevo)
-
-        else:
+        else: # (Responsable Inscripto, etc. -> Factura A)
             tipo = TipoFactura.A
-            # delegamos la creación de la retención al service
             retencion = RetencionService.crear_para_factura(db, arrendador.id, pago, hoy)
+            monto_facturacion_bruto = monto_bruto
+            monto_neto_pago = monto_bruto - retencion.total_retencion  
             nuevo = Facturacion(
                 tipo_factura=tipo,
                 fecha_facturacion=hoy,
-                monto_facturacion=pago.monto_a_pagar - retencion.total_retencion,
+                monto_facturacion=monto_facturacion_bruto,
                 arrendador_id=arrendador.id,
                 pago_id= pago_id
             )
             db.add(nuevo)
             db.flush()
             retencion.facturacion_id = nuevo.id
-            db.add(retencion)   
+            db.add(retencion)
         pago.estado = EstadoPago.REALIZADO
+        pago.monto_a_pagar = monto_neto_pago
+        
         db.commit()
         db.refresh(nuevo)
         ArrendamientoService.finalizar_arrendamiento(db, pago.arrendamiento_id)

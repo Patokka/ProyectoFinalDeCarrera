@@ -233,21 +233,26 @@ const handleDelete = (id: number) => {
           </div>
 
           {/* Paginación */}
-            <div className="mt-6 flex justify-between">
-                <Link href="/dashboard" passHref> 
-                  <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                    Volver
-                  </button>
-                </Link>
-            {totalPages > 1 && (
-              <div className="mt-6 flex justify-center">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+          <div className="mt-6 grid grid-cols-3 items-center">            
+            <div className="justify-self-start">
+              <Link href="/dashboard" passHref> 
+                <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
+                  Volver
+                </button>
+              </Link>
+            </div>
+            <div className="justify-self-center">
+              {totalPages > 1 && (
+                <div className="flex justify-center">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </div>
+            <div></div>
           </div>
         </div>
       </div>

@@ -91,3 +91,41 @@ export async function fetchFacturacionById(facturacion_id: number): Promise<Fact
 
     return res.json();
 }
+
+export async function putFacturacion(facturacion_id: number, fecha: string): Promise<FacturacionDtoOut> {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    const body = {
+        fecha_facturacion: fecha,
+    };
+    const res = await fetch(`${API_URL}/facturaciones/${facturacion_id}`, {
+        method: "PUT",
+        headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        throw new Error("Se perdió la sesión, redirigiendo a inicio de sesión");
+    }
+
+    if (res.status === 422) {
+        const err = await res.json();
+        throw new Error(err.detail || "Form mal formado");
+    }
+
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al modificar la facturación");
+    }
+
+    return res.json();
+}

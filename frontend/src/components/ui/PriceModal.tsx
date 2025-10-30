@@ -29,15 +29,10 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
-        const hoy = new Date();
-        const fechaSeleccionada = fecha ? new Date(fecha) : null;
 
         if (!fecha) {
             newErrors.fecha = "Campo obligatorio";
-        } else if (fechaSeleccionada && fechaSeleccionada <= hoy) {
-            newErrors.fecha = "Debe seleccionar una fecha posterior a hoy";
         }
-
         if (!precio) newErrors.precio = "Campo obligatorio";
         if (!origen) newErrors.origen = "Campo obligatorio";
 
