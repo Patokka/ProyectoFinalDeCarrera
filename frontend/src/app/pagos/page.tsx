@@ -277,7 +277,7 @@ export default function PagosPage() {
                           {pago.precio_promedio? formatCurrency(pago.precio_promedio) : "-" }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {pago.quintales? pago.quintales + ' qq' : pago.porcentaje + "%"}
+                          {pago.quintales? pago.quintales.toFixed(2) + ' qq' : pago.porcentaje + "%"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {pago.fuente_precio || '-'}

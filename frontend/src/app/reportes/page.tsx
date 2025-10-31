@@ -11,6 +11,7 @@ import { NumberInput } from "@/components/ui/NumberInput"
 import { ConfigModal, useConfigModal } from "@/components/ui/ConfigModal"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
 import RecipientsModal from "@/components/ui/RecipientModal";
+import HistorialPagosArrendadorModal from "@/components/ui/HistorialPagosArrendadorModal";
 
 const reportConfigs: Record<string, ReportConfig> = {
   "pagos-realizados": {
@@ -31,6 +32,7 @@ const reportConfigs: Record<string, ReportConfig> = {
     fileType: "excel",
     inputFields: ["month", "year"],
   },
+  
 };
 
 const reportCards: ReportCard[] = [
@@ -118,6 +120,15 @@ const reportCards: ReportCard[] = [
       },
     ],
   },
+  {
+    id: "historial-pagos-arrendador",
+    title: "Reporte historial de pagos de arrendador",
+    description: "Historial de pagos por rango de fechas y arrendador",
+    icon: BarChart3,
+    fileType: "pdf",
+    endpoint: "/reportes/historial-pagos-arrendador/pdf",
+    inputFields: [],
+  },
 ];
 
 const configurationCards: ConfigCard[] = [
@@ -179,15 +190,13 @@ export default function ReportesPage() {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false);
   const [errors, setErrors] = useState<{ month?: string; year?: string }>({});
-
+  const [isHistorialPagosArrendadorModalOpen, setIsHistorialPagosArrendadorModalOpen,] = useState(false);
   // Configuration form states
   const {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, } = useConfigModal();   
   const handleGenerateReport = async () => {
     if (!selectedReport) return;
-
     const reportConfig = reportConfigs[selectedReport];
     if (!reportConfig) return;
-
     const { endpoint, fileType } = reportConfig;
     const newErrors: { month?: string; year?: string } = {};
     // VALIDACIONES DE CAMPOS VACÍOS
@@ -198,25 +207,20 @@ export default function ReportesPage() {
     if (!year) {
       newErrors.year = "Debe completar el año";
       toast.error("Debe completar el año");
-
     }
-
     if(parseInt(month,10) > 12 || parseInt(month,10) < 1) {
       newErrors.month = "Ingrese un mes válido";
       toast.error("Ingrese un mes válido.");
     }
-
     if(parseInt(year,10) < 2020 || parseInt(year,10) > 2100) {
       newErrors.year = "Año fuera de rango (2020 - 2100)";
       toast.error("Año fuera de rango (2020 - 2100).");
     }
-
     const mes = parseInt(month, 10);
     const anio = parseInt(year, 10);
     const hoy = new Date();
     const actualMes = hoy.getMonth() + 1;
     const actualAnio = hoy.getFullYear();
-
     // VALIDACIÓN SEGÚN REPORTE
     if (selectedReport === "pagos-realizados") {
       if (anio > actualAnio || (anio === actualAnio && mes >= actualMes)) {
@@ -224,7 +228,6 @@ export default function ReportesPage() {
         toast.error(`Solo se pueden generar reportes hasta ${String(actualMes - 1).padStart(2, "0")}-${actualAnio}.`);
       }
     }
-
     if (selectedReport === "pagos-realizar") {
       if (anio < actualAnio || (anio === actualAnio && mes < actualMes)) {
         newErrors.month = `Solo se pueden generar reportes del mes actual (${String(actualMes).padStart(2,"0")}-${actualAnio}) o futuro.`;
@@ -233,7 +236,6 @@ export default function ReportesPage() {
     }
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
-
     try {
       setIsGenerating(true);
       const blob = await fetchReporte(endpoint, { mes: month, anio: year });
@@ -243,13 +245,11 @@ export default function ReportesPage() {
       link.download = `reporte_${selectedReport}.${fileType === "pdf" ? "pdf" : "xlsx"}`;
       link.click();
       window.URL.revokeObjectURL(url);
-
       toast.success("Reporte generado con éxito");
       setMonth("")
       setYear("")
       setErrors({})
       setIsReportDialogOpen(false);
-
     } catch (error) {
       toast.error("Error al generar el reporte");
       console.error(error);
@@ -259,9 +259,13 @@ export default function ReportesPage() {
   };
 
   const handleReportClick = (reportId: string) => {
-    setSelectedReport(reportId)
-    setIsReportDialogOpen(true)
-  }
+    if (reportId === "historial-pagos-arrendador") {
+      setIsHistorialPagosArrendadorModalOpen(true);
+    } else {
+      setSelectedReport(reportId);
+      setIsReportDialogOpen(true);
+    }
+  };
 
   return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
@@ -273,7 +277,7 @@ export default function ReportesPage() {
           </div>
 
           {/* Tarjetas de reporte, similares al dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14  ">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
             {reportCards.map((report) => {
               const Icon = report.icon
               return (
@@ -342,7 +346,6 @@ export default function ReportesPage() {
           {isReportDialogOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-                
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                   <h3 className="text-lg font-semibold text-gray-900">
@@ -359,7 +362,6 @@ export default function ReportesPage() {
 
                 {/* Cuerpo dinámico */}
                 <div className="p-6 space-y-4">
-
                   {/* Común: Mes */}
                   <div className="space-y-2">
                     <NumberInput
@@ -391,10 +393,10 @@ export default function ReportesPage() {
                   {/* Extra info  */}
                   {selectedReport === "facturaciones" && (
                     <div className="text-xs text-center text-blue-800 leading-snug">
-                      Se generará un reporte fiscal anual desde el mes/año seleccionado (12 meses).
+                      Se generará un reporte fiscal anual desde el mes/año seleccionado.
+                      Ej: Para generar reporte del 10/2024 al 09/2025 ingresar 10/2024 en los campos.
                     </div>
                   )}
-
                   {selectedReport === "pagos-realizados" && (
                     <p className="text-xs text-center text-blue-800 leading-snug">
                       Solo se permiten reportes hasta el mes anterior al actual.
@@ -405,7 +407,6 @@ export default function ReportesPage() {
                       Solo se permiten reportes del mes actual o futuro.
                     </p>
                   )}
-
                 </div>
 
                 {/* Footer con botones */}
@@ -430,7 +431,6 @@ export default function ReportesPage() {
             </div>
           )}
 
-
           {/* Configuración de horarios - Pop-Up*/}
           <ConfigModal
             isOpen={isOpen}
@@ -446,6 +446,10 @@ export default function ReportesPage() {
           <RecipientsModal
             isOpen={isRecipientsModalOpen}
             onClose={() => setIsRecipientsModalOpen(false)}
+          />
+          <HistorialPagosArrendadorModal
+            isOpen={isHistorialPagosArrendadorModalOpen}
+            onClose={() => setIsHistorialPagosArrendadorModalOpen(false)}
           />
         </div>
       </div>

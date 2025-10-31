@@ -1,3 +1,4 @@
+from datetime import date
 from fastapi import Depends, APIRouter
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -40,6 +41,23 @@ def descargar_reporte_pagos_pendientes(anio: int, mes: int, db: Session = Depend
     """
     buffer = ReporteService.generar_reporte_pagos_pendientes_pdf(db, anio, mes)
     filename = f"reporte_pagos_pendientes_{mes}-{anio}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+@router.get("/historial-pagos-arrendador/pdf")
+def descargar_reporte_pagos_arrendador(inicio: date, fin: date, arrendador_id:int, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
+    """
+    Endpoint para descargar el reporte de pagos de un arrendador en PDF.
+    Solo se permiten reportes del mes actual o futuro.
+    """
+    buffer = ReporteService.generar_reporte_por_arrendador_pdf(db, arrendador_id, inicio, fin)
+    filename = f"reporte_pagos_arrendador_{inicio.month}-{inicio.year}_{fin.month}-{fin.year}.pdf"
 
     return StreamingResponse(
         buffer,
