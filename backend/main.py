@@ -195,13 +195,10 @@ def job_actualizar_arrendamientos_vencidos():
 @app.post("/login", response_model = dict)
 def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter(Usuario.cuil == dto.cuil).first()
-
     if not usuario or not verify_password(dto.contrasena, usuario.contrasena):
         raise HTTPException(status_code=401, detail="Cuil o clave inválidas.")
-
     # Duración del token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-
     # Creación del token
     access_token = create_access_token(
         data={
@@ -212,7 +209,6 @@ def login(dto: UsuarioLogin, db: Session = Depends(get_db)):
         },
         expires_delta=access_token_expires,
     )
-
     #Respuesta con cookie HttpOnly para front y JSON
     response = JSONResponse(
             content={
@@ -240,13 +236,11 @@ def actualizar_job(data: JobUpdateRequest, db: Session = Depends(get_db)):
     job_config = db.query(jobConfiguration).filter_by(job_id = data.job_id).first()
     if not job_config:
         raise HTTPException(status_code=404, detail="Job no encontrado")
-
     job_config.day = data.day
     job_config.hour = data.hour
     job_config.minute = data.minute
     job_config.active = data.active
     db.commit()
-
     scheduler.remove_job(data.job_id)
     if data.active:
         trigger = CronTrigger(day=data.day, hour=data.hour, minute=data.minute)
@@ -255,9 +249,20 @@ def actualizar_job(data: JobUpdateRequest, db: Session = Depends(get_db)):
             trigger=trigger,
             id=data.job_id
         )
-
     return {"mensaje": f"Job '{data.job_id}' actualizado y en funcionamiento."}
 
+@app.get("/job-config/{job_id}", dependencies=[Depends(get_current_user)])
+def get_job_config(job_id: str, db: Session = Depends(get_db)):
+    job_config = db.query(jobConfiguration).filter_by(job_id=job_id).first()
+    if not job_config:
+        raise HTTPException(status_code=404, detail="Job no encontrado")
+    return {
+        "job_id": job_config.job_id,
+        "day": job_config.day,
+        "hour": job_config.hour,
+        "minute": job_config.minute,
+        "active": job_config.active,
+    }
 
 # Registro de las diferentes rutas
 app.include_router(ReporteController.router, prefix="/reportes", tags=["Reportes"], dependencies=[Depends(get_current_user)])

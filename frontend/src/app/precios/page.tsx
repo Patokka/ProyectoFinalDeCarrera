@@ -202,7 +202,7 @@ export default function PreciosPage() {
   return (
     <ProtectedRoute>
       <div className="bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="">
           {/* Header */}
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Precios</h1>

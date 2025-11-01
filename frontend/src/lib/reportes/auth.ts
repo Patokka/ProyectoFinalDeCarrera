@@ -89,3 +89,22 @@ export async function fetchReporteArrendador(endpoint: string, params: {inicio: 
     }
     return res.blob(); // retorna el archivo para descarga
 }
+
+export async function fetchJobConfig(jobId: string) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/login";
+        throw new Error("No hay sesión activa");
+    }
+    const res = await fetch(`${API_URL}/job-config/${jobId}`, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Error al obtener la configuración del job");
+    }
+    return res.json();
+}

@@ -296,7 +296,7 @@ export default function CrearArrendamientoPage() {
   return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
       <div className="bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="">
           {/* Header */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
@@ -381,7 +381,7 @@ export default function CrearArrendamientoPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
               <div>
                 <NumberInput
-                  label="Hectáreas para Arrendador"
+                  label="Hectáreas Arrendamiento"
                   value={formData.hectareas}
                   min = {0}
                   max = {1000000}

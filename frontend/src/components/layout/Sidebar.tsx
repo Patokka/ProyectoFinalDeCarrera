@@ -29,7 +29,7 @@ export default function SideBar({ children }: { children: React.ReactNode }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           {sidebarVisible && (
-            <div className="lg:col-span-1 space-y-4 p-4 bg-slate-200 border-r border-gray-400 transition-all duration-300 sticky top-0 overflow-y-auto h-[calc(100vh-4rem)]">
+            <div className="lg:col-span-1 space-y-4 p-4 bg-slate-200 border-r border-gray-400 transition-all duration-300 sticky top-16 overflow-y-auto h-[calc(100vh-4rem)]">
               <Calendar/>
               <PaymentSummary/>
               <QuintalesSummary/>

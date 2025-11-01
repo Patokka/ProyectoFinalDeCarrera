@@ -192,7 +192,7 @@ export default function ReportesPage() {
   const [errors, setErrors] = useState<{ month?: string; year?: string }>({});
   const [isHistorialPagosArrendadorModalOpen, setIsHistorialPagosArrendadorModalOpen,] = useState(false);
   // Configuration form states
-  const {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, } = useConfigModal();   
+  const {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated } = useConfigModal();   
   const handleGenerateReport = async () => {
     if (!selectedReport) return;
     const reportConfig = reportConfigs[selectedReport];
@@ -270,7 +270,7 @@ export default function ReportesPage() {
   return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
       <div className="bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="">
           {/* Header */}
           <div className="mb-10">
             <h1 className="text-2xl font-bold text-gray-900">Reportes:</h1>
@@ -442,6 +442,8 @@ export default function ReportesPage() {
             setConfigDay={setConfigDay}
             isSubmitting={isSubmitting}
             setIsSubmitting={setIsSubmitting}
+            isDeactivated={isDeactivated}
+            setIsDeactivated={setIsDeactivated}
           />
           <RecipientsModal
             isOpen={isRecipientsModalOpen}

@@ -77,7 +77,7 @@ export default function FacturacionesPage() {
   return (
     <ProtectedRoute>  
       <div className="bg-gray-50 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Facturaciones</h1>
             <button onClick={() => setIsFacturacionModalOpen(true)} className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}

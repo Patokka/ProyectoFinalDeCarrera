@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
 import { toast } from "sonner";
-import { updateJobConfig } from "@/lib/reportes/auth";
+import { updateJobConfig, fetchJobConfig } from "@/lib/reportes/auth";
 import { ConfigCard } from "@/lib/type";
 import SelectFilter from "./SelectFilter";
 
@@ -11,20 +11,32 @@ export const useConfigModal = () => {
     const [configTime, setConfigTime] = useState("");
     const [configDay, setConfigDay] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDeactivated, setIsDeactivated] = useState(false);
 
-    const openModal = (card: ConfigCard) => {
+    const openModal = async (card: ConfigCard) => {
         setSelectedConfigCard(card);
-        setConfigTime("");
-        setConfigDay("");
         setIsOpen(true);
+        try {
+            const data = await fetchJobConfig(card.jobId);
+            if (data) {
+                setConfigDay(data.day ? data.day.toString() : "");
+                setConfigTime(`${data.hour.toString().padStart(2, '0')}:${data.minute.toString().padStart(2, '0')}`);
+                setIsDeactivated(!data.active);
+            }
+        } catch (error) {
+            console.error("Error fetching configuration:", error);
+            toast.error("Error al cargar la configuración");
+        }
     };
 
     const closeModal = () => {
         setIsOpen(false);
         setSelectedConfigCard(null);
+        setConfigTime("");
+        setConfigDay("");
     };
 
-    return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting,setIsSubmitting,};
+return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting,setIsSubmitting, isDeactivated, setIsDeactivated};
 };
 
     interface ConfigModalProps {
@@ -37,10 +49,11 @@ export const useConfigModal = () => {
     setConfigDay: (val: string) => void;
     isSubmitting: boolean;
     setIsSubmitting: (val: boolean) => void;
+    isDeactivated: boolean;
+    setIsDeactivated: (val: boolean) => void;
     }
 
-    export const ConfigModal = ({isOpen, onClose, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, }: ConfigModalProps) => {
-    const [isDeactivated, setIsDeactivated] = useState(false);
+    export const ConfigModal = ({isOpen, onClose, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated, }: ConfigModalProps) => {
 
     if (!isOpen || !selectedConfigCard) return null;
 
