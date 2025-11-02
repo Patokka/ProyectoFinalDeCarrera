@@ -1,7 +1,5 @@
 import { FacturacionDtoOut } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchFacturaciones(): Promise<FacturacionDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -9,7 +7,7 @@ export async function fetchFacturaciones(): Promise<FacturacionDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/facturaciones`, {
+    const res = await fetch(`/api/facturaciones`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -39,7 +37,7 @@ export async function fetchFacturacionesByArrendatario(arrendatario_id: number):
         throw new Error("No hay sesión activa");
     }
     
-    const res = await fetch(`${API_URL}/facturaciones/arrendatario/${arrendatario_id}`, {
+    const res = await fetch(`/api/facturaciones/arrendatario/${arrendatario_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -69,7 +67,7 @@ export async function fetchFacturacionById(facturacion_id: number): Promise<Fact
         throw new Error("No hay sesión activa");
     }
     
-    const res = await fetch(`${API_URL}/facturaciones/${facturacion_id}`, {
+    const res = await fetch(`/api/facturaciones/${facturacion_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -92,7 +90,7 @@ export async function fetchFacturacionById(facturacion_id: number): Promise<Fact
     return res.json();
 }
 
-export async function putFacturacion(facturacion_id: number, fecha: string): Promise<FacturacionDtoOut> {
+export async function putFacturacion(facturacion_id: number, fecha: string, monto_facturacion: number|undefined): Promise<FacturacionDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
@@ -100,8 +98,9 @@ export async function putFacturacion(facturacion_id: number, fecha: string): Pro
     }
     const body = {
         fecha_facturacion: fecha,
+        monto_facturacion: monto_facturacion,
     };
-    const res = await fetch(`${API_URL}/facturaciones/${facturacion_id}`, {
+    const res = await fetch(`/api/facturaciones/${facturacion_id}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,

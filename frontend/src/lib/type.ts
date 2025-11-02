@@ -215,6 +215,7 @@ export type PagoForm ={
   participacion_arrendador_id: number;
   dias_promedio?: TipoDiasPromedio | null;
   porcentaje?: number | null;
+  monto_a_pagar?: number;
 }
 
 export interface PrecioDtoOut{

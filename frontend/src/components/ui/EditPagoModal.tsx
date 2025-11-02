@@ -21,17 +21,19 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
     const [porcentaje, setPorcentaje] = useState<number | undefined>(undefined);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [montoAPagar, setMontoAPagar] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         if (pago) {
             setVencimiento(pago.vencimiento);
-
             // Lógica condicional para quintales o porcentaje
             if (pago.porcentaje !== undefined && pago.porcentaje !== null) {
                 setPorcentaje(pago.porcentaje);
                 setQuintales(undefined);
+                setMontoAPagar(undefined);
             } else {
                 setQuintales(pago.quintales);
+                setMontoAPagar(pago.monto_a_pagar);
                 setPorcentaje(undefined);
             }
         }
@@ -43,6 +45,7 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
         setVencimiento("");
         setQuintales(undefined);
         setPorcentaje(undefined);
+        setMontoAPagar(undefined);
         onClose();
     };
 
@@ -92,6 +95,7 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
             } else {
                 payloadCompleto.quintales = quintales;
                 payloadCompleto.porcentaje = null;
+                payloadCompleto.monto_a_pagar = montoAPagar;
             }
             if (pago.dias_promedio) {
                 payloadCompleto.dias_promedio = pago.dias_promedio;
@@ -148,14 +152,24 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
                             error={errors.porcentaje}
                         />
                     ) : (
-                        <NumberInput
-                            label="Quintales a Pagar"
-                            value={quintales ?? 0}
-                            min={0}
-                            onChange={(val) => setQuintales(Number(val))}
-                            placeholder="Ingrese la cantidad de quintales"
-                            error={errors.quintales}
-                        />
+                        <>
+                            <NumberInput
+                                label="Quintales a Pagar"
+                                value={quintales ?? 0}
+                                min={0}
+                                onChange={(val) => setQuintales(Number(val))}
+                                placeholder="Ingrese la cantidad de quintales"
+                                error={errors.quintales}
+                            />
+                            <NumberInput
+                                label="Monto a Pagar"
+                                value={montoAPagar ?? 0}
+                                min={0}
+                                onChange={(val) => setMontoAPagar(Number(val))}
+                                placeholder="Ingrese el monto a pagar"
+                                error={errors.montoAPagar}
+                            />
+                        </>
                     )}
                 </div>
                 <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">

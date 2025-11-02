@@ -8,7 +8,7 @@ from services.PrecioService import PrecioService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[PrecioDtoOut], description="Obtención de todos los precios.", dependencies=[Depends(get_current_user)])
+@router.get("", response_model=list[PrecioDtoOut], description="Obtención de todos los precios.", dependencies=[Depends(get_current_user)])
 def listar_precios(db: Session = Depends(get_db)):
     return PrecioService.listar_precios(db)
 
@@ -28,7 +28,7 @@ def get_precios_pago(pago_id: int, db: Session = Depends(get_db)):
 def obtener_precio(precio_id: int, db: Session = Depends(get_db)):
     return PrecioService.obtener_precio_por_id(db, precio_id)
 
-@router.post("/", response_model=PrecioDtoOut, description="Creación de un precio.")
+@router.post("", response_model=PrecioDtoOut, description="Creación de un precio.")
 def crear_precio(dto: PrecioDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return PrecioService.crear_precio(db, dto)
 

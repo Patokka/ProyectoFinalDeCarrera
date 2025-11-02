@@ -16,19 +16,19 @@ import HistorialPagosArrendadorModal from "@/components/ui/HistorialPagosArrenda
 const reportConfigs: Record<string, ReportConfig> = {
   "pagos-realizados": {
     id: "pagos-realizados",
-    endpoint: "/reportes/mensual/pdf",
+    endpoint: "/api/reportes/mensual/pdf",
     fileType: "pdf",
     inputFields: ["month", "year"],
   },
   "pagos-realizar": {
     id: "pagos-realizar",
-    endpoint: "/reportes/pagos-pendientes/pdf",
+    endpoint: "/api/reportes/pagos-pendientes/pdf",
     fileType: "pdf",
     inputFields: ["month", "year"],
   },
   "facturaciones": {
     id: "facturaciones",
-    endpoint: "/reportes/facturacion/excel",
+    endpoint: "/api/reportes/facturacion/excel",
     fileType: "excel",
     inputFields: ["month", "year"],
   },
@@ -42,7 +42,7 @@ const reportCards: ReportCard[] = [
     description: "Para meses anteriores al actual",
     icon: BarChart3,
     fileType: "pdf",
-    endpoint: "/reportes/mensual/pdf",
+    endpoint: "/api/reportes/mensual/pdf",
     inputFields: [
       {
         id: "anio",
@@ -70,7 +70,7 @@ const reportCards: ReportCard[] = [
     description: "Para el mes actual o futuro",
     icon: BarChart3,
     fileType: "pdf",
-    endpoint: "/reportes/pagos-pendientes/pdf",
+    endpoint: "/api/reportes/pagos-pendientes/pdf",
     inputFields: [
       {
         id: "anio",
@@ -98,7 +98,7 @@ const reportCards: ReportCard[] = [
     description: "12 meses desde la fecha seleccionada",
     icon: BarChart3,
     fileType: "excel",
-    endpoint: "/reportes/facturacion/excel",
+    endpoint: "/api/reportes/facturacion/excel",
     inputFields: [
       {
         id: "anio_inicio",
@@ -126,7 +126,7 @@ const reportCards: ReportCard[] = [
     description: "Historial de pagos por rango de fechas y arrendador",
     icon: BarChart3,
     fileType: "pdf",
-    endpoint: "/reportes/historial-pagos-arrendador/pdf",
+    endpoint: "/api/reportes/historial-pagos-arrendador/pdf",
     inputFields: [],
   },
 ];
@@ -142,7 +142,7 @@ const configurationCards: ConfigCard[] = [
   },
   {
     id: "pagos-vencidos",
-    title: "Configurar hora de actualización de datos de pagos Vencidos",
+    title: "Configurar hora de actualización de pagos Vencidos",
     description: "Se verifica diariamente aquellos pagos que no han sido facturados",
     icon: Settings,
     type: "time",

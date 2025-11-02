@@ -22,7 +22,7 @@ def cambiar_contrasena_usuario(dto: UsuarioDtoModificacion, current_user = Depen
         # Solo si es otro tipo de error (por ejemplo, ValueError o bug interno)
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=list[UsuarioDtoOut], description="Obtención de todos los usuarios.")
+@router.get("", response_model=list[UsuarioDtoOut], description="Obtención de todos los usuarios.")
 def listar_usuario(db: Session = Depends(get_db),  current_user = Depends(get_current_user)):
     return UsuarioService.listar_todos(db)
 
@@ -30,7 +30,7 @@ def listar_usuario(db: Session = Depends(get_db),  current_user = Depends(get_cu
 def obtener_usuario(usuario_id: int, db: Session = Depends(get_db),  current_user = Depends(get_current_user)):
     return UsuarioService.obtener_por_id(db, usuario_id)
 
-@router.post("/", response_model=UsuarioDtoOut, description="Creación de un usuario.")
+@router.post("", response_model=UsuarioDtoOut, description="Creación de un usuario.")
 def crear_usuario(dto: UsuarioDto, db: Session = Depends(get_db), current_user: Usuario = Depends(admin_required)):
     return UsuarioService.crear(db, dto)
 

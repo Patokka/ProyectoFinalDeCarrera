@@ -31,7 +31,7 @@ class RetencionDtoOut(BaseModel):
 
 class RetencionDtoModificacion(BaseModel):
     fecha_retencion: Optional[date]
-    
+    total_retencion: Optional[float]
     model_config = {
         "from_attributes": True,     
         "use_enum_values": True   

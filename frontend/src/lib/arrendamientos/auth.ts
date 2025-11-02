@@ -1,7 +1,5 @@
 import { ArrendamientoDtoOut, ArrendamientoForm, ParticipacionArrendador, ParticipacionArrendadorDtoOut } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -9,7 +7,7 @@ export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
     throw new Error("No hay sesión activa");
   }
   
-  const res = await fetch(`${API_URL}/arrendamientos`, {
+  const res = await fetch(`/api/arrendamientos`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -55,7 +53,7 @@ export async function postArrendamiento(formData: ArrendamientoForm): Promise<Ar
     descripcion: formData.descripcion,
   };
 
-  const res = await fetch(`${API_URL}/arrendamientos`, {
+  const res = await fetch(`/api/arrendamientos`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -92,7 +90,7 @@ export async function postParticipacion(participacion: ParticipacionArrendador):
     throw new Error("No hay sesión activa");
   }
 
-  const res = await fetch(`${API_URL}/participaciones`, {
+  const res = await fetch(`/api/participaciones`, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -124,7 +122,7 @@ export async function fetchArrendamientoById(arrendamiento_id: number): Promise<
     throw new Error("No hay sesión activa");
   }
 
-  const res = await fetch(`${API_URL}/arrendamientos/${arrendamiento_id}`, {
+  const res = await fetch(`/api/arrendamientos/${arrendamiento_id}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -154,7 +152,7 @@ export async function fetchParticipacionesByArrendamiento(arrendamiento_id: numb
     throw new Error("No hay sesión activa");
   }
 
-  const res = await fetch(`${API_URL}/arrendamientos/participaciones/${arrendamiento_id}`, {
+  const res = await fetch(`/api/arrendamientos/participaciones/${arrendamiento_id}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -183,7 +181,7 @@ export async function cancelarArrendamiento(arrendamiento_id: number) {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/arrendamientos/cancelar/${arrendamiento_id}`, {
+    const res = await fetch(`/api/arrendamientos/cancelar/${arrendamiento_id}`, {
     method: "POST",
     headers: {
         "Authorization": `Bearer ${token}`,
@@ -214,7 +212,7 @@ export async function fetchArrendamientosActivos(): Promise<ArrendamientoDtoOut[
       throw new Error("No hay sesión activa");
   }
 
-  const res = await fetch(`${API_URL}/arrendamientos/activos`, {
+  const res = await fetch(`/api/arrendamientos/activos`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -244,7 +242,7 @@ export async function deleteArrendamiento(arrendamiento_id: number) {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/arrendamientos/${arrendamiento_id}`, {
+    const res = await fetch(`/api/arrendamientos/${arrendamiento_id}`, {
     method: "DELETE",
     headers: {
         "Authorization": `Bearer ${token}`,

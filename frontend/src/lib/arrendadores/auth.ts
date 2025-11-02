@@ -1,7 +1,5 @@
 import { ArrendadorDtoOut, ArrendadorForm } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchArrendadores(): Promise<ArrendadorDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -9,7 +7,7 @@ export async function fetchArrendadores(): Promise<ArrendadorDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
     
-    const res = await fetch(`${API_URL}/arrendadores`, {
+    const res = await fetch(`/api/arrendadores`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -40,7 +38,7 @@ export async function deleteArrendador(arrendador_id: number) {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {
+    const res = await fetch(`/api/arrendadores/${arrendador_id}`, {
     method: "DELETE",
     headers: {
         "Authorization": `Bearer ${token}`,
@@ -70,7 +68,7 @@ export async function fetchArrendadorById(arrendador_id: number): Promise<Arrend
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {
+    const res = await fetch(`/api/arrendadores/${arrendador_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -110,7 +108,7 @@ export async function postArrendador(formData: ArrendadorForm): Promise<Arrendad
         descripcion: formData.descripcion,
     };
 
-    const res = await fetch(`${API_URL}/arrendadores`, {
+    const res = await fetch(`/api/arrendadores`, {
         method: "POST",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -156,7 +154,7 @@ export async function putArrendador(formData: ArrendadorForm, arrendador_id: num
         descripcion: formData.descripcion || null,
     };
 
-    const res = await fetch(`${API_URL}/arrendadores/${arrendador_id}`, {
+    const res = await fetch(`/api/arrendadores/${arrendador_id}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,

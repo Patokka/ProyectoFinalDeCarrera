@@ -9,7 +9,7 @@ from services.ArrendamientoService import ArrendamientoService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[ParticipacionArrendadorDtoOut], description="Obtención de todas las participaciones.")
+@router.get("", response_model=list[ParticipacionArrendadorDtoOut], description="Obtención de todas las participaciones.")
 def listar_participaciones(db: Session = Depends(get_db)):
     return ArrendamientoService.listar_participaciones(db)
 
@@ -17,7 +17,7 @@ def listar_participaciones(db: Session = Depends(get_db)):
 def obtener_participacion(participacion_id: int, db: Session = Depends(get_db)):
     return ArrendamientoService.obtener_participacion_por_id(db, participacion_id)
 
-@router.post("/", response_model=ParticipacionArrendadorDtoOut, description="Creación de una participación.")
+@router.post("", response_model=ParticipacionArrendadorDtoOut, description="Creación de una participación.")
 def crear_participacion(dto: ParticipacionArrendadorDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.crear_participacion(db, dto)
 

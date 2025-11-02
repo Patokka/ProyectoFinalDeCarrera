@@ -1,7 +1,5 @@
 import { LocalidadDtoOut, ProvinciaDtoOut } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -9,7 +7,7 @@ export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/provincias`, {
+    const res = await fetch(`/api/provincias`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -40,7 +38,7 @@ export async function fetchLocalidades(provincia_id: number): Promise<LocalidadD
         throw new Error("No hay sesión activa");
     }
     
-    const res = await fetch(`${API_URL}/provincias/${provincia_id}/localidades`, {
+    const res = await fetch(`/api/provincias/${provincia_id}/localidades`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,

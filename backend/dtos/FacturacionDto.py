@@ -27,7 +27,7 @@ class FacturacionDtoOut(BaseModel):
     
 class FacturacionDtoModificacion(BaseModel):
     fecha_facturacion: Optional[date]
-
+    monto_facturacion: Optional[float]
     model_config = {
         "from_attributes": True,     
         "use_enum_values": True   

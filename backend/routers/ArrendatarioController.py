@@ -8,7 +8,7 @@ from services.ArrendatarioService import ArrendatarioService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[ArrendatarioDtoOut], description="Obtención de todos los arrendatarios.")
+@router.get("", response_model=list[ArrendatarioDtoOut], description="Obtención de todos los arrendatarios.")
 def listar_arrendatarios(db: Session = Depends(get_db)):
     return ArrendatarioService.listar_todos(db)
 
@@ -16,7 +16,7 @@ def listar_arrendatarios(db: Session = Depends(get_db)):
 def obtener_arrendatario(arrendatario_id: int, db: Session = Depends(get_db)):
     return ArrendatarioService.obtener_por_id(db, arrendatario_id)
 
-@router.post("/", response_model=ArrendatarioDtoOut, description="Creación de un arrendatario.")
+@router.post("", response_model=ArrendatarioDtoOut, description="Creación de un arrendatario.")
 def crear_arrendatario(dto: ArrendatarioDto, db: Session = Depends(get_db) , current_user: Usuario = Depends(canEditDelete)):
     return ArrendatarioService.crear(db, dto)
 

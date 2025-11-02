@@ -17,7 +17,6 @@ Antes de levantar los contenedores, necesitas configurar algunas variables de en
 
 **Contenido mínimo requerido:**
 Acordate de poner la llave de gmail del correo de la organización, en .env del backend , para que ellos sean los que envian los reportes!!!!!!!!!.
-Configurá la ip privada del servidor en next.config y env.local!!!!!!!!!!!!!.
 Cambiar el nombre de contacto de Fran al que tienen agendado a AGD!!!!!!!!!.
 El bot se ejecutará directamente en el servidor ya que no puede ser dockerizado, hay que crear la tarea o el proceso y mandarle la ruta completa al ejecutable, este genera el exe, ejecutar en entorno (.\venv_bot_build\Scripts\activate) con requirements:
     - pyinstaller --onefile --name WhatsAppBotAGD botPrecioAGD.py es el comando
@@ -58,3 +57,21 @@ Get-Content -Path "C:\ruta\tu_archivo.txt" -Wait, ubicate en ruta de log y pone 
 **Backup**
 Tenés que ejecutar el script que está en /backup con powershell, y si queres programar una tarea para que la realice una vez por mes, ver archivo para cambiar llaves y destinatarios.
 -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\Ruta\Completa\A\Tu\run_backup.ps1" editando eso en la pestaña de acciones de la tarea, en donde dice agregar argumentos poner esa línea para que ejecute en modo hidden. Iniciar en puede quedar en vacío en esta pestaña
+
+
+**Para manejo de ip**
+Tenés que cambiar el nombre de dispositivo en next.config.js para no preocuparte del dhcp y se pueda comunicar bien con el docker
+
+Agregar una "Regla de entrada" en el firewall de la PC backend.
+En la PC con Windows 11, presiona la tecla Windows y escribe "Firewall".
+Abre "Firewall de Windows Defender con seguridad avanzada".
+En el panel izquierdo, haz clic en "Reglas de entrada".
+En el panel derecho, haz clic en "Nueva regla...".
+Se abrirá un asistente:
+Tipo de regla: Selecciona Puerto. Haz clic en Siguiente.
+Protocolo y puertos: Selecciona TCP. Abajo, selecciona Puertos locales específicos: y escribe el puerto de tu frontend (ej: 3000). Haz clic en Siguiente.
+Acción: Selecciona Permitir la conexión. Haz clic en Siguiente.
+Perfil: Desmarca "Público" (por seguridad). Deja marcadas Privado y Dominio. Haz clic en Siguiente.
+Nombre: Escribe un nombre descriptivo, como Acceso Frontend Next.js (Puerto 3000).
+Haz clic en Finalizar.
+Una vez que hagas esto, la regla se aplica de inmediato. Intenta acceder desde tu teléfono o laptop otra vez usando http://DESKTOP-JUAN.local:3000 y ahora sí debería funcionar.

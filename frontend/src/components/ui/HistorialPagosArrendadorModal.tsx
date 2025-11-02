@@ -71,7 +71,7 @@ export default function HistorialPagosArrendadorModal({isOpen, onClose,}: Histor
         }
         try {
             setIsGenerating(true)
-            const blob = await fetchReporteArrendador("/reportes/historial-pagos-arrendador/pdf",{inicio: fechaInicio, fin: fechaFin, arrendador_id: parseInt(arrendadorId),})
+            const blob = await fetchReporteArrendador("/api/reportes/historial-pagos-arrendador/pdf",{inicio: fechaInicio, fin: fechaFin, arrendador_id: parseInt(arrendadorId),})
             const url = window.URL.createObjectURL(blob)
             const link = document.createElement("a")
             link.href = url

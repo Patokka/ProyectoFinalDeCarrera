@@ -38,7 +38,7 @@ def obtener_vencimientos_mes(mes: int, anio: int, db: Session = Depends(get_db))
         # Solo si es otro tipo de error (por ejemplo, ValueError o bug interno)
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=list[PagoDtoOut], description="Obtención de todos los pagos.")
+@router.get("", response_model=list[PagoDtoOut], description="Obtención de todos los pagos.")
 def listar_pagos(db: Session = Depends(get_db)):
     return PagoService.listar_todos(db)
 
@@ -46,7 +46,7 @@ def listar_pagos(db: Session = Depends(get_db)):
 def obtener_pago(pago_id: int, db: Session = Depends(get_db)):
     return PagoService.obtener_por_id(db, pago_id)
 
-@router.post("/", response_model=PagoDtoOut, description="Creación de un pago.")
+@router.post("", response_model=PagoDtoOut, description="Creación de un pago.")
 def crear_pago(dto: PagoDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return PagoService.crear(db, dto)
 

@@ -8,7 +8,7 @@ from services.FacturacionService import FacturacionService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[FacturacionDtoOut], description="Obtención de todas las facturación.")
+@router.get("", response_model=list[FacturacionDtoOut], description="Obtención de todas las facturación.")
 def listar_facturaciones(db: Session = Depends(get_db)):
     return FacturacionService.listar_todos(db)
 

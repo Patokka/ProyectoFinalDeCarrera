@@ -8,7 +8,7 @@ from services.UbicacionService import UbicacionService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[LocalidadDtoOut], description="Obtención de todas las localidades.")
+@router.get("", response_model=list[LocalidadDtoOut], description="Obtención de todas las localidades.")
 def listar_localidades(db: Session = Depends(get_db)):
     return UbicacionService.listar_localidades(db)
 
@@ -16,7 +16,7 @@ def listar_localidades(db: Session = Depends(get_db)):
 def obtener_localidad(localidad_id: int, db: Session = Depends(get_db)):
     return UbicacionService.obtener_localidad_por_id(db, localidad_id)
 
-@router.post("/", response_model=LocalidadDtoOut, description="Creación de una localidad.")
+@router.post("", response_model=LocalidadDtoOut, description="Creación de una localidad.")
 def crear_localidad(dto: LocalidadDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return UbicacionService.crear_localidad(db, dto)
 

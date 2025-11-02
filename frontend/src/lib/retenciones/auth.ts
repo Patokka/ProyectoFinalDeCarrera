@@ -1,7 +1,5 @@
 import { RetencionDtoOut } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -9,7 +7,7 @@ export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/retenciones`, {
+    const res = await fetch(`/api/retenciones`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -39,7 +37,7 @@ export async function fetchRetencionByFacturacionId(facturacion_id: number): Pro
         throw new Error("No hay sesión activa");
     }
     
-    const res = await fetch(`${API_URL}/retenciones/facturacion/${facturacion_id}`, {
+    const res = await fetch(`/api/retenciones/facturacion/${facturacion_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -62,7 +60,7 @@ export async function fetchRetencionByFacturacionId(facturacion_id: number): Pro
     return res.json();
 }
 
-export async function putRetencion(retencion_id: number, fecha: string): Promise<RetencionDtoOut> {
+export async function putRetencion(retencion_id: number, fecha: string, total_retencion: number | undefined): Promise<RetencionDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
@@ -70,8 +68,9 @@ export async function putRetencion(retencion_id: number, fecha: string): Promise
     }
     const body = {
         fecha_retencion: fecha,
+        total_retencion: total_retencion,
     };
-    const res = await fetch(`${API_URL}/retenciones/${retencion_id}`, {
+    const res = await fetch(`/api/retenciones/${retencion_id}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,

@@ -6,6 +6,7 @@ import { Download, X } from "lucide-react";
 import DateInput from "./DateInput";
 import { RetencionDtoOut } from "@/lib/type";
 import { putRetencion } from "@/lib/retenciones/auth";
+import { NumberInput } from "./NumberInput";
 
 interface EditRetencionModalProps {
     isOpen: boolean;
@@ -18,10 +19,12 @@ const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose
     const [fecha, setFecha] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [totalRetencion, setTotalRetencion] = useState<number | undefined>(undefined);
+    
     useEffect(() => {
         if (retencion) {
             setFecha(retencion.fecha_retencion);
+            setTotalRetencion(retencion.total_retencion);
         }
     }, [retencion]);
 
@@ -34,6 +37,9 @@ const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!fecha) newErrors.fecha = "La fecha de retención es obligatoria";
+        if (totalRetencion === undefined || totalRetencion <= 0) {
+            newErrors.totalRetencion = "El total de la retención debe ser un número positivo";
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -43,7 +49,7 @@ const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose
 
         try {
             setIsSubmitting(true);
-            await putRetencion(retencion.id, fecha);
+            await putRetencion(retencion.id, fecha, totalRetencion);
             toast.success("Retención actualizada con éxito");
             if (onSuccess) onSuccess();
             handleClose();
@@ -82,6 +88,14 @@ const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose
                         onChange={setFecha}
                         placeholder="Seleccionar fecha"
                         error={errors.fecha}
+                    />
+                    <NumberInput
+                        label="Total Retención"
+                        value={totalRetencion ?? 0}
+                        min={0}
+                        onChange={(val) => setTotalRetencion(Number(val))}
+                        placeholder="Ingrese el total de la retención"
+                        error={errors.totalRetencion}
                     />
                 </div>
 

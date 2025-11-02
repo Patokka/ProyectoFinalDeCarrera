@@ -1,8 +1,5 @@
 import { PagoDia, PagoDtoOut, PagoForm, PaymentSummaryResponse, QuintalesSummaryResponse } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-
 export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
     const token = localStorage.getItem("token")
     if (!token) {
@@ -10,7 +7,7 @@ export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos/resumen-mes`, {
+    const res = await fetch(`/api/pagos/resumen-mes`, {
         method: "GET",
         headers: {
         "Content-Type": "application/json",
@@ -36,7 +33,7 @@ export async function fetchPaymentDates(month: number, year: number): Promise<Pa
         throw new Error("No hay sesión activa")
     }
 
-    const res = await fetch(`${API_URL}/pagos/vencimientos-mes?mes=${month}&anio=${year}`, {
+    const res = await fetch(`/api/pagos/vencimientos-mes?mes=${month}&anio=${year}`, {
         headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -63,7 +60,7 @@ export async function generarCuotas(arrendamientoId: number): Promise<void> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos/generar/${arrendamientoId}`, {
+    const res = await fetch(`/api/pagos/generar/${arrendamientoId}`, {
         method: "POST",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -90,7 +87,7 @@ export async function fetchPagos(): Promise<PagoDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos`, {
+    const res = await fetch(`/api/pagos`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -120,7 +117,7 @@ export async function facturarPago(pago: number): Promise<void>{
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/facturaciones/crear/${pago}`, {
+    const res = await fetch(`/api/facturaciones/crear/${pago}`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -154,7 +151,7 @@ export async function fetchPagosByArrendador(arrendador_id: number): Promise<Pag
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos/arrendador/${arrendador_id}`, {
+    const res = await fetch(`/api/pagos/arrendador/${arrendador_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -184,7 +181,7 @@ export async function fetchPagosByArrendamiento(arrendamiento_id: number): Promi
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos/arrendamiento/${arrendamiento_id}`, {
+    const res = await fetch(`/api/pagos/arrendamiento/${arrendamiento_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -214,7 +211,7 @@ export async function fetchPagoById(pago_id: number): Promise<PagoDtoOut> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos/${pago_id}`, {
+    const res = await fetch(`/api/pagos/${pago_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -244,7 +241,7 @@ export async function cancelarPago(pago_id: number){
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/pagos/cancelar/${pago_id}`, {
+    const res = await fetch(`/api/pagos/cancelar/${pago_id}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -284,7 +281,7 @@ export async function postPago(formData: PagoForm): Promise<PagoDtoOut> {
         porcentaje: formData.porcentaje
     };
 
-    const res = await fetch(`${API_URL}/pagos`, {
+    const res = await fetch(`/api/pagos`, {
         method: "POST",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -319,7 +316,7 @@ export async function asignarPrecioPago(idPago: number): Promise<PagoDtoOut> {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/pagos/precio/${idPago}`, {
+    const res = await fetch(`/api/pagos/precio/${idPago}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -351,7 +348,7 @@ export async function fetchNextMonthQuintalesSummary(): Promise<QuintalesSummary
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/pagos/resumen-quintales-proximo-mes`, {
+    const res = await fetch(`/api/pagos/resumen-quintales-proximo-mes`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -387,8 +384,9 @@ export async function putPago(pago_id: number, formData: PagoForm): Promise<Pago
         participacion_arrendador_id: formData.participacion_arrendador_id,
         dias_promedio: formData.dias_promedio,
         porcentaje: formData.porcentaje,
+        monto_a_pagar: formData.monto_a_pagar
     };
-    const res = await fetch(`${API_URL}/pagos/${pago_id}`, {
+    const res = await fetch(`/api/pagos/${pago_id}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,

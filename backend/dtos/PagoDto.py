@@ -47,7 +47,7 @@ class PagoDtoModificacion(BaseModel):
     participacion_arrendador_id: int
     dias_promedio: TipoDiasPromedio
     porcentaje: Optional[float] = None
-    
+    monto_a_pagar: Optional[float]
     model_config = {
         "from_attributes": True,
         "use_enum_values": True

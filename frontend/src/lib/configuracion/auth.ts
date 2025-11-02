@@ -1,14 +1,12 @@
 import { Recipient } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchConfiguracion(clave: string): Promise<string | null> {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/retenciones/configuracion/${clave}`, {
+    const res = await fetch(`/api/retenciones/configuracion/${clave}`, {
         headers: {
             "Authorization": `Bearer ${token}`,
         },
@@ -35,7 +33,7 @@ export async function actualizarConfiguracion(clave: string, valor: string): Pro
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/retenciones/configuracion`, {
+    const res = await fetch(`/api/retenciones/configuracion`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -63,7 +61,7 @@ export async function eliminarConfiguracion(clave: string): Promise<void> {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/retenciones/configuracion/${clave}`, {
+    const res = await fetch(`/api/retenciones/configuracion/${clave}`, {
         method: "DELETE",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -91,7 +89,7 @@ export async function fetchDestinatarios(): Promise<Recipient[]> {
         throw new Error("No hay sesión activa, redirigiendo a login");
     }
 
-    const res = await fetch(`${API_URL}/retenciones/configuracion/destinatarios`, {  
+    const res = await fetch(`/api/retenciones/configuracion/destinatarios`, {  
         method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -126,7 +124,7 @@ export async function putCorreos(recipients: Recipient[]): Promise<boolean> {
     }
 
     //Obtener todos los destinatarios existentes para detectar cuáles eliminar
-    const resGet = await fetch(`${API_URL}/retenciones/configuracion/destinatarios`, {
+    const resGet = await fetch(`/api/retenciones/configuracion/destinatarios`, {
         headers: { "Authorization": `Bearer ${token}` },
     });
 
@@ -140,7 +138,7 @@ export async function putCorreos(recipients: Recipient[]): Promise<boolean> {
 
     //Actualizar / agregar los actuales
     for (const r of recipients) {
-        const res = await fetch(`${API_URL}/retenciones/configuracion`, {
+        const res = await fetch(`/api/retenciones/configuracion`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -167,7 +165,7 @@ export async function putCorreos(recipients: Recipient[]): Promise<boolean> {
 
     //Eliminar los que ya no están
     for (let i = recipients.length + 1; i <= existing.length; i++) {
-        const resDel = await fetch(`${API_URL}/retenciones/configuracion/DESTINATARIO_${i}`, {
+        const resDel = await fetch(`/api/retenciones/configuracion/DESTINATARIO_${i}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`,

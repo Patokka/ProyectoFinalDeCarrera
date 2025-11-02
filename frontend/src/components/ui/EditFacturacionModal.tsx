@@ -6,6 +6,7 @@ import { X, Download } from "lucide-react";
 import DateInput from "./DateInput";
 import { FacturacionDtoOut } from "@/lib/type";
 import { putFacturacion } from "@/lib/facturaciones/auth";
+import { NumberInput } from "./NumberInput";
 
 interface EditFacturacionModalProps {
     isOpen: boolean;
@@ -18,10 +19,12 @@ const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onC
     const [fecha, setFecha] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-
+    const [montoFacturacion, setMontoFacturacion] = useState<number | undefined>(undefined);
+    
     useEffect(() => {
         if (factura) {
             setFecha(factura.fecha_facturacion);
+            setMontoFacturacion(factura.monto_facturacion);
         }
     }, [factura]);
 
@@ -34,6 +37,9 @@ const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onC
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!fecha) newErrors.fecha = "La fecha de facturación es obligatoria";
+        if (montoFacturacion === undefined || montoFacturacion <= 0) {
+            newErrors.montoFacturacion = "El monto de facturación debe ser un número positivo";
+        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -43,7 +49,7 @@ const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onC
 
         try {
             setIsSubmitting(true);
-            await putFacturacion(factura.id, fecha);
+            await putFacturacion(factura.id, fecha, montoFacturacion);
             toast.success("Factura actualizada con éxito");
             if (onSuccess) onSuccess();
             handleClose();
@@ -83,7 +89,16 @@ const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onC
                         placeholder="Seleccionar fecha"
                         error={errors.fecha}
                     />
+                    <NumberInput
+                        label="Monto de Facturación"
+                        value={montoFacturacion ?? 0}
+                        min={0}
+                        onChange={(val) => setMontoFacturacion(Number(val))}
+                        placeholder="Ingrese el monto"
+                        error={errors.montoFacturacion}
+                    />
                 </div>
+                
 
                 {/* Footer */}
                 <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">

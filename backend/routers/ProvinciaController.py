@@ -9,7 +9,7 @@ from services.UbicacionService import UbicacionService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[ProvinciaDtoOut], description="Obtención de todas las provincias.")
+@router.get("", response_model=list[ProvinciaDtoOut], description="Obtención de todas las provincias.")
 def listar_provincias(db: Session = Depends(get_db)):
     return UbicacionService.listar_provincias(db)
 
@@ -21,7 +21,7 @@ def obtener_provincia(provincia_id: int, db: Session = Depends(get_db)):
 def obtener_provincia(provincia_id: int, db: Session = Depends(get_db)):
     return UbicacionService.obtener_provincia_por_id(db, provincia_id)
 
-@router.post("/", response_model=ProvinciaDtoOut, description="Creación de una provincia.")
+@router.post("", response_model=ProvinciaDtoOut, description="Creación de una provincia.")
 def crear_provincia(dto: ProvinciaDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return UbicacionService.crear_provincia(db, dto)
 

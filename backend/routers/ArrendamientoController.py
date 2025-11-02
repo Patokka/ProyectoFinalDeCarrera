@@ -9,7 +9,7 @@ from services.ArrendamientoService import ArrendamientoService
 
 router = APIRouter()
 
-@router.get("/", response_model=list[ArrendamientoDtoOut], description="Obtención de todos los arrendamientos.")
+@router.get("", response_model=list[ArrendamientoDtoOut], description="Obtención de todos los arrendamientos.")
 def listar_arrendamientos(db: Session = Depends(get_db)):
     return ArrendamientoService.listar_todos(db)
 
@@ -25,7 +25,7 @@ def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
 def obtener_arrendamiento(arrendamiento_id: int, db: Session = Depends(get_db)):
     return ArrendamientoService.obtener_por_id(db, arrendamiento_id)
 
-@router.post("/", response_model=ArrendamientoDtoOut, description="Creación de un arrendamiento.")
+@router.post("", response_model=ArrendamientoDtoOut, description="Creación de un arrendamiento.")
 def crear_arrendamiento(dto: ArrendamientoDto, db: Session = Depends(get_db), current_user: Usuario = Depends(canEditDelete)):
     return ArrendamientoService.crear(db, dto)
 

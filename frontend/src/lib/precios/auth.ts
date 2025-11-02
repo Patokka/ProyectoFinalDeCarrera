@@ -1,7 +1,5 @@
 import { PrecioDtoOut, PrecioForm } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -9,7 +7,7 @@ export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/precios/AGD`, {
+    const res = await fetch(`/api/precios/AGD`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -39,7 +37,7 @@ export async function fetchPreciosBCR(): Promise<PrecioDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/precios/BCR`, {
+    const res = await fetch(`/api/precios/BCR`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -75,7 +73,7 @@ export async function postPrecio(formData: PrecioForm): Promise<PrecioDtoOut> {
         origen: formData.origen,
     };
 
-    const res = await fetch(`${API_URL}/precios`, {
+    const res = await fetch(`/api/precios`, {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -111,7 +109,7 @@ export async function deletePrecio(precio_id: number) {
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/precios/${precio_id}`, {
+    const res = await fetch(`/api/precios/${precio_id}`, {
     method: "DELETE",
     headers: {
         "Authorization": `Bearer ${token}`,
@@ -147,7 +145,7 @@ export async function putPrecio(formData: PrecioForm, idPrecio: number): Promise
         origen: formData.origen,
     };
 
-    const res = await fetch(`${API_URL}/precios/${idPrecio}`, {
+    const res = await fetch(`/api/precios/${idPrecio}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -183,7 +181,7 @@ export async function fetchPreciosPago(pago_id: number): Promise<PrecioDtoOut[]>
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/precios/pago/${pago_id}`, {
+    const res = await fetch(`/api/precios/pago/${pago_id}`, {
         method: "GET",
         headers: {
         Authorization: `Bearer ${token}`,

@@ -432,7 +432,12 @@ class ReporteService:
         fecha_fin = date(anio + (mes // 12), (mes % 12) + 1, 1)
         
         hoy = date.today()
-        primer_dia_mes_actual = date(hoy.year, hoy.month, 1)
+        if hoy.day == 1 and hoy.month != 1:
+            primer_dia_mes_actual = date(hoy.year, hoy.month -1, 1)
+        elif hoy.day == 1 and hoy.month == 1:
+            primer_dia_mes_actual = date(hoy.year -1, 12, 1)
+        else:
+            primer_dia_mes_actual = date(hoy.year, hoy.month, 1)
         precios_mes_actual = db.query(Precio.precio_obtenido).filter(
             Precio.fecha_precio >= primer_dia_mes_actual,
             Precio.fecha_precio <= hoy,
@@ -559,7 +564,7 @@ class ReporteService:
             elements.append(table)
             # Nota aclaratoria al final de cada hoja
             nota = Paragraph(
-                f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía de BCR{formato_moneda(precio_guia_mes)} (promedio del mes actual).</i></font>',
+                f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía de BCR {formato_moneda(precio_guia_mes)} (promedio del mes {primer_dia_mes_actual.month}/{primer_dia_mes_actual.year}).</i></font>',
                 styles["Normal"]
             )
             elements.append(Spacer(1, 0.4 * cm))
@@ -609,7 +614,12 @@ class ReporteService:
         elements = []
         styles = getSampleStyleSheet()
         hoy = date.today()
-        primer_dia_mes_actual = date(hoy.year, hoy.month, 1)
+        if hoy.day == 1 and hoy.month != 1:
+            primer_dia_mes_actual = date(hoy.year, hoy.month -1, 1)
+        elif hoy.day == 1 and hoy.month == 1:
+            primer_dia_mes_actual = date(hoy.year -1, 12, 1)
+        else:
+            primer_dia_mes_actual = date(hoy.year, hoy.month, 1)
         precios_mes_actual = db.query(Precio.precio_obtenido).filter(
             Precio.fecha_precio >= primer_dia_mes_actual,
             Precio.fecha_precio <= hoy,
@@ -698,7 +708,7 @@ class ReporteService:
         table.setStyle(table_style)
         elements.append(table)
         if "*" in str(data):
-            nota_texto = f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía de BCR {formato_moneda(precio_guia_mes)} (promedio del mes actual).</i></font>'
+            nota_texto = f'<font size="9" color="grey"><i>Nota: Los montos marcados con (*) se calcularon usando precio guía de BCR {formato_moneda(precio_guia_mes)} (promedio del mes {primer_dia_mes_actual.month}/{primer_dia_mes_actual.year}).</i></font>'
             nota = Paragraph(nota_texto, styles["Normal"])
             elements.append(Spacer(1, 0.4 * cm))
             elements.append(nota)

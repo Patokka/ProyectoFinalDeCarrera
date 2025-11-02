@@ -14,7 +14,6 @@ interface AuthContextType {
   login: (cuil: string, contrasena: string) => Promise<void>
   logout: () => void
 }
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -27,7 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const login = async (cuil: string, contrasena: string) => {
-    const res = await fetch(`${API_URL}/login`, {
+    const res = await fetch(`/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ cuil, contrasena }),

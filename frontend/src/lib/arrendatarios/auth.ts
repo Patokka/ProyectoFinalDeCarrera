@@ -1,7 +1,5 @@
 import { ArrendatarioDtoOut, ArrendatarioForm } from "../type";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -9,7 +7,7 @@ export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
         throw new Error("No hay sesión activa");
     }
     
-    const res = await fetch(`${API_URL}/arrendatarios`, {
+    const res = await fetch(`/api/arrendatarios`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -38,7 +36,7 @@ export async function deleteArrendatario(id: number) {
         window.location.href = "/login";
         throw new Error("No hay sesión activa");
     }
-    const res = await fetch(`${API_URL}/arrendatarios/${id}`, {
+    const res = await fetch(`/api/arrendatarios/${id}`, {
     method: "DELETE",
     headers: {
         "Authorization": `Bearer ${token}`,
@@ -68,7 +66,7 @@ export async function fetchArrendatarioById(arrendatario_id: number): Promise<Ar
         throw new Error("No hay sesión activa");
     }
 
-    const res = await fetch(`${API_URL}/arrendatarios/${arrendatario_id}`, {
+    const res = await fetch(`/api/arrendatarios/${arrendatario_id}`, {
         method: "GET",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -106,7 +104,7 @@ export async function postArrendatario(formData: ArrendatarioForm): Promise<Arre
         localidad_id: formData.localidad_id,
     };
 
-    const res = await fetch(`${API_URL}/arrendatarios`, {
+    const res = await fetch(`/api/arrendatarios`, {
         method: "POST",
         headers: {
         "Authorization": `Bearer ${token}`,
@@ -150,7 +148,7 @@ export async function putArrendatario(formData: ArrendatarioForm, idArrendatario
         localidad_id: formData.localidad_id,
     };
 
-    const res = await fetch(`${API_URL}/arrendatarios/${idArrendatario}`, {
+    const res = await fetch(`/api/arrendatarios/${idArrendatario}`, {
         method: "PUT",
         headers: {
         "Authorization": `Bearer ${token}`,
