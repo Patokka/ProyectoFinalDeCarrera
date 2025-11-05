@@ -23,7 +23,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 from sqlalchemy import func
-from util import Configuracion
+from util.Configuracion import Configuracion
 from enums.TipoCondicion import TipoCondicion
 from model.Precio import Precio
 from model.Arrendador import Arrendador
@@ -432,9 +432,9 @@ class ReporteService:
         fecha_fin = date(anio + (mes // 12), (mes % 12) + 1, 1)
         
         hoy = date.today()
-        if hoy.day == 1 and hoy.month != 1:
+        if hoy.day <= 5 and hoy.month != 1:
             primer_dia_mes_actual = date(hoy.year, hoy.month -1, 1)
-        elif hoy.day == 1 and hoy.month == 1:
+        elif hoy.day <= 1 and hoy.month == 1:
             primer_dia_mes_actual = date(hoy.year -1, 12, 1)
         else:
             primer_dia_mes_actual = date(hoy.year, hoy.month, 1)
@@ -493,7 +493,7 @@ class ReporteService:
                         Pago.arrendamiento_id == arrendamiento.id,
                         Pago.vencimiento >= fecha_inicio,
                         Pago.vencimiento < fecha_fin,
-                        Pago.estado == "PENDIENTE"
+                        Pago.estado.in_(["PENDIENTE", "VENCIDO"])
                     )
                     .all()
                 )
@@ -614,9 +614,9 @@ class ReporteService:
         elements = []
         styles = getSampleStyleSheet()
         hoy = date.today()
-        if hoy.day == 1 and hoy.month != 1:
+        if hoy.day <= 1 and hoy.month != 1:
             primer_dia_mes_actual = date(hoy.year, hoy.month -1, 1)
-        elif hoy.day == 1 and hoy.month == 1:
+        elif hoy.day <= 1 and hoy.month == 1:
             primer_dia_mes_actual = date(hoy.year -1, 12, 1)
         else:
             primer_dia_mes_actual = date(hoy.year, hoy.month, 1)

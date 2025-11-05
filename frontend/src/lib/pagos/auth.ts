@@ -384,7 +384,8 @@ export async function putPago(pago_id: number, formData: PagoForm): Promise<Pago
         participacion_arrendador_id: formData.participacion_arrendador_id,
         dias_promedio: formData.dias_promedio,
         porcentaje: formData.porcentaje,
-        monto_a_pagar: formData.monto_a_pagar
+        monto_a_pagar: formData.monto_a_pagar,
+        precio_promedio: formData.precio_promedio,
     };
     const res = await fetch(`/api/pagos/${pago_id}`, {
         method: "PUT",

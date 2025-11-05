@@ -458,7 +458,7 @@ export default function CrearArrendamientoPage() {
                   <div>
                     <div className="flex items-center space-x-2">
                       <NumberInput
-                        label="Porcentaje Producción"
+                        label="Porcentaje Producción por cosecha"
                         value={formData.porcentaje_aparceria}
                         min = {0}
                         max = {100}

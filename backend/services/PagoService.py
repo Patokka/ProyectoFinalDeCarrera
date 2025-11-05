@@ -79,17 +79,15 @@ class PagoService:
     def generarCuotas(db: Session, arrendamiento_id: int):
         """
         Genera cuotas de pago en función de las participaciones.
-        - FIJO: genera cuotas completas con quintales calculados.
+        - FIJO: genera cuotas completas con quintales calculados a 2 decimales.
         - A_PORCENTAJE: genera cuotas con vencimientos iguales pero sin quintales.
         """
         hoy = date.today()
         arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id=arrendamiento_id)
-        
         # Obtener participaciones
         participaciones = db.query(ParticipacionArrendador).filter_by(arrendamiento_id=arrendamiento.id).all()
         if not participaciones:
             raise HTTPException(status_code=400, detail="No hay participaciones registradas para este arrendamiento.")
-
         # Mapeo de periodicidad
         periodos = {
             PlazoPago.MENSUAL: 1,
@@ -101,49 +99,62 @@ class PagoService:
         }
         meses_por_cuota = periodos.get(arrendamiento.plazo_pago)
         if not meses_por_cuota:
-            raise HTTPException(status_code=400, detail=f"Periodicidad '{arrendamiento.plazo_pago}' no soportada.")
-
+            raise HTTPException(status_code=400, detail=f"Periodicidad '{arrendamiento.plazo_pago}' no soportada.") 
+        DOS_DECIMALES = Decimal('0.01')
+        D_DOCE = Decimal('12')
+        D_MESES_POR_CUOTA = Decimal(str(meses_por_cuota))
         cuotas = []
-
         for participacion in participaciones:
             fecha_actual = arrendamiento.fecha_inicio
             fechas_cuotas = []
-            
-            # El bucle ahora incluye la fecha de inicio
             while fecha_actual <= arrendamiento.fecha_fin:
                 fechas_cuotas.append(fecha_actual)
-                fecha_actual = PagoService._sumar_meses(fecha_actual, meses_por_cuota)
-
+                fecha_actual = PagoService._sumar_meses(fecha_actual, meses_por_cuota)  
             cantidad_cuotas = len(fechas_cuotas)
             if cantidad_cuotas == 0:
-                continue # Evitar división por cero si el período es muy corto
-
-            # Iterar sobre las fechas de vencimiento pre-calculadas
-            for fecha_vencimiento in fechas_cuotas:
-                if arrendamiento.tipo == TipoArrendamiento.FIJO:
-                    # En 'FIJO', cada cuota tiene el mismo valor
-                    # 1. Calcular el total ANUAL de quintales
-                    quintales_anuales = (participacion.hectareas_asignadas * participacion.quintales_asignados)
-                    # 2. Calcular el equivalente MENSUAL
-                    quintales_mensuales = quintales_anuales / 12
-                    # 3. Multiplicar el mensual por los meses del período
-                    quintales_pago = quintales_mensuales * meses_por_cuota
-                    dias_promedio_pago = arrendamiento.dias_promedio
-                    porcentaje_pago = None
-                else:  # A_PORCENTAJE
-                    quintales_pago = None
-                    # El porcentaje se divide entre la cantidad de cuotas
-                    porcentaje_pago = participacion.porcentaje / cantidad_cuotas
-                    dias_promedio_pago = None
+                continue 
+            lista_quintales_cuota = []
+            lista_porcentaje_cuota = []
+            dias_promedio_pago = None
+            if arrendamiento.tipo == TipoArrendamiento.FIJO:
+                hectareas = Decimal(str(participacion.hectareas_asignadas))
+                quintales_ha = Decimal(str(participacion.quintales_asignados))
+                quintales_anuales = hectareas * quintales_ha
+                quintales_mensuales = quintales_anuales / D_DOCE
+                quintales_pago_exacto = quintales_mensuales * D_MESES_POR_CUOTA
+                quintales_pago_redondeado = quintales_pago_exacto.quantize(DOS_DECIMALES, rounding=ROUND_HALF_UP)
+                lista_quintales_cuota = [quintales_pago_redondeado] * cantidad_cuotas
+                lista_porcentaje_cuota = [None] * cantidad_cuotas
+                dias_promedio_pago = arrendamiento.dias_promedio
+            else:  
+                porcentaje_anual = Decimal(str(participacion.porcentaje))
+                if D_MESES_POR_CUOTA == 0:
+                    raise HTTPException(status_code=400, detail="Meses por cuota no puede ser cero.")
+                cuotas_por_anio = D_DOCE / D_MESES_POR_CUOTA                
+                if cuotas_por_anio == 0:
+                    raise HTTPException(status_code=400, detail="Cálculo de cuotas por año resultó en cero.")
+                porcentaje_por_cuota_exacto = porcentaje_anual / cuotas_por_anio
+                porcentaje_por_cuota_redondeado = porcentaje_por_cuota_exacto.quantize(DOS_DECIMALES, rounding=ROUND_HALF_UP)
+                lista_porcentaje_cuota = [porcentaje_por_cuota_redondeado] * cantidad_cuotas
+                lista_quintales_cuota = [None] * cantidad_cuotas # Rellenar con None
+                dias_promedio_pago = None
+            for i, fecha_vencimiento in enumerate(fechas_cuotas):
                 if(hoy > fecha_vencimiento):
                     estado_pago = EstadoPago.VENCIDO
                 else:
                     estado_pago = EstadoPago.PENDIENTE
+                # Obtener los valores de las listas
+                quintales_pago = None
+                if lista_quintales_cuota[i] is not None:
+                    quintales_pago = float(lista_quintales_cuota[i])
+                porcentaje_pago = None
+                if lista_porcentaje_cuota[i] is not None:
+                    porcentaje_pago = float(lista_porcentaje_cuota[i])
                 cuotas.append(Pago(
                     estado=estado_pago,
                     quintales=quintales_pago,
                     precio_promedio=None,
-                    vencimiento=fecha_vencimiento, # Usamos la fecha calculada
+                    vencimiento=fecha_vencimiento,
                     fuente_precio=arrendamiento.origen_precio,
                     monto_a_pagar=None,
                     arrendamiento_id=arrendamiento.id,
@@ -154,7 +165,7 @@ class PagoService:
         db.add_all(cuotas)
         db.commit()
         return cuotas
-    
+
     @staticmethod
     def _obtener_precios_promedio(db: Session, pago: "Pago"):
         vencimiento = pago.vencimiento

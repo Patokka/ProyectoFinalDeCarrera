@@ -216,6 +216,7 @@ export type PagoForm ={
   dias_promedio?: TipoDiasPromedio | null;
   porcentaje?: number | null;
   monto_a_pagar?: number;
+  precio_promedio?: number;
 }
 
 export interface PrecioDtoOut{

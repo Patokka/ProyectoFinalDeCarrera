@@ -25,7 +25,7 @@ class Pago(Base):
     arrendamiento_id: Mapped[int] = mapped_column(ForeignKey("arrendamiento.id"), nullable=False)
     participacion_arrendador_id: Mapped[int] = mapped_column(ForeignKey("participacion_arrendador.id"), nullable=False)
     porcentaje: Mapped[float] = mapped_column(nullable=True)
-    dias_promedio: Mapped[TipoDiasPromedio] = mapped_column(Enum(TipoDiasPromedio, nullable=True))
+    dias_promedio: Mapped[TipoDiasPromedio | None] = mapped_column(Enum(TipoDiasPromedio, nullable=True))
     
     #Relaciones
     arrendamiento: Mapped["Arrendamiento"] = relationship()

@@ -22,6 +22,7 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [montoAPagar, setMontoAPagar] = useState<number | undefined>(undefined);
+    const [precioPromedioQuintal, setPrecioPromedioQuintal] = useState<number | undefined>(undefined);
 
     useEffect(() => {
         if (pago) {
@@ -31,13 +32,15 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
                 setPorcentaje(pago.porcentaje);
                 setQuintales(undefined);
                 setMontoAPagar(undefined);
+                setPrecioPromedioQuintal(undefined);
             } else {
                 setQuintales(pago.quintales);
                 setMontoAPagar(pago.monto_a_pagar);
                 setPorcentaje(undefined);
+                setPrecioPromedioQuintal(pago.precio_promedio);
             }
         }
-    }, [pago]);
+    }, [pago, isOpen]);
 
     const handleClose = () => {
         setErrors({});
@@ -46,6 +49,7 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
         setQuintales(undefined);
         setPorcentaje(undefined);
         setMontoAPagar(undefined);
+        setPrecioPromedioQuintal(undefined);
         onClose();
     };
 
@@ -62,6 +66,12 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
         } else {
             if (quintales === undefined || quintales <= 0) {
                 newErrors.quintales = "La cantidad de quintales debe ser un número positivo";
+            }
+            if (montoAPagar !== undefined && montoAPagar < 0) {
+                newErrors.montoAPagar = "El monto no puede ser negativo";
+            }
+            if (precioPromedioQuintal !== undefined && precioPromedioQuintal < 0) {
+                newErrors.precioPromedioQuintal = "El precio promedio no puede ser negativo";
             }
         }
         
@@ -96,6 +106,7 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
                 payloadCompleto.quintales = quintales;
                 payloadCompleto.porcentaje = null;
                 payloadCompleto.monto_a_pagar = montoAPagar;
+                payloadCompleto.precio_promedio = precioPromedioQuintal;
             }
             if (pago.dias_promedio) {
                 payloadCompleto.dias_promedio = pago.dias_promedio;
@@ -160,6 +171,14 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
                                 onChange={(val) => setQuintales(Number(val))}
                                 placeholder="Ingrese la cantidad de quintales"
                                 error={errors.quintales}
+                            />
+                            <NumberInput
+                                label="Precio Promedio por Quintal"
+                                value={precioPromedioQuintal ?? 0}
+                                min={0}
+                                onChange={(val) => setPrecioPromedioQuintal(Number(val))}
+                                placeholder="Ingrese el precio promedio"
+                                error={errors.precioPromedioQuintal}
                             />
                             <NumberInput
                                 label="Monto a Pagar"

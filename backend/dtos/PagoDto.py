@@ -48,6 +48,8 @@ class PagoDtoModificacion(BaseModel):
     dias_promedio: TipoDiasPromedio
     porcentaje: Optional[float] = None
     monto_a_pagar: Optional[float]
+    precio_promedio: Optional[float]
+
     model_config = {
         "from_attributes": True,
         "use_enum_values": True
