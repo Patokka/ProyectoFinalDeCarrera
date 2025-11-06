@@ -230,6 +230,9 @@ export default function PagosPage() {
                         Vencimiento
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                        Arrendador
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                         Precio Promedio Quintal
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
@@ -274,6 +277,9 @@ export default function PagosPage() {
                           {formatDate(pago.vencimiento)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {pago.participacion_arrendador.arrendador?.nombre_o_razon_social || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {pago.precio_promedio? formatCurrency(pago.precio_promedio) : "-" }
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -307,7 +313,7 @@ export default function PagosPage() {
                     ))}
                     {/* Fila de totales */}
                     <tr className="bg-gray-100 font-semibold">
-                      <td colSpan={5} className="px-6 py-3 text-sm text-gray-900">
+                      <td colSpan={6} className="px-6 py-3 text-sm text-gray-900">
                         Totales pagos Pendientes / Vencidos:
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">

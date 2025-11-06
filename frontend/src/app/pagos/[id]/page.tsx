@@ -90,7 +90,7 @@ export default function PagoDetailPage() {
             try {
                 await cancelarPago(Number(idPago))
                 toast.success("Pago cancelado con éxito, volviendo a la página de pagos...")
-                setTimeout(() => router.push("/pagos"), 1000)
+                setTimeout(() => window.location.href = "/pagos", 1000)
             } catch (e: any) {
                 toast.error(e.message)
             }
@@ -176,10 +176,17 @@ export default function PagoDetailPage() {
                             readOnly={true}
                             disabled={false}/>
                         <Text
+                            label="Arrendatario:"
+                            value={pago.arrendamiento.arrendatario.razon_social}
+                            readOnly={true}
+                            disabled={false}/>
+                        {pago?.porcentaje && (
+                        <Text
                             label="Porcentaje de Producción a entregar:"
                             value={pago.porcentaje? pago.porcentaje + '%' : ''}
                             readOnly={true}
                             disabled={false}/>
+                        )}
                         {pago?.monto_a_pagar && (
                             <>
                             <Text 

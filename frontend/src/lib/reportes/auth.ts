@@ -1,5 +1,5 @@
 
-export async function fetchReporte(endpoint: string, params: Record<string, string>): Promise<Blob> {
+export async function fetchReporte(endpoint: string, params: Record<string, string>): Promise<{ blob: Blob, filename: string }> {
     const token = localStorage.getItem("token");
     if (!token) {
         window.location.href = "/login";
@@ -22,15 +22,26 @@ export async function fetchReporte(endpoint: string, params: Record<string, stri
         throw new Error("Sesión expirada. Redirigiendo al inicio de sesión.");
     }
     if (!res.ok) {
-        // Intentamos parsear mensaje de error
         try {
-        const err = await res.json();
-        throw new Error(err.detail || "Error al generar el reporte.");
+            const err = await res.json();
+            throw new Error(err.detail || "Error al generar el reporte.");
         } catch {
-        throw new Error("Error al generar el reporte.");
+            throw new Error("Error al generar el reporte.");
         }
     }
-    return res.blob(); // retorna el archivo para descarga
+    const disposition = res.headers.get('Content-Disposition');
+    let filename = `reporte_${params.mes || ''}-${params.anio || ''}.pdf`; // Nombre por defecto
+    if (disposition && disposition.includes('attachment')) {
+        const filenameRegex = /filename[^;=\n]*=(['"]?)(.*?)\1(?:;|$)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[2]) {
+            filename = matches[2].replace(/['"]/g, ''); // Limpia comillas
+        }
+    }
+    return {
+        blob: await res.blob(),
+        filename: filename
+    };
 }
 
 export async function updateJobConfig(data: {job_id: string; hour: number; minute: number; day?: number; active: boolean;}) {

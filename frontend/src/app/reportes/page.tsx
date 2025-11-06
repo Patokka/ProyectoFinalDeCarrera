@@ -238,11 +238,11 @@ export default function ReportesPage() {
     if (Object.keys(newErrors).length > 0) return;
     try {
       setIsGenerating(true);
-      const blob = await fetchReporte(endpoint, { mes: month, anio: year });
+      const { blob, filename } = await fetchReporte(endpoint, { mes: month, anio: year });      
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `reporte_${selectedReport}.${fileType === "pdf" ? "pdf" : "xlsx"}`;
+      link.download = filename;
       link.click();
       window.URL.revokeObjectURL(url);
       toast.success("Reporte generado con éxito");

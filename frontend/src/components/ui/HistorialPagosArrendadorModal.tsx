@@ -69,13 +69,24 @@ export default function HistorialPagosArrendadorModal({isOpen, onClose,}: Histor
             Object.values(newErrors).forEach(error => toast.error(error));
             return
         }
+        const arrendadorSeleccionado = arrendadores.find(
+            (arr) => arr.value === arrendadorId
+        );
+        const nombreParaArchivo = arrendadorSeleccionado
+            ? arrendadorSeleccionado.label
+                .normalize("NFD") // Quita acentos
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9_ ]/g, "") // Quita símbolos
+                .replace(/\s+/g, "_") // Reemplaza espacios con guion bajo
+            : "Arrendador"; // Nombre de respaldo por si algo falla
+        const filename = `pagos_${nombreParaArchivo}.pdf`;
         try {
             setIsGenerating(true)
             const blob = await fetchReporteArrendador("/api/reportes/historial-pagos-arrendador/pdf",{inicio: fechaInicio, fin: fechaFin, arrendador_id: parseInt(arrendadorId),})
             const url = window.URL.createObjectURL(blob)
             const link = document.createElement("a")
             link.href = url
-            link.download = `reporte_historial_pagos_arrendador.pdf`
+            link.download = filename
             link.click()
             window.URL.revokeObjectURL(url)
             toast.success("Reporte generado con éxito")
