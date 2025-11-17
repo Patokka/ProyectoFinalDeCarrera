@@ -99,7 +99,7 @@ export default function CrearUsuarioPage() {
     };
 
     return (
-    <ProtectedRoute allowedRoles={["ADMINSITRADOR"]}>
+    <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
         <div className="bg-gray-50 p-6">
             <div className="">
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

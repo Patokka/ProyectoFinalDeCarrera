@@ -39,7 +39,7 @@ const reportCards: ReportCard[] = [
   {
     id: "pagos-realizados",
     title: "Reporte de Pagos Realizados",
-    description: "Para meses anteriores al actual",
+    description: "Hasta el mes actual",
     icon: BarChart3,
     fileType: "pdf",
     endpoint: "/api/reportes/mensual/pdf",
@@ -223,9 +223,9 @@ export default function ReportesPage() {
     const actualAnio = hoy.getFullYear();
     // VALIDACIÓN SEGÚN REPORTE
     if (selectedReport === "pagos-realizados") {
-      if (anio > actualAnio || (anio === actualAnio && mes >= actualMes)) {
-        newErrors.month = `Solo se pueden generar reportes hasta ${String(actualMes - 1).padStart(2,"0")}-${actualAnio}`;
-        toast.error(`Solo se pueden generar reportes hasta ${String(actualMes - 1).padStart(2, "0")}-${actualAnio}.`);
+      if (anio > actualAnio || (anio === actualAnio && mes > actualMes)) {
+        newErrors.month = `Solo se pueden generar reportes hasta ${String(actualMes).padStart(2,"0")}-${actualAnio}`;
+        toast.error(`Solo se pueden generar reportes hasta ${String(actualMes ).padStart(2, "0")}-${actualAnio}.`);
       }
     }
     if (selectedReport === "pagos-realizar") {
@@ -251,8 +251,8 @@ export default function ReportesPage() {
       setErrors({})
       setIsReportDialogOpen(false);
     } catch (error) {
-      toast.error("Error al generar el reporte");
-      console.error(error);
+      const message = error instanceof Error ? error.message : "Error al generar el reporte";
+      toast.error(message);
     } finally{
       setIsGenerating(false);
     }
@@ -399,7 +399,7 @@ export default function ReportesPage() {
                   )}
                   {selectedReport === "pagos-realizados" && (
                     <p className="text-xs text-center text-blue-800 leading-snug">
-                      Solo se permiten reportes hasta el mes anterior al actual.
+                      Solo se permiten reportes hasta el mes actual.
                     </p>
                   )}
                   {selectedReport === "pagos-realizar" && (

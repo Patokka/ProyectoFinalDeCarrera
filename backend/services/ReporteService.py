@@ -162,7 +162,7 @@ class ReporteService:
             ultimo_mes = 12
         else:
             ultimo_anio = hoy.year
-            ultimo_mes = hoy.month - 1
+            ultimo_mes = hoy.month
         if (anio > ultimo_anio) or (anio == ultimo_anio and mes > ultimo_mes):
             raise HTTPException(
                 status_code=400,

@@ -79,7 +79,6 @@ return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfig
             toast.success("Configuración actualizada");
             onClose();
         } catch (e) {
-            console.error(e);
             toast.error("Error al guardar la configuración");
         } finally {
             setIsSubmitting(false);

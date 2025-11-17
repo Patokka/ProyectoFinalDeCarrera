@@ -85,6 +85,9 @@ export default function ModificarUsuarioPage() {
                 ...formData,
                 cuil: formData.cuil.replace(/-/g, '')
             };
+            if (!payload.mail || payload.mail.trim() === "") {
+                delete payload.mail;
+            }
             await putUsuario(payload, Number(idUsuario));
             toast.success('Usuario guardado con éxito, volviendo a página de usuarios...');
             router.push('/usuarios');
