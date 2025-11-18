@@ -6,12 +6,6 @@ import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '@/components/context/AuthContext'
 import { formatCuitDisplay } from '@/lib/helpers'
 
-/**
- * @page LoginPage
- * @description Página de inicio de sesión de la aplicación.
- *              Permite a los usuarios autenticarse con su CUIL y contraseña.
- * @returns {JSX.Element} El formulario de inicio de sesión.
- */
 export default function LoginPage() {
   const { login } = useAuth()
   const [formData, setFormData] = useState({ cuil: '', contrasena: '' })
@@ -20,17 +14,14 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
-  /**
-   * @function handleSubmit
-   * @description Maneja el envío del formulario de inicio de sesión.
-   * @param {React.FormEvent} e - El evento del formulario.
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+
     try {
       await login(formData.cuil.replace(/-/g,""), formData.contrasena)
+      // Al actualizarse el contexto, Navbar y Sidebar se re-renderizan automáticamente
       router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión')
@@ -39,17 +30,13 @@ export default function LoginPage() {
     }
   }
 
-  /**
-   * @function handleInputChange
-   * @description Actualiza el estado del formulario cuando los campos de entrada cambian.
-   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
   return (
-    <div className="bg-gray-50 flex items-start justify-center pt-20 px-4">
+    <div className="bg-gray-50 flex items-start justify-center pt-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-8">Inicio de Sesión</h2>
@@ -61,7 +48,9 @@ export default function LoginPage() {
             </div>
           )}
           <div>
-            <label htmlFor="cuil" className="label-class">CUIT o CUIL</label>
+            <label htmlFor="cuil" className="block text-sm font-medium text-gray-700 mb-2">
+              CUIT o CUIL
+            </label>
             <input
               id="cuil"
               name="cuil"
@@ -70,11 +59,13 @@ export default function LoginPage() {
               value={formatCuitDisplay(formData.cuil)}
               onChange={handleInputChange}
               placeholder="Ej. 99-99999999-9"
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           <div>
-            <label htmlFor="contrasena" className="label-class">Contraseña</label>
+            <label htmlFor="contrasena" className="block text-sm font-medium text-gray-700 mb-2">
+              Contraseña
+            </label>
             <div className="relative">
               <input
                 id="contrasena"
@@ -83,7 +74,7 @@ export default function LoginPage() {
                 required
                 value={formData.contrasena}
                 onChange={handleInputChange}
-                className="input-field pr-10"
+                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
               <button
                 type="button"
@@ -98,13 +89,13 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn-primary w-full flex justify-center items-center space-x-2 py-3"
+              className="w-full flex justify-center items-center space-x-2 py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             >
               {isLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-700"></div>
               ) : (
                 <>
-                  <LogIn size={16} />
+                  <LogIn className="w-4 h-4" />
                   <span>Iniciar Sesión</span>
                 </>
               )}

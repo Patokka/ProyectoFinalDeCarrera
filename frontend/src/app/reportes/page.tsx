@@ -184,22 +184,15 @@ const configurationCards: ConfigCard[] = [
 
 export default function ReportesPage() {
   const [isRecipientsModalOpen, setIsRecipientsModalOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<string | null>(null);
-  const [month, setMonth] = useState("");
-  const [year, setYear] = useState("");
-  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<string | null>(null)
+  const [month, setMonth] = useState("")
+  const [year, setYear] = useState("")
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false);
   const [errors, setErrors] = useState<{ month?: string; year?: string }>({});
-  const [isHistorialPagosArrendadorModalOpen, setIsHistorialPagosArrendadorModalOpen] = useState(false);
-  const {isOpen, openModal, closeModal, selectedConfigCard} = useConfigModal();
-
-  // Datos estáticos para las tarjetas de reportes y configuración...
-
-  /**
-   * @function handleGenerateReport
-   * @description Valida los parámetros y solicita la generación de un reporte a la API.
-   *              Maneja la descarga del archivo resultante.
-   */
+  const [isHistorialPagosArrendadorModalOpen, setIsHistorialPagosArrendadorModalOpen,] = useState(false);
+  // Configuration form states
+  const {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated } = useConfigModal();   
   const handleGenerateReport = async () => {
     if (!selectedReport) return;
     const reportConfig = reportConfigs[selectedReport];
@@ -265,11 +258,6 @@ export default function ReportesPage() {
     }
   };
 
-  /**
-   * @function handleReportClick
-   * @description Abre el modal correspondiente al tipo de reporte seleccionado.
-   * @param {string} reportId - El ID del reporte a generar.
-   */
   const handleReportClick = (reportId: string) => {
     if (reportId === "historial-pagos-arrendador") {
       setIsHistorialPagosArrendadorModalOpen(true);
@@ -283,30 +271,80 @@ export default function ReportesPage() {
     <ProtectedRoute allowedRoles={["ADMINISTRADOR", "OPERADOR"]}>
       <div className="bg-gray-50 p-6">
         <div className="">
+          {/* Header */}
           <div className="mb-10">
             <h1 className="text-2xl font-bold text-gray-900">Reportes:</h1>
           </div>
 
+          {/* Tarjetas de reporte, similares al dashboard */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14">
-            {/* Mapeo de tarjetas de reporte */}
+            {reportCards.map((report) => {
+              const Icon = report.icon
+              return (
+                <div
+                  key={report.id}
+                  onClick={() => handleReportClick(report.id)}
+                  className="bg-white border border-gray-300 rounded-lg p-3 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="w-16 h-16 bg-green-300 rounded-lg flex items-center justify-center">
+                      <Icon className="w-8 h-8 text-gray-700" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-900 mb-1">{report.title}</h3>
+                      {report.description && <p className="text-sm text-gray-600">{report.description}</p>}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Configuración de horarios y destinatarios:</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Mapeo de tarjetas de configuración */}
-            </div>
-          </div>
+          {/* Sección de Configuración */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">Configuración de horarios y destinatarios:</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {configurationCards.map((config) => {
+            const Icon = config.icon;
+            return (
+              <div
+                key={config.id}
+                onClick={() => {
+                  if (config.type === "recipients") {
+                    setIsRecipientsModalOpen(true);
+                  } else {
+                    openModal(config);
+                  }
+                }}
+                className="bg-white border border-gray-300 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                <div className="flex items-center space-x-3 text-center">
+                  <div className="w-10 h-10 bg-gray-300 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-gray-700" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-medium text-gray-900 mb-1">{config.title}</h3>
+                    <p className="text-xs text-gray-600">{config.description}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
+          {/* Botón Volver */}
           <div className="flex justify-start">
             <Link href="/dashboard" passHref> 
-              <button className="btn-secondary px-4 py-2 rounded-md transition-colors">Volver</button>
+              <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
+                Volver
+              </button>
             </Link>
           </div>
 
-          {/* Modal para parámetros de reporte */}
+          {/* Sección  de parámetros de reporte Pop-Up*/}
           {isReportDialogOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
@@ -393,9 +431,28 @@ export default function ReportesPage() {
             </div>
           )}
 
-          <ConfigModal isOpen={isOpen} onClose={closeModal} selectedConfigCard={selectedConfigCard} />
-          <RecipientsModal isOpen={isRecipientsModalOpen} onClose={() => setIsRecipientsModalOpen(false)} />
-          <HistorialPagosArrendadorModal isOpen={isHistorialPagosArrendadorModalOpen} onClose={() => setIsHistorialPagosArrendadorModalOpen(false)} />
+          {/* Configuración de horarios - Pop-Up*/}
+          <ConfigModal
+            isOpen={isOpen}
+            onClose={closeModal}
+            selectedConfigCard={selectedConfigCard}
+            configTime={configTime}
+            setConfigTime={setConfigTime}
+            configDay={configDay}
+            setConfigDay={setConfigDay}
+            isSubmitting={isSubmitting}
+            setIsSubmitting={setIsSubmitting}
+            isDeactivated={isDeactivated}
+            setIsDeactivated={setIsDeactivated}
+          />
+          <RecipientsModal
+            isOpen={isRecipientsModalOpen}
+            onClose={() => setIsRecipientsModalOpen(false)}
+          />
+          <HistorialPagosArrendadorModal
+            isOpen={isHistorialPagosArrendadorModalOpen}
+            onClose={() => setIsHistorialPagosArrendadorModalOpen(false)}
+          />
         </div>
       </div>
     </ProtectedRoute>
