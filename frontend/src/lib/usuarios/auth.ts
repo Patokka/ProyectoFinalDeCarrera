@@ -1,10 +1,5 @@
 import { UsuarioDtoOut, UsuarioForm} from "../type";
 
-/**
- * @brief Obtiene todos los usuarios del sistema.
- * @returns Una promesa que se resuelve en una lista de usuarios.
- * @throws Un error si no hay sesión activa o si ocurre un problema al obtener los usuarios.
- */
 export async function fetchUsuarios(): Promise<UsuarioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -31,12 +26,6 @@ export async function fetchUsuarios(): Promise<UsuarioDtoOut[]> {
     return res.json();
 }
 
-/**
- * @brief Elimina un usuario del sistema.
- * @param idUsuario El ID del usuario a eliminar.
- * @returns Una promesa que se resuelve en `true` si el usuario fue eliminado correctamente.
- * @throws Un error si no hay sesión activa, si el usuario intenta eliminarse a sí mismo, o si ocurre un problema al eliminar el usuario.
- */
 export async function deleteUsuario(idUsuario: number) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -66,12 +55,6 @@ export async function deleteUsuario(idUsuario: number) {
     return true;
 }
 
-/**
- * @brief Crea un nuevo usuario en el sistema.
- * @param formData Los datos del usuario a crear.
- * @returns Una promesa que se resuelve en el usuario creado.
- * @throws Un error si no hay sesión activa o si ocurre un problema al crear el usuario.
- */
 export async function postUsuario(formData: UsuarioForm): Promise<UsuarioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -110,12 +93,6 @@ export async function postUsuario(formData: UsuarioForm): Promise<UsuarioDtoOut>
     return res.json();
 }
 
-/**
- * @brief Obtiene un usuario por su ID.
- * @param idUsuario El ID del usuario a obtener.
- * @returns Una promesa que se resuelve en el usuario encontrado.
- * @throws Un error si no hay sesión activa o si ocurre un problema al obtener el usuario.
- */
 export async function fetchUsuarioById(idUsuario: number): Promise<UsuarioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -142,13 +119,6 @@ export async function fetchUsuarioById(idUsuario: number): Promise<UsuarioDtoOut
     return res.json();
 }
 
-/**
- * @brief Modifica un usuario existente en el sistema.
- * @param formData Los nuevos datos del usuario.
- * @param idUsuario El ID del usuario a modificar.
- * @returns Una promesa que se resuelve en el usuario modificado.
- * @throws Un error si no hay sesión activa o si ocurre un problema al modificar el usuario.
- */
 export async function putUsuario(formData: UsuarioForm, idUsuario: number): Promise<UsuarioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -187,13 +157,6 @@ export async function putUsuario(formData: UsuarioForm, idUsuario: number): Prom
     return res.json();
 }
 
-/**
- * @brief Cambia la contraseña del usuario actual.
- * @param contrasenaActual La contraseña actual del usuario.
- * @param contrasenaNueva La nueva contraseña para el usuario.
- * @returns Una promesa que se resuelve cuando la contraseña ha sido cambiada correctamente.
- * @throws Un error si no hay sesión activa o si ocurre un problema al cambiar la contraseña.
- */
 export async function cambiarContrasena(contrasenaActual: string, contrasenaNueva: string): Promise<void> {
     const token = localStorage.getItem("token");
     if (!token) {

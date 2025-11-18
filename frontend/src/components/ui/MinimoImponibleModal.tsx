@@ -6,13 +6,6 @@ import { RotateCcw, X } from "lucide-react";
 import { NumberInput } from "./NumberInput";
 import { fetchConfiguracion, actualizarConfiguracion } from "@/lib/configuracion/auth";
 
-/**
- * @interface MinimoImponibleModalProps
- * @description Propiedades para el componente MinimoImponibleModal.
- * @property {boolean} isOpen - Controla la visibilidad del modal.
- * @property {() => void} onClose - Función para cerrar el modal.
- * @property {() => void} [onSuccess] - Callback opcional tras una actualización exitosa.
- */
 interface MinimoImponibleModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -21,33 +14,25 @@ interface MinimoImponibleModalProps {
 
 const CLAVE_MONTO = "MINIMO_IMPONIBLE";
 
-/**
- * @component MinimoImponibleModal
- * @description Un modal para ver y actualizar el valor del mínimo no imponible para las retenciones.
- * @param {MinimoImponibleModalProps} props - Las propiedades del componente.
- * @returns {JSX.Element | null} El modal o `null` si está cerrado.
- */
 const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [monto, setMonto] = useState<number | undefined>(undefined);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    /**
-     * @effect
-     * @description Carga el valor actual del mínimo imponible desde la API cuando se abre el modal.
-     */
+    // Cargar valor actual de la configuración al abrir el modal
     useEffect(() => {
         if (isOpen) {
             fetchConfiguracion(CLAVE_MONTO)
-                .then(res => setMonto(res ? Number(res) : undefined))
-                .catch(() => toast.error("No se pudo obtener el valor actual."));
+                .then((res) => {
+                    setMonto(Number(res));
+                })
+                .catch(() => {
+                    toast.error("No se pudo obtener el mínimo imponible actual");
+                    setMonto(undefined);
+                });
         }
     }, [isOpen]);
 
-    /**
-     * @function handleClose
-     * @description Cierra el modal y resetea su estado.
-     */
     const handleClose = () => {
         setMonto(undefined);
         setErrors({});
@@ -55,38 +40,38 @@ const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onC
         onClose();
     };
 
-    /**
-     * @function validateForm
-     * @description Valida que el monto ingresado sea un número válido y positivo.
-     * @returns {boolean} `true` si es válido.
-     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (monto === undefined || monto < 0) {
-            newErrors.monto = "Debe ingresar un monto válido y positivo.";
+            newErrors.monto = "Debe ingresar un monto válido";
         }
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        if (Object.keys(newErrors).length > 0) {
+            toast.error("Por favor, completa todos los campos correctamente");
+            return false;
+        }
+        return true;
     };
 
-    /**
-     * @function handleGuardar
-     * @description Valida el formulario y envía el nuevo valor del mínimo imponible a la API.
-     */
     const handleGuardar = async () => {
-        if (!validateForm()) return;
-        try {
-            setIsSubmitting(true);
-            const valorString = monto!.toFixed(2).replace(',', '.');
-            await actualizarConfiguracion(CLAVE_MONTO, valorString);
-            toast.success("Mínimo imponible actualizado.");
-            if (onSuccess) onSuccess();
-            handleClose();
-        } catch (error: any) {
-            toast.error(error.message || "Error al actualizar.");
-        } finally {
-            setIsSubmitting(false);
-        }
+    if (!validateForm()) return;
+
+    try {
+        setIsSubmitting(true);
+        // convertir number a string con coma decimal y 2 decimales
+        const valorString = monto !== null && monto !== undefined
+        ? monto.toFixed(2).replace(',', '.')
+        : '0.00';
+
+        await actualizarConfiguracion("MINIMO_IMPONIBLE", valorString);
+        toast.success("Mínimo imponible actualizado correctamente");
+        handleClose();
+    } catch (error: any) {
+        const msg = error.message || "Error al actualizar el mínimo imponible";
+        toast.error(msg);
+    } finally {
+        setIsSubmitting(false);
+    }
     };
 
     if (!isOpen) return null;
@@ -94,28 +79,48 @@ const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onC
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-lg w-full">
+                {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b">
-                    <h3 className="text-lg font-semibold">Configurar Mínimo Imponible</h3>
-                    <button onClick={handleClose} disabled={isSubmitting} className="btn-icon-gray">
-                        <X size={20} />
+                    <h3 className="text-lg font-semibold text-center text-gray-900">
+                        Configurar Mínimo Imponible
+                    </h3>
+                    <button
+                        onClick={handleClose}
+                        className={`text-gray-400 ml-4 hover:text-gray-600 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                        disabled={isSubmitting}
+                    >
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
+                {/* Body */}
                 <div className="p-6 space-y-4">
                     <NumberInput
                         label="Monto Imponible"
-                        value={monto}
+                        value={monto ?? 0}
                         min={0}
                         step={0.01}
-                        onChange={val => setMonto(val)}
+                        onChange={(val) => setMonto(Math.floor(Number(val) * 100) / 100)}
+                        placeholder="Ingrese el mínimo imponible"
                         error={errors.monto}
                     />
                 </div>
 
+                {/* Footer */}
                 <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
-                    <button onClick={handleClose} disabled={isSubmitting} className="btn-secondary">Cancelar</button>
-                    <button onClick={handleGuardar} disabled={isSubmitting} className="btn-primary">
-                        <RotateCcw size={16}/>
+                    <button
+                        onClick={handleClose}
+                        className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                        disabled={isSubmitting}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleGuardar}
+                        disabled={isSubmitting}
+                        className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                        <RotateCcw className='h-4 w-4'/>
                         <span>{isSubmitting ? "Guardando..." : "Guardar Monto"}</span>
                     </button>
                 </div>

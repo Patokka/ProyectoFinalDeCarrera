@@ -14,21 +14,8 @@ from model.Arrendamiento import Arrendamiento
 from dtos.ArrendamientoDto import ArrendamientoDto, ArrendamientoDtoOut, ArrendamientoDtoModificacion
 
 class ArrendamientoService:
-    """
-    Clase de servicio que encapsula la lógica de negocio para la gestión de arrendamientos
-    y las participaciones de los arrendadores.
-    """
     @staticmethod
     def listar_activos(db: Session):
-        """
-        Obtiene todos los arrendamientos con estado 'ACTIVO'.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-
-        Returns:
-            list[ArrendamientoDtoOut]: Una lista de arrendamientos activos.
-        """
         arrendamientos = (
             db.query(Arrendamiento)
             .options(
@@ -40,6 +27,7 @@ class ArrendamientoService:
         result = []
         for arr in arrendamientos:
             arr_dto = ArrendamientoDtoOut.model_validate(arr)
+            # mapear solo arrendadores, no participaciones
             arr_dto.arrendadores = [p.arrendador for p in arr.participaciones]
             result.append(arr_dto)
 
@@ -47,15 +35,6 @@ class ArrendamientoService:
     
     @staticmethod
     def listar_todos(db: Session):
-        """
-        Obtiene todos los arrendamientos de la base de datos, ordenados por fecha de fin.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-
-        Returns:
-            list[ArrendamientoDtoOut]: Una lista de todos los arrendamientos.
-        """
         arrendamientos = (
             db.query(Arrendamiento)
             .options(
@@ -67,6 +46,7 @@ class ArrendamientoService:
         result = []
         for arr in arrendamientos:
             arr_dto = ArrendamientoDtoOut.model_validate(arr)
+            # mapear solo arrendadores, no participaciones
             arr_dto.arrendadores = [p.arrendador for p in arr.participaciones]
             result.append(arr_dto)
 
@@ -74,19 +54,6 @@ class ArrendamientoService:
 
     @staticmethod
     def obtener_por_id(db: Session, arrendamiento_id: int):
-        """
-        Obtiene un arrendamiento por su ID.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento a buscar.
-
-        Returns:
-            Arrendamiento: El arrendamiento encontrado.
-
-        Raises:
-            HTTPException: Si el arrendamiento no se encuentra (código 404).
-        """
         obj = db.query(Arrendamiento).get(arrendamiento_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
@@ -94,16 +61,6 @@ class ArrendamientoService:
 
     @staticmethod
     def crear(db: Session, dto: ArrendamientoDto):
-        """
-        Crea un nuevo arrendamiento en la base de datos.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            dto (ArrendamientoDto): Los datos del arrendamiento a crear.
-
-        Returns:
-            Arrendamiento: El arrendamiento recién creado.
-        """
         nuevo = Arrendamiento(**dto.model_dump())
         db.add(nuevo)
         db.commit()
@@ -113,20 +70,6 @@ class ArrendamientoService:
 
     @staticmethod
     def actualizar(db: Session, arrendamiento_id: int, dto: ArrendamientoDtoModificacion):
-        """
-        Actualiza los datos de un arrendamiento existente.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento a actualizar.
-            dto (ArrendamientoDtoModificacion): Los datos a modificar.
-
-        Returns:
-            Arrendamiento: El arrendamiento actualizado.
-
-        Raises:
-            HTTPException: Si el arrendamiento no se encuentra (código 404).
-        """
         obj = db.query(Arrendamiento).get(arrendamiento_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Arrendamiento no encontrado.")
@@ -138,17 +81,6 @@ class ArrendamientoService:
 
     @staticmethod
     def eliminar(db: Session, arrendamiento_id: int):
-        """
-        Elimina un arrendamiento y sus participaciones y pagos asociados.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento a eliminar.
-
-        Raises:
-            HTTPException: Si el arrendamiento no está en estado 'CANCELADO' (400) o si
-                           tiene pagos no cancelados (400).
-        """
         arr = db.query(Arrendamiento).get(arrendamiento_id)
         if arr.estado != EstadoArrendamiento.CANCELADO:
             raise HTTPException(status_code=400, detail="No se puede eliminar el arrendamiento ya que el mismo no está CANCELADO")
@@ -165,16 +97,7 @@ class ArrendamientoService:
 
     @staticmethod
     def cancelar_arrendamiento(db: Session, arrendamiento_id: int):
-        """
-        Cambia el estado de un arrendamiento a 'CANCELADO' y cancela todos sus pagos no realizados.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento a cancelar.
-
-        Returns:
-            Arrendamiento: El arrendamiento con el estado actualizado.
-        """
+        #Verificar si existe el arrendamiento
         arrendamiento = ArrendamientoService.obtener_por_id(db, arrendamiento_id)
         
         pagos = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
@@ -191,39 +114,32 @@ class ArrendamientoService:
     @staticmethod
     def finalizar_arrendamiento(db: Session, arrendamiento_id: int):
         """
-        Finaliza un arrendamiento si todas sus cuotas están pagadas.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento a finalizar.
-
-        Returns:
-            Arrendamiento | None: El arrendamiento finalizado, o None si no se pudo finalizar.
+        Intenta finalizar el arrendamiento si todas las cuotas están pagadas.
+        No lanza errores si no se puede finalizar.
         """
         arrendamiento = ArrendamientoService.obtener_por_id(db, arrendamiento_id)
 
+        # Si ya está cancelado, simplemente no hace nada
         if arrendamiento.estado == EstadoArrendamiento.CANCELADO:
             return None
 
+        # Si tiene todas las cuotas pagadas, lo finaliza
         if ArrendamientoService.tieneCuotasPagadas(db, arrendamiento.id):
             arrendamiento.estado = EstadoArrendamiento.FINALIZADO
             db.commit()
             return arrendamiento
         
+        # Si no se puede finalizar, no hacer nada
         return None
     
     @staticmethod
     def tieneCuotasPagadas(db: Session, arrendamiento_id):
         """
-        Verifica si todas las cuotas de un arrendamiento han sido pagadas.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento.
-
-        Returns:
-            bool: True si todos los pagos están 'REALIZADO', False en caso contrario.
+        Devuelve True si el arrendamiento tiene TODAS sus cuotas pagadas (estado REALIZADO).
+        Si existe al menos un pago en otro estado entonces devuelve False.
         """
+
+        # Consultamos si existe algún pago que NO esté realizado
         existe_pendiente = (
             db.query(Pago.id)
             .filter(
@@ -238,13 +154,13 @@ class ArrendamientoService:
     @staticmethod
     def actualizarArrendamientosVencidos(db: Session):
         """
-        Job periódico que actualiza el estado de los arrendamientos cuya fecha de fin
-        ha pasado. Los marca como 'FINALIZADO' si todos los pagos están realizados,
-        o como 'VENCIDO' en caso contrario.
+        Marca como FINALIZADO todos los arrendamientos con vencimiento en el día de ayer
+        que aún estén en estado PENDIENTE.
         """
         hoy = date.today()
         ayer = hoy - timedelta(days=1)
 
+        # Buscar arrendamientos pendientes con vencimiento ayer
         arrendamientos = (
             db.query(Arrendamiento)
             .filter(
@@ -274,32 +190,10 @@ class ArrendamientoService:
     ############################################
     @staticmethod
     def listar_participaciones(db: Session):
-        """
-        Obtiene todas las participaciones de arrendadores de la base de datos.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-
-        Returns:
-            list[ParticipacionArrendador]: Una lista de todas las participaciones.
-        """
         return db.query(ParticipacionArrendador).all()
 
     @staticmethod
     def obtener_participacion_por_id(db: Session, participacion_id: int):
-        """
-        Obtiene una participación de arrendador por su ID.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            participacion_id (int): El ID de la participación a buscar.
-
-        Returns:
-            ParticipacionArrendador: La participación encontrada.
-
-        Raises:
-            HTTPException: Si la participación no se encuentra (código 404).
-        """
         obj = db.query(ParticipacionArrendador).get(participacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Participación no encontrada.")
@@ -307,16 +201,6 @@ class ArrendamientoService:
 
     @staticmethod
     def crear_participacion(db: Session, dto: ParticipacionArrendadorDto):
-        """
-        Crea una nueva participación de arrendador.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            dto (ParticipacionArrendadorDto): Los datos de la participación a crear.
-
-        Returns:
-            ParticipacionArrendador: La participación recién creada.
-        """
         nuevo = ParticipacionArrendador(**dto.model_dump())
         db.add(nuevo)
         db.commit()
@@ -326,21 +210,7 @@ class ArrendamientoService:
 
     @staticmethod
     def actualizar_participacion(db: Session, participacion_id: int, dto: ParticipacionArrendadorDtoModificacion):
-        """
-        Actualiza una participación de arrendador existente.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            participacion_id (int): El ID de la participación a actualizar.
-            dto (ParticipacionArrendadorDtoModificacion): Los datos a modificar.
-
-        Returns:
-            ParticipacionArrendador: La participación actualizada.
-
-        Raises:
-            HTTPException: Si la participación no se encuentra (código 404).
-        """
-        obj = db.query(ParticipacionArrendador).get(participacion_id) # Corregido para buscar en el modelo correcto
+        obj = db.query(ParticipacionArrendadorDto).get(participacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Participación no encontrada.")
         for campo, valor in dto.model_dump(exclude_unset=True).items():
@@ -349,20 +219,8 @@ class ArrendamientoService:
         db.refresh(obj)
         return obj
 
-
     @staticmethod
     def eliminar_participacion(db: Session, participacion_id: int):
-        """
-        Elimina una participación de arrendador.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            participacion_id (int): El ID de la participación a eliminar.
-
-        Raises:
-            HTTPException: Si la participación no se encuentra (404) o tiene
-                           relaciones que impiden su eliminación.
-        """
         obj = db.query(ParticipacionArrendador).get(participacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Participación no encontrada.")
@@ -372,16 +230,6 @@ class ArrendamientoService:
         
     @staticmethod
     def obtener_participaciones_por_id(db, arrendamiento_id):
-        """
-        Obtiene todas las participaciones asociadas a un arrendamiento.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendamiento_id (int): El ID del arrendamiento.
-
-        Returns:
-            list[ParticipacionArrendador]: Lista de participaciones del arrendamiento.
-        """
         arrendamiento = ArrendamientoService.obtener_por_id(db, arrendamiento_id)
         resultado = arrendamiento.participaciones
         return resultado

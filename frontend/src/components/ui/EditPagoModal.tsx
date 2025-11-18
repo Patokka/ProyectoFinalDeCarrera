@@ -8,14 +8,6 @@ import DateInput from "./DateInput";
 import { PagoDtoOut, PagoForm } from "@/lib/type";
 import { putPago } from "@/lib/pagos/auth";
 
-/**
- * @interface EditPagoModalProps
- * @description Propiedades para el componente EditPagoModal.
- * @property {boolean} isOpen - Controla la visibilidad del modal.
- * @property {() => void} onClose - Función para cerrar el modal.
- * @property {() => void} [onSuccess] - Callback opcional tras una edición exitosa.
- * @property {PagoDtoOut | null} pago - El objeto del pago a editar.
- */
 interface EditPagoModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -23,84 +15,111 @@ interface EditPagoModalProps {
     pago: PagoDtoOut | null;
 }
 
-/**
- * @component EditPagoModal
- * @description Un modal con un formulario para editar los detalles de un pago existente.
- *              Permite modificar la fecha, quintales, porcentaje, monto y precio promedio.
- * @param {EditPagoModalProps} props - Las propiedades del componente.
- * @returns {JSX.Element | null} El modal de edición o `null` si está cerrado.
- */
 const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSuccess, pago }) => {
-    const [formData, setFormData] = useState<Partial<PagoForm>>({});
+    const [vencimiento, setVencimiento] = useState("");
+    const [quintales, setQuintales] = useState<number | undefined>(undefined);
+    const [porcentaje, setPorcentaje] = useState<number | undefined>(undefined);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [montoAPagar, setMontoAPagar] = useState<number | undefined>(undefined);
+    const [precioPromedioQuintal, setPrecioPromedioQuintal] = useState<number | undefined>(undefined);
 
-    /**
-     * @effect
-     * @description Carga los datos del pago seleccionado en el estado del formulario cuando se abre el modal.
-     */
     useEffect(() => {
         if (pago) {
-            setFormData({
-                vencimiento: pago.vencimiento,
-                quintales: pago.quintales,
-                porcentaje: pago.porcentaje,
-                monto_a_pagar: pago.monto_a_pagar,
-                precio_promedio: pago.precio_promedio,
-            });
+            setVencimiento(pago.vencimiento);
+            // Lógica condicional para quintales o porcentaje
+            if (pago.porcentaje !== undefined && pago.porcentaje !== null) {
+                setPorcentaje(pago.porcentaje);
+                setQuintales(undefined);
+                setMontoAPagar(undefined);
+                setPrecioPromedioQuintal(undefined);
+            } else {
+                setQuintales(pago.quintales);
+                setMontoAPagar(pago.monto_a_pagar);
+                setPorcentaje(undefined);
+                setPrecioPromedioQuintal(pago.precio_promedio);
+            }
         }
     }, [pago, isOpen]);
 
-    /**
-     * @function handleClose
-     * @description Cierra el modal y resetea todos los estados.
-     */
     const handleClose = () => {
         setErrors({});
         setIsSubmitting(false);
-        setFormData({});
+        setVencimiento("");
+        setQuintales(undefined);
+        setPorcentaje(undefined);
+        setMontoAPagar(undefined);
+        setPrecioPromedioQuintal(undefined);
         onClose();
     };
 
-    /**
-     * @function validateForm
-     * @description Valida los campos del formulario antes del envío.
-     * @returns {boolean} `true` si es válido.
-     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
-        if (!formData.vencimiento) newErrors.vencimiento = "La fecha es obligatoria";
-        // Lógica de validación para quintales vs porcentaje...
+        if (!vencimiento) newErrors.vencimiento = "La fecha de vencimiento es obligatoria";
+
+        if (pago?.porcentaje !== undefined && pago?.porcentaje !== null) {
+            if (porcentaje === undefined || porcentaje <= 0) {
+                newErrors.porcentaje = "El porcentaje debe ser un número positivo";
+            } else if (porcentaje > 100) {
+                newErrors.porcentaje = "El porcentaje no puede ser mayor a 100";
+            }
+        } else {
+            if (quintales === undefined || quintales <= 0) {
+                newErrors.quintales = "La cantidad de quintales debe ser un número positivo";
+            }
+            if (montoAPagar !== undefined && montoAPagar < 0) {
+                newErrors.montoAPagar = "El monto no puede ser negativo";
+            }
+            if (precioPromedioQuintal !== undefined && precioPromedioQuintal < 0) {
+                newErrors.precioPromedioQuintal = "El precio promedio no puede ser negativo";
+            }
+        }
+        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    /**
-     * @function handleGuardar
-     * @description Valida y envía los datos actualizados del pago a la API.
-     */
+
     const handleGuardar = async () => {
         if (!validateForm() || !pago) return;
-        if (["REALIZADO", "CANCELADO"].includes(pago.estado)) {
-            return toast.error("No se puede editar un pago realizado o cancelado.");
+        if (pago.estado === "REALIZADO" || pago.estado === "CANCELADO") {
+            toast.error("No se puede editar un pago que ya ha sido realizado o cancelado.");
+            return;
+        }
+        if (!pago.fuente_precio) {
+            toast.error("Error: El pago no tiene 'fuente_precio' y es requerido para la edición.");
+            return;
         }
 
         try {
             setIsSubmitting(true);
-            const payload: PagoForm = {
-                ...formData,
-                vencimiento: formData.vencimiento!,
+            const payloadCompleto: PagoForm = {
+                vencimiento: vencimiento,
                 arrendamiento_id: pago.arrendamiento.id,
                 participacion_arrendador_id: pago.participacion_arrendador.id,
-                fuente_precio: pago.fuente_precio!,
-                dias_promedio: pago.dias_promedio,
+                fuente_precio: pago.fuente_precio,
             };
-            await putPago(pago.id, payload);
-            toast.success("Pago actualizado con éxito.");
+            if (pago.porcentaje !== undefined && pago.porcentaje !== null) {
+                payloadCompleto.porcentaje = porcentaje;
+                payloadCompleto.quintales = null;
+            } else {
+                payloadCompleto.quintales = quintales;
+                payloadCompleto.porcentaje = null;
+                payloadCompleto.monto_a_pagar = montoAPagar;
+                payloadCompleto.precio_promedio = precioPromedioQuintal;
+            }
+            if (pago.dias_promedio) {
+                payloadCompleto.dias_promedio = pago.dias_promedio;
+            } else {
+                payloadCompleto.dias_promedio = null; 
+            }
+            await putPago(pago.id, payloadCompleto);
+            toast.success("Pago actualizado con éxito");
             if (onSuccess) onSuccess();
             handleClose();
         } catch (error: any) {
-            toast.error(error.message || "Error al actualizar el pago.");
+            const msg = error.message || "Error al actualizar el pago";
+            toast.error(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -111,26 +130,82 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-lg w-full">
+                {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b">
-                    <h3 className="text-lg font-semibold">Editar Pago</h3>
-                    <button onClick={handleClose} disabled={isSubmitting} className="btn-icon-gray"><X size={20} /></button>
+                    <h3 className="text-lg font-semibold text-center text-gray-900">
+                        Editar Pago
+                    </h3>
+                    <button
+                        onClick={handleClose}
+                        className={`text-gray-400 ml-4 hover:text-gray-600 ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                        disabled={isSubmitting}
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
                 <div className="p-6 space-y-4">
-                    <DateInput label="Fecha de Vencimiento" value={formData.vencimiento || ''} onChange={v => setFormData(p => ({...p, vencimiento: v}))} error={errors.vencimiento} />
-                    {pago.porcentaje != null ? (
-                        <NumberInput label="Porcentaje a Pagar (%)" value={formData.porcentaje} min={0} max={100} onChange={v => setFormData(p => ({...p, porcentaje: v}))} error={errors.porcentaje} />
+                    <DateInput
+                        label="Fecha de Vencimiento"
+                        value={vencimiento}
+                        onChange={setVencimiento}
+                        placeholder="Seleccionar fecha"
+                        error={errors.vencimiento}
+                    />
+                    {(pago.porcentaje !== undefined && pago.porcentaje !== null) ? (
+                        // Input de Porcentaje
+                        <NumberInput
+                            label="Porcentaje a Pagar (%)"
+                            value={porcentaje ?? 0}
+                            min={0}
+                            max={100} // Es buena idea limitar el porcentaje
+                            onChange={(val) => setPorcentaje(Number(val))}
+                            placeholder="Ingrese el porcentaje"
+                            error={errors.porcentaje}
+                        />
                     ) : (
                         <>
-                            <NumberInput label="Quintales a Pagar" value={formData.quintales} min={0} onChange={v => setFormData(p => ({...p, quintales: v}))} error={errors.quintales} />
-                            <NumberInput label="Precio Promedio por Quintal" value={formData.precio_promedio} min={0} onChange={v => setFormData(p => ({...p, precio_promedio: v}))} error={errors.precioPromedioQuintal} />
-                            <NumberInput label="Monto a Pagar" value={formData.monto_a_pagar} min={0} onChange={v => setFormData(p => ({...p, monto_a_pagar: v}))} error={errors.montoAPagar} />
+                            <NumberInput
+                                label="Quintales a Pagar"
+                                value={quintales ?? 0}
+                                min={0}
+                                onChange={(val) => setQuintales(Number(val))}
+                                placeholder="Ingrese la cantidad de quintales"
+                                error={errors.quintales}
+                            />
+                            <NumberInput
+                                label="Precio Promedio por Quintal"
+                                value={precioPromedioQuintal ?? 0}
+                                min={0}
+                                onChange={(val) => setPrecioPromedioQuintal(Number(val))}
+                                placeholder="Ingrese el precio promedio"
+                                error={errors.precioPromedioQuintal}
+                            />
+                            <NumberInput
+                                label="Monto a Pagar"
+                                value={montoAPagar ?? 0}
+                                min={0}
+                                onChange={(val) => setMontoAPagar(Number(val))}
+                                placeholder="Ingrese el monto a pagar"
+                                error={errors.montoAPagar}
+                            />
                         </>
                     )}
                 </div>
                 <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
-                    <button onClick={handleClose} disabled={isSubmitting} className="btn-secondary">Cancelar</button>
-                    <button onClick={handleGuardar} disabled={isSubmitting} className="btn-primary">
-                        <Download size={16}/><span>{isSubmitting ? "Guardando..." : "Guardar Cambios"}</span>
+                    <button
+                        onClick={handleClose}
+                        className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                        disabled={isSubmitting}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleGuardar}
+                        disabled={isSubmitting}
+                        className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                        <Download className='h-4 w-4'/>
+                        <span>{isSubmitting ? "Guardando..." : "Guardar Cambios"}</span>
                     </button>
                 </div>
             </div>

@@ -1,10 +1,5 @@
 import { ArrendatarioDtoOut, ArrendatarioForm } from "../type";
 
-/**
- * @brief Obtiene todos los arrendatarios del sistema.
- * @returns Una promesa que se resuelve en una lista de arrendatarios.
- * @throws Un error si no hay sesión activa o si ocurre un problema al obtener los arrendatarios.
- */
 export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -35,12 +30,6 @@ export async function fetchArrendatarios(): Promise<ArrendatarioDtoOut[]> {
     return res.json();
 }
 
-/**
- * @brief Elimina un arrendatario del sistema.
- * @param id El ID del arrendatario a eliminar.
- * @returns Una promesa que se resuelve en `true` si el arrendatario fue eliminado correctamente.
- * @throws Un error si no hay sesión activa o si ocurre un problema al eliminar el arrendatario.
- */
 export async function deleteArrendatario(id: number) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -70,12 +59,6 @@ export async function deleteArrendatario(id: number) {
     return true;
 }
 
-/**
- * @brief Obtiene un arrendatario por su ID.
- * @param arrendatario_id El ID del arrendatario a obtener.
- * @returns Una promesa que se resuelve en el arrendatario encontrado.
- * @throws Un error si no hay sesión activa o si ocurre un problema al obtener el arrendatario.
- */
 export async function fetchArrendatarioById(arrendatario_id: number): Promise<ArrendatarioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -106,12 +89,6 @@ export async function fetchArrendatarioById(arrendatario_id: number): Promise<Ar
     return res.json();
 }
 
-/**
- * @brief Crea un nuevo arrendatario en el sistema.
- * @param formData Los datos del arrendatario a crear.
- * @returns Una promesa que se resuelve en el arrendatario creado.
- * @throws Un error si no hay sesión activa o si ocurre un problema al crear el arrendatario.
- */
 export async function postArrendatario(formData: ArrendatarioForm): Promise<ArrendatarioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -156,13 +133,6 @@ export async function postArrendatario(formData: ArrendatarioForm): Promise<Arre
     return res.json();
 }
 
-/**
- * @brief Modifica un arrendatario existente en el sistema.
- * @param formData Los nuevos datos del arrendatario.
- * @param idArrendatario El ID del arrendatario a modificar.
- * @returns Una promesa que se resuelve en el arrendatario modificado.
- * @throws Un error si no hay sesión activa o si ocurre un problema al modificar el arrendatario.
- */
 export async function putArrendatario(formData: ArrendatarioForm, idArrendatario: number): Promise<ArrendatarioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {

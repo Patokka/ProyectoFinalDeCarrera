@@ -14,39 +14,13 @@ from model.Retencion import Retencion
 from dtos.RetencionDto import RetencionDto, RetencionDtoModificacion
 from util.Configuracion import Configuracion
 class RetencionService:
-    """
-    Clase de servicio que encapsula la lógica de negocio para la gestión de retenciones
-    y la configuración del sistema relacionada.
-    """
 
     @staticmethod
     def listar_todos(db: Session):
-        """
-        Obtiene todas las retenciones de la base de datos, ordenadas por fecha.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-
-        Returns:
-            list[Retencion]: Una lista de todas las retenciones.
-        """
         return db.query(Retencion).order_by(asc(Retencion.fecha_retencion)).all()
 
     @staticmethod
     def obtener_por_id(db: Session, retencion_id: int):
-        """
-        Obtiene una retención por su ID.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            retencion_id (int): El ID de la retención a buscar.
-
-        Returns:
-            Retencion: La retención encontrada.
-
-        Raises:
-            HTTPException: Si la retención no se encuentra (código 404).
-        """
         obj = db.query(Retencion).get(retencion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Retención no encontrada.")
@@ -54,22 +28,12 @@ class RetencionService:
 
     @staticmethod
     def crear(db: Session, dto: RetencionDto):
-        """
-        Crea una nueva retención en la base de datos.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            dto (RetencionDto): Los datos de la retención a crear.
-
-        Returns:
-            Retencion: La retención recién creada.
-        
-        Raises:
-            HTTPException: Si el arrendador es monotributista (400).
-        """
+        #Esta linea verifica si existe el arrendador
         arrendador = ArrendadorService.obtener_por_id(db, dto.arrendador_id)
+        
         if arrendador.condicion_fiscal == TipoCondicion.MONOTRIBUTISTA:
-            raise HTTPException(status_code=400, detail="No se pueden aplicar retenciones a monotributistas.")
+            raise HTTPException(status_code=400, detail="La condición fiscal del arrendador obliga a no aplicarle retenciones.")
+
         nuevo = Retencion(**dto.model_dump())
         db.add(nuevo)
         db.commit()
@@ -78,20 +42,6 @@ class RetencionService:
 
     @staticmethod
     def actualizar(db: Session, retencion_id: int, dto: RetencionDtoModificacion):
-        """
-        Actualiza los datos de una retención existente.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            retencion_id (int): El ID de la retención a actualizar.
-            dto (RetencionDtoModificacion): Los datos a modificar.
-
-        Returns:
-            Retencion: La retención actualizada.
-
-        Raises:
-            HTTPException: Si la retención no se encuentra (código 404).
-        """
         obj = db.query(Retencion).get(retencion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Retención no encontrada.")
@@ -103,16 +53,6 @@ class RetencionService:
 
     @staticmethod
     def eliminar(db: Session, retencion_id: int):
-        """
-        Elimina una retención de la base de datos.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            retencion_id (int): El ID de la retención a eliminar.
-
-        Raises:
-            HTTPException: Si la retención no se encuentra (404).
-        """
         obj = db.query(Retencion).get(retencion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Retención no encontrada.")
@@ -122,128 +62,86 @@ class RetencionService:
         
     @staticmethod
     def obtener_retenciones_arrendador(db: Session, arrendador_id: int):
-        """
-        Obtiene todas las retenciones asociadas a un arrendador.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendador_id (int): El ID del arrendador.
-
-        Returns:
-            list[Retencion]: Lista de retenciones del arrendador.
-        """
-        return db.query(Retencion).filter(Retencion.arrendador_id == arrendador_id).all()
+        #Solamente se consulta el arrendador para obtener la excepción en caso de que no exista        
+        ArrendadorService.obtener_por_id(db,arrendador_id)
+        
+        retenciones = db.query(Retencion).filter(
+            Retencion.arrendador_id == arrendador_id
+        ).all()
+        return retenciones
     
     @staticmethod
     def obtener_configuracion(db: Session, clave: str) -> str | None:
-        """
-        Obtiene el valor de una clave de configuración del sistema.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            clave (str): La clave de configuración a buscar.
-
-        Returns:
-            str | None: El valor de la configuración o None si no se encuentra.
-        """
         config = db.query(Configuracion).filter_by(clave=clave).first()
-        return config.valor if config else None
+        return config.valor if config else HTTPException(status_code=404, detail= f"No se encontró la configuración de {clave}")
 
     @staticmethod
     def actualizar_configuracion(db: Session, clave: str, valor: str) -> dict:
-        """
-        Crea o actualiza un par clave-valor en la configuración del sistema.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            clave (str): La clave de configuración.
-            valor (str): El nuevo valor.
-
-        Returns:
-            dict: Un mensaje de confirmación con la clave y el valor.
-        """
         config = db.query(Configuracion).filter_by(clave=clave).first()
         if config:
             config.valor = valor
         else:
             config = Configuracion(clave=clave, valor=valor)
             db.add(config)
+
         db.commit()
         return {"status": "ok", "clave": clave, "valor": valor}
     
     @staticmethod
     def eliminar_configuracion(db: Session, clave: str) -> dict:
-        """
-        Elimina una clave de configuración del sistema.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            clave (str): La clave a eliminar.
-
-        Returns:
-            dict: Un mensaje de confirmación.
-        """
         config = db.query(Configuracion).filter_by(clave=clave).first()
         if not config:
-            raise HTTPException(status_code=404, detail=f"No se encontró la clave {clave}")
+            raise HTTPException(status_code=404, detail=f"No se encontró la configuración de {clave}")
         db.delete(config)
         db.commit()
-        return {"status": "ok"}
+        return {"status": "ok", "clave": clave}
     
     @staticmethod
     def obtener_destinatarios(db: Session) -> list[str]:
         """
-        Obtiene la lista de correos electrónicos configurados como destinatarios.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-
-        Returns:
-            list[str]: Lista de direcciones de correo.
+        Obtiene todos los destinatarios de correo configurados en la tabla Configuracion.
+        Devuelve una lista de direcciones de correo electrónico.
         """
-        registros = db.query(Configuracion).filter(Configuracion.clave.like("DESTINATARIO%")).all()
-        return [r.valor for r in registros if r.valor]
+        registros = (db.query(Configuracion).filter(Configuracion.clave.like("DESTINATARIO%")).order_by(Configuracion.clave.asc()).all())
+        destinatarios = [r.valor for r in registros if r.valor]
+        return destinatarios
     
     @staticmethod
     def crear_para_factura(db: Session, arrendador_id: int, pago, fecha: date):
         """
-        Calcula y crea una retención para un pago específico en el momento de la facturación.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            arrendador_id (int): El ID del arrendador.
-            pago (Pago): El objeto de pago.
-            fecha (date): La fecha de la retención.
-
-        Returns:
-            Retencion: La instancia de la retención creada (sin persistir en la DB).
+        Crea una retención en base al pago y la fecha dada.
+        Retorna la instancia de Retencion ya persistida en la DB.
         """
         arrendamiento = ArrendamientoService.obtener_por_id(db, pago.arrendamiento_id)
-        minimo_imponible = float(RetencionService.obtener_configuracion(db, "MINIMO_IMPONIBLE") or 0)
+        #Obtener monto imponible actual desde la config
+        minimo_imponible_actual = float(RetencionService.obtener_configuracion(db, "MINIMO_IMPONIBLE"))
 
-        periodos = {PlazoPago.MENSUAL: 1, PlazoPago.BIMESTRAL: 2, PlazoPago.TRIMESTRAL: 3, PlazoPago.CUATRIMESTRAL: 4, PlazoPago.SEMESTRAL: 6, PlazoPago.ANUAL: 12}
-        meses_por_cuota = periodos.get(arrendamiento.plazo_pago, 1)
+        periodos = {
+            PlazoPago.MENSUAL: 1,
+            PlazoPago.BIMESTRAL: 2,
+            PlazoPago.TRIMESTRAL: 3,
+            PlazoPago.CUATRIMESTRAL: 4,
+            PlazoPago.SEMESTRAL: 6,
+            PlazoPago.ANUAL: 12
+        }
+        meses_por_cuota = periodos.get(arrendamiento.plazo_pago)
 
-        base_retencion = minimo_imponible * meses_por_cuota
-        monto_retencion = (pago.monto_a_pagar - Decimal(base_retencion)) * Decimal('0.06')
+        #Calcular base de la retención
+        base_retencion = minimo_imponible_actual * meses_por_cuota
 
-        return Retencion(
+        monto_retencion = (pago.monto_a_pagar -Decimal(base_retencion))* Decimal(0.06)
+
+        #Crear objeto retención
+        retencion = Retencion(
             fecha_retencion=fecha or date.today(),
-            monto_imponible=minimo_imponible,
-            total_retencion=max(monto_retencion, Decimal(0)), # Asegurar que no sea negativo
-            arrendador_id=arrendador_id
+            monto_imponible=minimo_imponible_actual,
+            total_retencion=monto_retencion,
+            arrendador_id=arrendador_id,
+            facturacion_id=None
         )
+        return retencion
     
     @staticmethod
     def obtener_por_factura_id(db: Session, facturacion_id: int):
-        """
-        Obtiene la retención asociada a un ID de facturación.
-
-        Args:
-            db (Session): La sesión de la base de datos.
-            facturacion_id (int): El ID de la facturación.
-
-        Returns:
-            Retencion | None: La retención encontrada o None.
-        """
-        return db.query(Retencion).filter(Retencion.facturacion_id == facturacion_id).first()
+        obj = db.query(Retencion).filter(Retencion.facturacion_id == facturacion_id).first()
+        return obj 
