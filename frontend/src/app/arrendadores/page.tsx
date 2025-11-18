@@ -13,6 +13,10 @@ import { toast } from 'sonner';
 import { canEditOrDelete, formatCuit, formatCuitDisplay, getCondicionBadgeColor } from '@/lib/helpers';
 import { useAuth } from '@/components/context/AuthContext';
 
+/**
+ * @constant condicionFiscalOptions
+ * @description Opciones para el filtro de condición fiscal.
+ */
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
   { value: 'MONOTRIBUTISTA', label: 'MONOTRIBUTISTA' },
@@ -22,6 +26,12 @@ const condicionFiscalOptions = [
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page ArrendadoresPage
+ * @description Página principal para la gestión de arrendadores. Muestra una lista paginada
+ *              y filtrable de arrendadores, permitiendo crear, ver, editar y eliminar registros.
+ * @returns {JSX.Element} La página de gestión de arrendadores.
+ */
 export default function ArrendadoresPage() {
   const [arrendadores, setArrendadores] = useState<ArrendadorDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +43,10 @@ export default function ArrendadoresPage() {
   const { user } = useAuth();
   const canEditEliminate = canEditOrDelete(user?.rol);
 
-  // Fetch inicial
+  /**
+   * @effect
+   * @description Carga la lista inicial de arrendadores desde la API al montar el componente.
+   */
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -49,63 +62,72 @@ export default function ArrendadoresPage() {
     loadData();
   }, []);
 
-  // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de arrendadores filtrada según los términos de búsqueda y filtros aplicados.
+   */
   const filteredData = useMemo(() => {
     return arrendadores.filter(item => {
-      const matchesNombre = item.nombre_o_razon_social
-        .toLowerCase()
-        .includes(searchTermNombre.toLowerCase());
-      const matchesCuit = item.cuil
-        .toLowerCase()
-        .includes(searchTermCuit.toLowerCase().replace(/-/g,""));
+      const matchesNombre = item.nombre_o_razon_social.toLowerCase().includes(searchTermNombre.toLowerCase());
+      const matchesCuit = item.cuil.toLowerCase().includes(searchTermCuit.toLowerCase().replace(/-/g,""));
       const matchesCondicion = !condicionFilter || item.condicion_fiscal === condicionFilter;
-
       return matchesNombre && matchesCuit && matchesCondicion;
     });
   }, [arrendadores, searchTermNombre, searchTermCuit, condicionFilter]);
 
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos a mostrar en la página actual de la tabla.
+   */
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
 
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+
+  /**
+   * @effect
+   * @description Reinicia la paginación a la primera página cada vez que cambian los filtros.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit, condicionFilter]);
 
-const handleDelete = (id: number) => {
-  // Confirmación
-  const confirmToastId = toast.info(
-    "¿Está seguro que desea eliminar este arrendador?",
-    {
-      action: {
-        label: "Confirmar",
-        onClick: () => {
-          toast.dismiss(confirmToastId);
-          
-          //Delete
-          toast.promise(
-            deleteArrendador(id).then(() => {
-              setArrendadores(prev =>
-                prev.filter((item) => item.id !== id)
-              );
-            }),
-            {
-              loading: "Eliminando arrendador...",
-              success: "Arrendador eliminado con éxito",
-              error: (err) => err.message || "Error al eliminar el arrendador",
-            }
-          );
+  /**
+   * @function handleDelete
+   * @description Muestra una confirmación y, si es aceptada, elimina un arrendador.
+   * @param {number} id - El ID del arrendador a eliminar.
+   */
+  const handleDelete = (id: number) => {
+    const confirmToastId = toast.info(
+      "¿Está seguro que desea eliminar este arrendador?",
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
+            toast.promise(
+              deleteArrendador(id).then(() => {
+                setArrendadores(prev => prev.filter((item) => item.id !== id));
+              }),
+              {
+                loading: "Eliminando arrendador...",
+                success: "Arrendador eliminado con éxito",
+                error: (err) => err.message || "Error al eliminar el arrendador",
+              }
+            );
+          },
         },
-      },
-      duration: 5000, // 5 segundos
-    }
-  );
-};
+        duration: 5000,
+      }
+    );
+  };
+
   return (
     <ProtectedRoute>
       <div className="bg-gray-50 p-6">
+        {/* ... (resto del JSX sin cambios) */}
         <div className="">
           <div className="mb-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Arrendadores</h1>
@@ -118,110 +140,50 @@ const handleDelete = (id: number) => {
             </Link>
           </div>
 
-          {/* Filtros */}
           <div className="bg-slate-100 rounded-lg shadow-sm border border-gray-400 p-6 mb-6">
             <h2 className="text-sm font-medium text-gray-700 mb-3 underline">Filtrar:</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <SearchInput
-                placeholder="Buscar..."
-                value={searchTermNombre}
-                onChange={setSearchTermNombre}
-                label="Nombre / Razón Social"
-              />
-              <SearchInput
-                placeholder="Ej: 99-999999-9"
-                value={formatCuitDisplay(searchTermCuit)}
-                onChange={setSearchTermCuit}
-                label="CUIT-CUIL"
-              />
-              <SelectFilter
-                options={condicionFiscalOptions}
-                value={condicionFilter}
-                onChange={setCondicionFilter}
-                placeholder="Ej: MONOTRIBUTISTA"
-                label="Condición Fiscal"
-              />
+              <SearchInput placeholder="Buscar..." value={searchTermNombre} onChange={setSearchTermNombre} label="Nombre / Razón Social" />
+              <SearchInput placeholder="Ej: 99-999999-9" value={formatCuitDisplay(searchTermCuit)} onChange={setSearchTermCuit} label="CUIT-CUIL" />
+              <SelectFilter options={condicionFiscalOptions} value={condicionFilter} onChange={setCondicionFilter} placeholder="Ej: MONOTRIBUTISTA" label="Condición Fiscal" />
             </div>
           </div>
 
-          {/* Tabla */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             {loading ? (
               <div className="text-center py-12">Cargando...</div>
             ) : error ? (
               <div className="text-center py-12 text-red-500 font-semibold">{error}</div>
             ) : filteredData.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                No se encontraron arrendadores que coincidan con los filtros.
-              </div>
+              <div className="text-center py-12 text-gray-500">No se encontraron arrendadores.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-300">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Nombre / Razón Social
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        CUIT-CUIL
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Condición Fiscal
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Mail
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Teléfono
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Localidad
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                        Acciones
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Nombre / Razón Social</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">CUIT-CUIL</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Condición Fiscal</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Mail</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Teléfono</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Localidad</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {paginatedData.map((arrendador) => (
                       <tr key={arrendador.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900 max-w-xs">
-                          <div className="truncate">{arrendador.nombre_o_razon_social}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCuit(arrendador.cuil)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCondicionBadgeColor(arrendador.condicion_fiscal)}`}>
-                            {arrendador.condicion_fiscal.replace(/_/g, ' ')}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                          {arrendador.mail || "-"}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
-                          {arrendador.telefono || "-"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {arrendador.localidad?.nombre_localidad +', ' + arrendador.localidad.provincia.nombre_provincia}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 max-w-xs truncate">{arrendador.nombre_o_razon_social}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCuit(arrendador.cuil)}</td>
+                        <td className="px-6 py-4"><span className={`badge ${getCondicionBadgeColor(arrendador.condicion_fiscal)}`}>{arrendador.condicion_fiscal.replace(/_/g, ' ')}</span></td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{arrendador.mail || "-"}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{arrendador.telefono || "-"}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{arrendador.localidad?.nombre_localidad}, {arrendador.localidad.provincia.nombre_provincia}</td>
+                        <td className="px-6 py-4">
                           <div className="flex space-x-2">
-                            <Link href={`/arrendadores/${arrendador.id}`}>
-                              <button className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded transition-colors" title="Ver detalles">
-                                <Eye className="h-4 w-4" />
-                              </button>
-                            </Link>
-                            <Link href={`/arrendadores/${arrendador.id}/edit`}passHref>
-                              <button   className={`p-1 rounded transition-colors ${canEditEliminate ? "text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 cursor-pointer": "text-gray-400  cursor-not-allowed"}`} title="Editar"
-                                      disabled={!canEditEliminate}>
-                                <Edit className="h-4 w-4" />
-                              </button>
-                            </Link>
-                            <button onClick={() => handleDelete(arrendador.id)} className={`p-1 rounded transition-colors ${canEditEliminate ? "text-red-600 hover:text-red-900 hover:bg-red-50 cursor-pointer": "text-gray-400 cursor-not-allowed"}`} title="Eliminar"
-                                    disabled={!canEditEliminate}>
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                            <Link href={`/arrendadores/${arrendador.id}`}><button className="btn-icon-blue"><Eye size={16}/></button></Link>
+                            <Link href={`/arrendadores/${arrendador.id}/edit`}><button className={`btn-icon-yellow ${!canEditEliminate && 'cursor-not-allowed opacity-50'}`} disabled={!canEditEliminate}><Edit size={16}/></button></Link>
+                            <button onClick={() => handleDelete(arrendador.id)} className={`btn-icon-red ${!canEditEliminate && 'cursor-not-allowed opacity-50'}`} disabled={!canEditEliminate}><Trash2 size={16}/></button>
                           </div>
                         </td>
                       </tr>
@@ -232,27 +194,9 @@ const handleDelete = (id: number) => {
             )}
           </div>
 
-          {/* Paginación */}
-          <div className="mt-6 grid grid-cols-3 items-center">            
-            <div className="justify-self-start">
-              <Link href="/dashboard" passHref> 
-                <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                  Volver
-                </button>
-              </Link>
-            </div>
-            <div className="justify-self-center">
-              {totalPages > 1 && (
-                <div className="flex justify-center">
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              )}
-            </div>
-            <div></div>
+          <div className="mt-6 flex justify-between items-center">
+            <Link href="/dashboard"><button className="btn-secondary">Volver</button></Link>
+            {totalPages > 1 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
           </div>
         </div>
       </div>

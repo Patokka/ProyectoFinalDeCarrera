@@ -21,13 +21,38 @@ from dtos.ArrendadorDto import  ArrendadorDtoOut
 from dtos.PagoDto import  PagoDtoOut
 
 class FacturacionService:
+    """
+    Clase de servicio que encapsula la lógica de negocio para la gestión de facturaciones.
+    """
 
     @staticmethod
     def listar_todos(db: Session):
+        """
+        Obtiene todas las facturaciones de la base de datos, ordenadas por fecha.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+
+        Returns:
+            list[Facturacion]: Una lista de todas las facturaciones.
+        """
         return db.query(Facturacion).order_by(asc(Facturacion.fecha_facturacion)).all()
 
     @staticmethod
     def obtener_por_id(db: Session, facturacion_id: int):
+        """
+        Obtiene una facturación por su ID.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            facturacion_id (int): El ID de la facturación a buscar.
+
+        Returns:
+            Facturacion: La facturación encontrada.
+
+        Raises:
+            HTTPException: Si la facturación no se encuentra (código 404).
+        """
         obj = db.query(Facturacion).get(facturacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Facturación no encontrada.")
@@ -35,6 +60,22 @@ class FacturacionService:
 
     @staticmethod
     def crear(db: Session, pago_id: int):
+        """
+        Crea una nueva facturación para un pago específico.
+        Cambia el estado del pago a 'REALIZADO'.
+        Si el arrendador no es monotributista, también crea una retención asociada.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago_id (int): El ID del pago a facturar.
+
+        Returns:
+            Facturacion: La facturación recién creada.
+
+        Raises:
+            HTTPException: Si el pago ya fue facturado/cancelado (500) o si no tiene
+                           un monto asignado (500).
+        """
         pago = PagoService.obtener_por_id(db, pago_id)        
         if pago.estado == EstadoPago.REALIZADO or pago.estado == EstadoPago.CANCELADO:
             raise HTTPException(status_code=500, detail= "El pago ya fue facturado o está cancelado.")
@@ -66,7 +107,7 @@ class FacturacionService:
                 pago_id = pago_id
             )
             db.add(nuevo)
-        else: # (Responsable Inscripto, etc. -> Factura A)
+        else:
             tipo = TipoFactura.A
             retencion = RetencionService.crear_para_factura(db, arrendador.id, pago, hoy)
             monto_facturacion_bruto = monto_bruto
@@ -92,6 +133,20 @@ class FacturacionService:
 
     @staticmethod
     def actualizar(db: Session, facturacion_id: int, dto: FacturacionDtoModificacion):
+        """
+        Actualiza los datos de una facturación existente.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            facturacion_id (int): El ID de la facturación a actualizar.
+            dto (FacturacionDtoModificacion): Los datos a modificar.
+
+        Returns:
+            Facturacion: La facturación actualizada.
+
+        Raises:
+            HTTPException: Si la facturación no se encuentra (código 404).
+        """
         obj = db.query(Facturacion).get(facturacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Facturación no encontrada.")
@@ -103,6 +158,17 @@ class FacturacionService:
 
     @staticmethod
     def eliminar(db: Session, facturacion_id: int):
+        """
+        Elimina una facturación de la base de datos.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            facturacion_id (int): El ID de la facturación a eliminar.
+
+        Raises:
+            HTTPException: Si la facturación no se encuentra (404) o si tiene
+                           relaciones que impiden su eliminación.
+        """
         obj = db.query(Facturacion).get(facturacion_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Facturación no encontrada.")
@@ -112,7 +178,16 @@ class FacturacionService:
         
     @staticmethod
     def obtener_facturaciones_arrendador(db: Session, arrendador_id: int):
-        #Solamente se consulta el arrendador para obtener la excepción en caso de que no exista        
+        """
+        Obtiene todas las facturaciones asociadas a un arrendador.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            arrendador_id (int): El ID del arrendador.
+
+        Returns:
+            list[Facturacion]: Lista de facturaciones del arrendador.
+        """
         ArrendadorService.obtener_por_id(db,arrendador_id)
         
         facturaciones = db.query(Facturacion).filter(
@@ -122,10 +197,18 @@ class FacturacionService:
 
     @staticmethod
     def obtener_facturaciones_arrendatario(db: Session, arrendatario_id: int):
-        #Solamente se consulta el arrendatario para obtener la excepción en caso de que no exista        
+        """
+        Obtiene todas las facturaciones asociadas a un arrendatario a través de sus arrendamientos y pagos.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            arrendatario_id (int): El ID del arrendatario.
+
+        Returns:
+            list[Facturacion]: Lista de facturaciones del arrendatario.
+        """
         ArrendatarioService.obtener_por_id(db,arrendatario_id)
         
-        # Hacer join de Facturacion para llegar al arrendatario
         facturaciones = (
             db.query(Facturacion)
             .join(Pago, Facturacion.pago_id == Pago.id)
