@@ -82,7 +82,7 @@ class BotPrecioAGD:
         try: os.makedirs(self.perfil_chrome, exist_ok=True)
         except Exception as e: logger.error(f"No se pudo crear dir perfil: {e}")
         self.flag_mensaje_path = os.path.join(self.perfil_chrome, "ultimo_mensaje.txt")
-        self.ultimo_mensaje_enviado = self.cargar_ultimo_mensaje()
+        self.ultimo_mensaje_enviado, self.fecha_ultimo_mensaje = self.cargar_ultimo_mensaje()
         self.generic_error_counter = 0
         self._realizar_login()
 
@@ -158,7 +158,10 @@ class BotPrecioAGD:
         headers = {"Authorization": f"Bearer {self.api_token}", "Content-Type": "application/json"}
         try:
             response = requests.post(self.url_destino, json={"mensaje": mensaje}, headers=headers, timeout=10)
-            if response.status_code in [200, 201, 204]: return True
+            if response.status_code in [200, 201, 204, 409]: 
+                if response.status_code == 409:
+                    logger.info("Backend respondió 409 (Conflicto). Asumiendo 'Ya registrado'.")
+                return True
             elif response.status_code == 401 and not is_retry:
                 logger.warning("Token expirado (401). Re-autenticando..."); self.api_token = None
                 if self._realizar_login(): return self.enviar_mensaje_al_backend(mensaje, is_retry=True)
@@ -410,12 +413,22 @@ class BotPrecioAGD:
                 ultimo_msg_texto = "\n".join([s.text for s in spans if s.text]).strip()
             except: return True 
             if not ultimo_msg_texto: return True 
-            mensaje_guardado, fecha_guardada = self.cargar_ultimo_mensaje() 
             hoy = time.strftime("%Y-%m-%d")
             if "Los precios en disponible para el mercado de AGD" in ultimo_msg_texto:
-                if ultimo_msg_texto != mensaje_guardado or fecha_guardada != hoy:
-                    logger.info(f"Mensaje AGD:\n{ultimo_msg_texto[:100]}...")
-                    if self.enviar_mensaje_al_backend(ultimo_msg_texto): self.guardar_ultimo_mensaje(ultimo_msg_texto)
+                # Usamos las variables de la instancia (cargadas en memoria)
+                if ultimo_msg_texto != self.ultimo_mensaje_enviado or self.fecha_ultimo_mensaje != hoy:
+                    logger.info(f"Mensaje AGD (nuevo detectado):\n{ultimo_msg_texto[:100]}...")
+                    # Si el envío es exitoso (incluyendo el 409 del Paso 1)...
+                    if self.enviar_mensaje_al_backend(ultimo_msg_texto):
+                        # 1. Lo guardamos en el archivo (como antes)
+                        self.guardar_ultimo_mensaje(ultimo_msg_texto)
+                        
+                        # 2. ACTUALIZAMOS EL ESTADO EN MEMORIA al instante
+                        logger.info("Actualizando estado en memoria...")
+                        self.ultimo_mensaje_enviado = ultimo_msg_texto.strip()
+                        self.fecha_ultimo_mensaje = hoy
+                    else:
+                        logger.warning("El envío al backend falló, no se actualiza estado ni se guarda.")
         except (NoSuchElementException, StaleElementReferenceException): 
             logger.warning("Elemento desapareció (probablemente refrescando)."); 
             self.chat_abierto = None

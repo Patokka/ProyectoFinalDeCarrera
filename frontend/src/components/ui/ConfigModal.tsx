@@ -98,7 +98,7 @@ export const ConfigModal = ({isOpen, onClose, selectedConfigCard, configTime, se
             toast.success("Configuración actualizada.");
             onClose();
         } catch (e) {
-            toast.error("Error al guardar la configuración.");
+            toast.error("Error al guardar la configuración");
         } finally {
             setIsSubmitting(false);
         }

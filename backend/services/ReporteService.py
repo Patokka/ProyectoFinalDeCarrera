@@ -160,7 +160,8 @@ class ReporteService:
         if hoy.month == 1:
             ultimo_anio, ultimo_mes = hoy.year - 1, 12
         else:
-            ultimo_anio, ultimo_mes = hoy.year, hoy.month - 1
+            ultimo_anio = hoy.year
+            ultimo_mes = hoy.month
         if (anio > ultimo_anio) or (anio == ultimo_anio and mes > ultimo_mes):
             raise HTTPException(status_code=400, detail="Solo se pueden generar reportes de meses pasados.")
 

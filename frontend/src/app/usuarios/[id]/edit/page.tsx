@@ -75,7 +75,13 @@ export default function ModificarUsuarioPage() {
     const guardarUsuario = async () => {
         if (!validateForm()) return toast.error('Complete los campos obligatorios.');
         try {
-            const payload = { ...formData, cuil: formData.cuil.replace(/-/g, '') };
+            const payload = {
+                ...formData,
+                cuil: formData.cuil.replace(/-/g, '')
+            };
+            if (!payload.mail || payload.mail.trim() === "") {
+                delete payload.mail;
+            }
             await putUsuario(payload, Number(idUsuario));
             toast.success('Usuario actualizado con éxito.');
             router.push('/usuarios');
