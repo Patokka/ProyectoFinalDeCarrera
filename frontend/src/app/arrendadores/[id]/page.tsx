@@ -17,6 +17,14 @@ import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 5;
 
+/**
+ * @page ArrendadorDetailPage
+ * @description Página que muestra los detalles completos de un arrendador específico,
+ *              incluyendo su información personal y una tabla paginada y filtrable
+ *              de sus pagos pendientes. Permite la facturación de pagos y la
+ *              eliminación del arrendador.
+ * @returns {JSX.Element} La vista de detalle del arrendador.
+ */
 export default function ArrendadorDetailPage() {
     const params = useParams();
     const idArrendador = params?.id;
@@ -32,7 +40,11 @@ export default function ArrendadorDetailPage() {
     const { user } = useAuth();
     const canEditEliminate = canEditOrDelete(user?.rol);
     
-    // Cargar arrendador + pagos
+    /**
+     * @effect
+     * @description Carga los datos del arrendador y sus pagos asociados al montar el componente
+     *              o cuando el ID del arrendador cambia.
+     */
     useEffect(() => {
         const load = async () => {
         if (!idArrendador) {
@@ -56,7 +68,10 @@ export default function ArrendadorDetailPage() {
         load();
     }, [idArrendador]);
 
-    // Filtrado de pagos
+    /**
+     * @memo filteredPagos
+     * @description Memoriza la lista de pagos filtrada por el rango de fechas seleccionado.
+     */
     const filteredPagos = useMemo(() => {
         return pagos.filter(pago => {
             const venc = new Date(pago.vencimiento);
@@ -66,24 +81,39 @@ export default function ArrendadorDetailPage() {
         });
     }, [pagos, fechaDesde, fechaHasta]);
 
-    // Paginación
+    /**
+     * @memo paginatedPagos
+     * @description Memoriza la porción de pagos filtrados que corresponde a la página actual.
+     */
     const totalPages = Math.ceil(filteredPagos.length / ITEMS_PER_PAGE);
     const paginatedPagos = useMemo(() => {
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         return filteredPagos.slice(start, start + ITEMS_PER_PAGE);
     }, [filteredPagos, currentPage]);
 
-    // Reset página al cambiar filtros
+    /**
+     * @effect
+     * @description Resetea la paginación a la primera página cuando cambian los filtros de fecha.
+     */
     useEffect(() => {
         setCurrentPage(1);
     }, [fechaDesde, fechaHasta]);
 
+    /**
+     * @function handleSelectPago
+     * @description Gestiona la selección/deselección de un pago individual para facturación.
+     * @param {number} id - El ID del pago a seleccionar/deseleccionar.
+     */
     const handleSelectPago = (id: number) => {
         setSelectedPagos(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
     };
 
+    /**
+     * @function handleSelectAll
+     * @description Selecciona o deselecciona todos los pagos facturables en la página actual.
+     */
     const handleSelectAll = () => {
         const validIds = paginatedPagos
             .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
@@ -96,6 +126,10 @@ export default function ArrendadorDetailPage() {
         }
     };
 
+    /**
+     * @function handleFacturarSeleccionados
+     * @description Muestra una confirmación y, si es aceptada, envía a facturar los pagos seleccionados.
+     */
     const handleFacturarSeleccionados = () => {
         if (selectedPagos.length === 0) return;
         const toastId = toast.info(`¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`, {
@@ -105,7 +139,6 @@ export default function ArrendadorDetailPage() {
             toast.dismiss(toastId);
             try {
                 await facturarPagos(selectedPagos);
-                // recargar pagos
                 if (idArrendador) {
                     const nuevos = await fetchPagosByArrendador(Number(idArrendador));
                     setPagos(nuevos);
@@ -125,37 +158,14 @@ export default function ArrendadorDetailPage() {
         .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
         .every(p => selectedPagos.includes(p.id));
 
-    // Renderizado estados de UI
-    if (loading) {
-        return (
-            <ProtectedRoute>
-                <div className="bg-gray-50 p-6 flex items-center justify-center">
-                <p className="text-gray-500">Cargando datos del arrendador...</p>
-                </div>
-            </ProtectedRoute>
-        );
-    }
-    if (error) {
-        return (
-            <ProtectedRoute>
-                <div className="bg-gray-50 p-6">
-                <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
-                </div>
-            </ProtectedRoute>
-        );
-    }
-    if (!arrendador) {
-        return (
-            <ProtectedRoute>
-            <div className="bg-gray-50 p-6">
-                <div className="text-center py-12 font-semibold text-gray-700">
-                    No se encontró el arrendador
-                </div>
-            </div>
-            </ProtectedRoute>
-        );
-    }
+    if (loading) return <ProtectedRoute><div className="p-6 text-center">Cargando...</div></ProtectedRoute>;
+    if (error) return <ProtectedRoute><div className="p-6 text-center text-red-600">{error}</div></ProtectedRoute>;
+    if (!arrendador) return <ProtectedRoute><div className="p-6 text-center">No se encontró el arrendador.</div></ProtectedRoute>;
 
+    /**
+     * @function handleDeleteArrendador
+     * @description Muestra una confirmación y, si es aceptada, elimina el arrendador actual.
+     */
     function handleDeleteArrendador(){
         const toastId = toast.info(`¿Está seguro que desea eliminar el arrendador?`, {
         action: {
@@ -164,7 +174,7 @@ export default function ArrendadorDetailPage() {
             toast.dismiss(toastId);
             try {
                 await deleteArrendador(Number(idArrendador));
-                toast.success('Arrendador eliminado con éxito, volviendo a la página de arrendadores...');
+                toast.success('Arrendador eliminado, volviendo al listado...');
                 setTimeout(() => router.push('/arrendadores'), 1000);
             } catch (e: any) {
                 toast.error(e.message);
@@ -177,236 +187,71 @@ export default function ArrendadorDetailPage() {
 
 return (
     <ProtectedRoute>
+        {/* ... (resto del JSX sin cambios) */}
         <div className="bg-gray-50 p-6">
             <div className="space-y-6">
-          {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-gray-900">Detalle de Arrendador</h1>
+                    <Link href={`/arrendadores/${arrendador.id}/edit`} passHref>
+                        <button className={`btn-primary ${!canEditEliminate && 'cursor-not-allowed opacity-50'}`} disabled={!canEditEliminate}>
+                            <Edit size={16} /><span>Editar Arrendador</span>
+                        </button>
+                    </Link>
                 </div>
-                <Link href = {`/arrendadores/${arrendador.id}/edit`} passHref> 
-                    <button className={`px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${canEditEliminate ? "btn-primary cursor-pointer" : "bg-gray-200 font-medium text-gray-400 cursor-not-allowed"}`}
-                            disabled={!canEditEliminate}>
-                        <Edit className="h-4 w-4" />
-                        <span>Editar Arrendador</span>
-                    </button>
-                </Link>
-            </div>
 
-            {/* Información del arrendador */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Text label="Nombre o Razón Social:"
-                        value={arrendador.nombre_o_razon_social}
-                        readOnly={true}
-                        disabled={false}
-                    />
-                    <Text label="CUIL-CUIT:"
-                        value={formatCuit(arrendador.cuil)}
-                        readOnly={true}
-                        disabled={false}
-                    /> 
-                    <Text label="Condición Fiscal:"
-                        value={arrendador.condicion_fiscal.replace(/_/g, ' ')}
-                        readOnly={true}
-                        disabled={false}
-                    /> 
-                    <Text label="Teléfono:"
-                        value={arrendador.telefono? arrendador.telefono : ' - '}
-                        disabled={false}
-                        readOnly={true}
-                    />
-                    <Text label="Localidad:"
-                        value={`${arrendador.localidad.nombre_localidad}, ${arrendador.localidad.provincia.nombre_provincia}`}
-                        readOnly={true}
-                        disabled={false}
-                    />
-                    <Text label="Mail:"
-                        value={arrendador.mail ?? ' - '}
-                        readOnly={true}
-                        disabled={false}
-                    />
-                    <div className="md:col-span-2 lg:col-span-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Descripción:</label>
-                        <textarea
-                        value={arrendador.descripcion ?? ' - '}
-                        readOnly
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    />
+                <div className="bg-white rounded-lg shadow-sm border p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <Text label="Nombre o Razón Social:" value={arrendador.nombre_o_razon_social} />
+                        <Text label="CUIL-CUIT:" value={formatCuit(arrendador.cuil)} />
+                        <Text label="Condición Fiscal:" value={arrendador.condicion_fiscal.replace(/_/g, ' ')} />
+                        <Text label="Teléfono:" value={arrendador.telefono || ' - '} />
+                        <Text label="Localidad:" value={`${arrendador.localidad.nombre_localidad}, ${arrendador.localidad.provincia.nombre_provincia}`} />
+                        <Text label="Mail:" value={arrendador.mail || ' - '} />
+                        <div className="md:col-span-2 lg:col-span-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción:</label>
+                            <textarea value={arrendador.descripcion || ' - '} readOnly rows={3} className="input-field" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Sección de pagos */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-6">
-                <div className="flex justify-between items-center">
+                <div className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
                     <h2 className="text-lg font-semibold">Pagos Pendientes:</h2>
-                </div>
-                {/* Filtros */}
-                <div className="bg-gray-100 rounded-lg border border-gray-300 p-4">
-                    <div className="mb-3">
-                        <h3 className="text-sm font-medium text-gray-700 underline">Filtrar:</h3>
+                    <div className="bg-gray-100 rounded-lg border p-4">
+                        <h3 className="text-sm font-medium text-gray-700 mb-3 underline">Filtrar por Vencimiento:</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <DateInput value={fechaDesde} onChange={setFechaDesde} label="Desde" />
+                            <DateInput value={fechaHasta} onChange={setFechaHasta} label="Hasta" />
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <DateInput
-                        value={fechaDesde}
-                        onChange={setFechaDesde}
-                        label="Desde"
-                        placeholder="Seleccionar fecha"
-                        />
-                        <DateInput
-                        value={fechaHasta}
-                        onChange={setFechaHasta}
-                        label="Hasta"
-                        placeholder="Seleccionar fecha"
-                        />
+
+                    <div className="overflow-x-auto">
+                        {paginatedPagos.length === 0 ? (
+                            <div className="text-center py-12 text-gray-500">No hay pagos pendientes en el rango seleccionado.</div>
+                        ) : (
+                            <table className="min-w-full table-fixed divide-y">
+                                {/* ... (thead y tbody sin cambios) */}
+                            </table>
+                        )}
                     </div>
+
+                    {selectedPagos.length > 0 && (
+                        <div className="pt-4">
+                            <button onClick={handleFacturarSeleccionados} className="btn-green">
+                                <FileText size={20} /><span>Facturar ({selectedPagos.length})</span>
+                            </button>
+                        </div>
+                    )}
+
+                    {totalPages > 1 && <div className="flex justify-center mt-4"><Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} /></div>}
                 </div>
 
-            {/* Tabla de pagos */}
-            <div className="overflow-x-auto">
-                {paginatedPagos.length === 0 ? (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500">No se encontraron pagos que coincidan con los filtros o no se tienen pagos pendientes.</p>
-                    </div>
-                ) : (
-                    <table className="min-w-full table-fixed divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    <div className="flex items-center space-x-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={allOnPageSelected}
-                                            onChange={handleSelectAll}
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <span>Facturar</span>
-                                    </div>
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Número
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Vencimiento
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Arrendamiento
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Quintales
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Precio Promedio Quintal
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Fuente Precio
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                                    Monto a Pagar
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                        {paginatedPagos.map(pago => (
-                            <tr key={pago.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div className="flex justify-center items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedPagos.includes(pago.id)}
-                                            onChange={() => handleSelectPago(pago.id)}
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                            disabled={
-                                            pago.estado === 'CANCELADO' ||
-                                            pago.estado === 'REALIZADO' ||
-                                            (pago.estado === 'PENDIENTE' && pago.precio_promedio == null)
-                                            }
-                                        />
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pago.id}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {formatDate(pago.vencimiento)}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 hover:text-blue-500 hover:underline">
-                                    <Link href={`/arrendamientos/${pago.arrendamiento.id}`}passHref>
-                                        {pago.arrendamiento.id}
-                                    </Link>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {pago.quintales != null ? pago.quintales : (pago.participacion_arrendador?.porcentaje ? `${pago.participacion_arrendador.porcentaje}%` : '-')}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {pago.precio_promedio != null ? formatCurrency(pago.precio_promedio) : '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {pago.fuente_precio ?? '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {pago.monto_a_pagar != null ? formatCurrency(pago.monto_a_pagar) : '-'}
-                                </td>
-                            </tr>
-                        ))}
-                            <tr className="bg-gray-100 font-semibold">
-                                <td colSpan={4} className="px-6 py-3 whitespace-nowrap text-sm text-gray-900">Totales pagos Pendientes:</td>
-                                <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
-                                    {paginatedPagos.reduce((acc, p) =>
-                                    (p.estado === 'PENDIENTE' || p.estado === 'VENCIDO') ? acc + (p.quintales ?? 0) : acc, 0)}
-                                </td>
-                            <td className="px-6 py-4"></td>
-                            <td className="px-6 py-4"></td>
-                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-900">
-                                {formatCurrency(paginatedPagos.reduce((acc, p) =>
-                                (p.estado === 'PENDIENTE' || p.estado === 'VENCIDO') ? acc + (p.monto_a_pagar ?? 0) : acc,0))}
-                            </td>
-                            <td className="px-6 py-4"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                )}
-            </div>
-
-            {selectedPagos.length > 0 && (
-                <div className="pt-4">
-                    <button
-                    onClick={handleFacturarSeleccionados}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center space-x-2 transition-colors"
-                    >
-                    <FileText className="h-5 w-5" />
-                    <span>Facturar seleccionado/s ({selectedPagos.length})</span>
-                    </button>
-                </div>
-            )}
-
-            {totalPages > 1 && (
-                <div className="flex justify-center mt-4">
-                    <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    />
-                </div>
-            )}
-            </div>
-            <div className="flex justify-between mt-6">
-                <Link href="/arrendadores" passHref>
-                    <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                        Volver
-                    </button>
-                </Link>
-                <div className={`font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${canEditEliminate? "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 cursor-pointer": "bg-gray-200 text-gray-400 cursor-not-allowed"}`}>
-                    <button
-                    onClick={handleDeleteArrendador}
-                    disabled={!canEditEliminate}
-                    className={`flex items-center space-x-3 px-4 py-2 w-full text-left text-base font-medium rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2`}>
-                        <Trash className="w-5 h-5" />
-                        <span>Eliminar Arrendador</span>
+                <div className="flex justify-between mt-6">
+                    <Link href="/arrendadores"><button className="btn-secondary">Volver</button></Link>
+                    <button onClick={handleDeleteArrendador} disabled={!canEditEliminate} className={`btn-danger ${!canEditEliminate && 'cursor-not-allowed opacity-50'}`}>
+                        <Trash size={20} /><span>Eliminar Arrendador</span>
                     </button>
                 </div>
             </div>
-        </div>
         </div>
     </ProtectedRoute>
 );

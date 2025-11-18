@@ -13,6 +13,10 @@ import { Download } from 'lucide-react';
 import { postUsuario } from '@/lib/usuarios/auth';
 import PasswordInput from '@/components/ui/PasswordInput';
 
+/**
+ * @constant rolesOptions
+ * @description Opciones para el selector de rol de usuario.
+ */
 const rolesOptions = [
     { value: 'ADMINISTRADOR', label: 'Administrador' },
     { value: 'OPERADOR', label: 'Operador' },
@@ -20,156 +24,89 @@ const rolesOptions = [
 ];
 
 const initialFormData: UsuarioForm = {
-    nombre: '',
-    apellido: '',
-    contrasena: '',
-    mail: '',
-    cuil: '',
-    rol: 'CONSULTA' as TipoRol
+    nombre: '', apellido: '', contrasena: '', mail: '', cuil: '', rol: 'CONSULTA' as TipoRol
 };
 
+/**
+ * @page CrearUsuarioPage
+ * @description Página con el formulario para crear un nuevo usuario.
+ *              Solo accesible para administradores.
+ * @returns {JSX.Element} El formulario de creación de usuario.
+ */
 export default function CrearUsuarioPage() {
     const router = useRouter();
     const [formData, setFormData] = useState<UsuarioForm>(initialFormData);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el estado del formulario cuando cambia un campo.
+     */
     const handleInputChange = (field: string, value: any) => {
-        setFormData(prev => ({
-        ...prev,
-        [field]: value
-        }));
-
-        if (errors[field]) {
-        setErrors(prev => ({ ...prev, [field]: '' }));
-        }
+        setFormData(prev => ({ ...prev, [field]: value }));
+        if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
     };
 
+    /**
+     * @function validateForm
+     * @description Valida todos los campos del formulario.
+     * @returns {boolean} True si el formulario es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.nombre.trim()) newErrors.nombre = 'Campo obligatorio';
-        if (!formData.nombre.trim()) newErrors.apellido = 'Campo obligatorio';
-        if (!formData.contrasena.trim()) {
-            newErrors.contrasena = 'Campo obligatorio';
-        } else {
-            //longitud mínima y cantidad de dígitos
-            const tieneLongitud = formData.contrasena.length >= 6;
-            const numeros = (formData.contrasena.match(/\d/g) || []).length;
-            const tieneDosNumeros = numeros >= 2;
-            if (!tieneLongitud || !tieneDosNumeros) {
-                newErrors.contrasena = 'Debe tener al menos 6 caracteres y 2 números';
-            }
+        if (!formData.apellido.trim()) newErrors.apellido = 'Campo obligatorio';
+        if (!formData.contrasena.trim()) newErrors.contrasena = 'Campo obligatorio';
+        else if (formData.contrasena.length < 6 || (formData.contrasena.match(/\d/g) || []).length < 2) {
+            newErrors.contrasena = 'Debe tener al menos 6 caracteres y 2 números';
         }
-        if (!formData.cuil) {
-            newErrors.cuil = "Campo obligatorio";
-        } else if (!validarCuilCuit(formData.cuil)) {
-            newErrors.cuil = "CUIL inválido";
-        }
+        if (!formData.cuil) newErrors.cuil = "Campo obligatorio";
+        else if (!validarCuilCuit(formData.cuil)) newErrors.cuil = "CUIL inválido";
         if (formData.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) newErrors.mail = 'Mail inválido';
-        if (!formData.rol.trim()) newErrors.rol = 'Campo obligatorio';
+        if (!formData.rol) newErrors.rol = 'Campo obligatorio';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function guardarUsuario
+     * @description Valida y envía los datos del nuevo usuario a la API.
+     */
     const guardarUsuario = async () => {
-        if (!validateForm()) {
-            toast.error('Por favor, completa todos los campos obligatorios');
-            return;
-        }
+        if (!validateForm()) return toast.error('Complete los campos obligatorios.');
         try {
-            const payload = {
-                ...formData,
-                cuil: formData.cuil.replace(/-/g, '')
-            };
-            if (!payload.mail || payload.mail.trim() === "") {
-                delete payload.mail;
-            }
+            const payload = { ...formData, cuil: formData.cuil.replace(/-/g, '') };
+            if (!payload.mail?.trim()) delete payload.mail;
             await postUsuario(payload);
-            toast.success('Usuario guardado con éxito, volviendo a página de usuarios...');
+            toast.success('Usuario guardado con éxito.');
             router.push('/usuarios');
         } catch (error: any) {
-            // Parseamos el mensaje que devolvió el backend
-            const msg = error.message || 'Error al guardar el usuarios';
-            if (msg.includes("CUIT - CUIL ya está registrado")) {
-                setErrors(prev => ({ ...prev, cuil: "Este CUIT - CUIL ya existe para otro usuario" }));
-                toast.error(msg);
-            } else {
-                toast.error(msg);
-            }
+            toast.error(error.message || 'Error al guardar el usuario.');
         }
     };
 
     return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
         <div className="bg-gray-50 p-6">
-            <div className="">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h1 className="text-2xl font-bold text-gray-900">Crear Usuario:</h1>
-                            <button
-                                onClick={guardarUsuario}
-                                className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
-                            >
-                                <Download className='h-4 w-4'/>
-                                <span>Guardar Usuario</span>
-                            </button>
-                        </div>
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-bold">Crear Usuario</h1>
+                    <button onClick={guardarUsuario} className="btn-primary">
+                        <Download size={16}/><span>Guardar Usuario</span>
+                    </button>
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        <Input
-                            label="Nombre"
-                            value={formData.nombre}
-                            onChange={(val) => handleInputChange('nombre', val)}
-                            placeholder="Ej: Juan"
-                            error={errors.nombre}
-                        />
-                        <Input
-                            label="Apellido"
-                            value={formData.apellido}
-                            onChange={(val) => handleInputChange('apellido', val)}
-                            placeholder="Ej: Perez"
-                            error={errors.apellido}
-                        />
-                        <Input
-                            label="CUIT - CUIL"
-                            value={formatCuitDisplay(formData.cuil)}
-                            onChange={(val) => {
-                                // Permitís solo dígitos y guiones
-                                if (/^[0-9-]*$/.test(val)) {
-                                    setFormData({ ...formData, cuil: val });
-                                }
-                            }}
-                            placeholder="99-99999999-9"
-                            error={errors.cuil}
-                        />
-                        <SelectFilter
-                            options={rolesOptions}
-                            value={formData.rol}
-                            onChange={(val) => handleInputChange('rol', val as TipoRol)}
-                            label="Rol"
-                        />
-                        <PasswordInput
-                            label="Contraseña"
-                            value={formData.contrasena}
-                            onChange={(val) => handleInputChange('contrasena', val)}
-                            placeholder="Requisitos: 6 caracteres y 2 números"
-                            error={errors.contrasena}
-                        />
-                        <Input
-                            label="Mail (opcional)"
-                            value={String(formData.mail)}
-                            onChange={(val) => handleInputChange('mail', val)}
-                            placeholder="ejemplo@correo.com"
-                            error={errors.mail}
-                        />
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <Input label="Nombre" value={formData.nombre} onChange={val => handleInputChange('nombre', val)} error={errors.nombre} />
+                    <Input label="Apellido" value={formData.apellido} onChange={val => handleInputChange('apellido', val)} error={errors.apellido} />
+                    <Input label="CUIT - CUIL" value={formatCuitDisplay(formData.cuil)} onChange={val => handleInputChange('cuil', val.replace(/[^0-9]/g, ''))} error={errors.cuil} />
+                    <SelectFilter label="Rol" options={rolesOptions} value={formData.rol} onChange={val => handleInputChange('rol', val as TipoRol)} error={errors.rol} />
+                    <PasswordInput label="Contraseña" value={formData.contrasena} onChange={val => handleInputChange('contrasena', val)} error={errors.contrasena} />
+                    <Input label="Mail (opcional)" value={formData.mail || ''} onChange={val => handleInputChange('mail', val)} error={errors.mail} />
                 </div>
-                <div className="mt-6">
-                    <Link href="/usuarios" passHref>
-                        <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                            Volver
-                        </button>
-                    </Link>
-                </div>
+            </div>
+            <div className="mt-6">
+                <Link href="/usuarios"><button className="btn-secondary">Volver</button></Link>
             </div>
         </div>
     </ProtectedRoute>

@@ -47,6 +47,16 @@ from selenium.common.exceptions import (
 )
 
 class BotPrecioAGD:
+    """
+    Bot para monitorear precios de AGD desde WhatsApp y enviarlos a un backend.
+
+    Este bot utiliza Selenium para controlar una sesión de WhatsApp Web,
+    monitorea un chat específico en busca de mensajes que contengan precios,
+    y envía estos mensajes a una API backend para su procesamiento.
+    Gestiona la sesión de WhatsApp (incluyendo el escaneo de QR),
+    maneja la autenticación con el backend y es robusto frente a errores
+    comunes como la pérdida de sesión o fallos de conexión.
+    """
     CONTACTO = "Nordesan"
     URL_LOGIN = os.environ.get("BACKEND_LOGIN_URL", "http://localhost:8080/login")
     URL_DESTINO = os.environ.get("BACKEND_PRECIOS_URL", "http://localhost:8080/precios/consultarAGD")
@@ -56,6 +66,9 @@ class BotPrecioAGD:
     CHAT_LIST_SELECTOR = '#pane-side'
 
     def __init__(self):
+        """
+        Inicializa el bot, configura el perfil de Chrome, y realiza el login inicial en el backend.
+        """
         self.contacto = self.CONTACTO
         self.url_destino = self.URL_DESTINO
         self.api_username = self.USERNAME_LOGIN
@@ -74,11 +87,20 @@ class BotPrecioAGD:
         self._realizar_login()
 
     def limpiar_perfil(self):
+        """
+        Elimina el directorio del perfil de Chrome para forzar un reinicio limpio.
+        """
         try:
             if os.path.exists(self.perfil_chrome): logger.info(f"Limpiando perfil..."); shutil.rmtree(self.perfil_chrome)
         except Exception as e: logger.warning(f"No se pudo limpiar perfil: {e}")
 
     def _realizar_login(self):
+        """
+        Realiza la autenticación contra el backend para obtener un token de API.
+
+        Returns:
+            bool: True si el login fue exitoso y se obtuvo un token, False en caso contrario.
+        """
         if not self.api_username or not self.api_password: logger.error("Faltan credenciales."); return False
         logger.info("Login backend...")
         try:
@@ -93,6 +115,12 @@ class BotPrecioAGD:
         except requests.exceptions.RequestException as e: logger.error(f"Error conexión login: {e}"); return False
 
     def cargar_ultimo_mensaje(self):
+        """
+        Carga el último mensaje enviado desde el archivo de bandera.
+
+        Returns:
+            list: Una lista con el texto del último mensaje y la fecha, o [None, None] si no se encuentra.
+        """
         try:
             with open(self.flag_mensaje_path, "r", encoding="utf-8") as f:
                 contenido = f.read().strip().split("||"); return contenido if len(contenido) == 2 else [None, None]
@@ -100,6 +128,12 @@ class BotPrecioAGD:
         except Exception as e: logger.warning(f"Error cargando último msg: {e}"); return [None, None]
 
     def guardar_ultimo_mensaje(self, mensaje):
+        """
+        Guarda el mensaje recién enviado en el archivo de bandera para evitar duplicados.
+
+        Args:
+            mensaje (str): El texto del mensaje que se ha enviado.
+        """
         try:
             hoy = time.strftime("%Y-%m-%d"); os.makedirs(os.path.dirname(self.flag_mensaje_path), exist_ok=True)
             with open(self.flag_mensaje_path, "w", encoding="utf-8") as f: f.write(f"{mensaje.strip()}||{hoy}")
@@ -107,6 +141,18 @@ class BotPrecioAGD:
         except Exception as e: logger.warning(f"Error guardando último msg: {e}")
 
     def enviar_mensaje_al_backend(self, mensaje, is_retry=False):
+        """
+        Envía el mensaje de precios extraído al endpoint del backend.
+
+        Maneja la re-autenticación si el token ha expirado.
+
+        Args:
+            mensaje (str): El mensaje de precios a enviar.
+            is_retry (bool): Flag interno para evitar bucles de re-autenticación.
+
+        Returns:
+            bool: True si el mensaje fue enviado exitosamente, False en caso contrario.
+        """
         if not self.api_token:
             if not self._realizar_login(): return False
         headers = {"Authorization": f"Bearer {self.api_token}", "Content-Type": "application/json"}
@@ -125,7 +171,18 @@ class BotPrecioAGD:
         except requests.exceptions.RequestException as e: logger.error(f"Error conexión enviando msg: {e}"); return False
 
     def iniciar_driver(self, headless=False):
-        """Inicia el driver de Chrome, visible o headless."""
+        """
+        Inicia una nueva instancia del driver de Chrome (WebDriver).
+
+        Puede iniciar en modo `headless` (sin interfaz gráfica) o `visible`.
+        Se encarga de limpiar instancias previas del driver antes de crear una nueva.
+
+        Args:
+            headless (bool): Si es True, inicia Chrome en modo headless.
+
+        Returns:
+            bool: True si el driver se inició correctamente, False si hubo un error.
+        """
         self._force_kill_drivers()
         lockfile_path = os.path.join(self.perfil_chrome, "SingletonLock")
         if os.path.exists(lockfile_path):
@@ -176,13 +233,26 @@ class BotPrecioAGD:
             return False
 
     def sesion_activa(self):
+        """
+        Verifica si hay una sesión de WhatsApp activa en el navegador.
+
+        Returns:
+            bool: True si la sesión está activa (se encuentra la lista de chats), False en caso contrario.
+        """
         if not self.driver: return False
         try: WebDriverWait(self.driver, 2).until(EC.presence_of_element_located((By.CSS_SELECTOR, self.CHAT_LIST_SELECTOR))); return True
         except: return False
         
     def monitorear_en_bucle(self):
         """
-        Bucle de monitoreo. Devuelve False si la sesión se pierde (reinicio normal). Devuelve "FATAL" si hay 3 strikes (reinicio con borrado).
+        Inicia el bucle principal de monitoreo de mensajes.
+
+        Este bucle llama a `_monitorear_mensajes` repetidamente.
+        Si la sesión se pierde, sale del bucle y devuelve una señal para reiniciar.
+        Si ocurren 3 errores consecutivos, devuelve una señal "FATAL" para un reinicio completo.
+
+        Returns:
+            str or bool: False si la sesión se pierde (reinicio normal), "FATAL" si hay 3 errores.
         """
         logger.info(f"Iniciando bucle de monitoreo...")
         sesion_activa = True
@@ -199,7 +269,15 @@ class BotPrecioAGD:
         return False # Salida normal
 
     def _manejar_sesion_whatsapp(self):
-        """Gestiona sesión. USA SIEMPRE MODO VISIBLE para login/QR."""
+        """
+        Gestiona el inicio de sesión en WhatsApp Web.
+
+        Abre WhatsApp Web en modo visible y espera a que el usuario escanee el código QR
+        si es necesario. Confirma que la sesión se haya iniciado correctamente.
+
+        Returns:
+            bool: True si la sesión se estableció correctamente, False si hubo un error.
+        """
         logger.info("Verificando sesión WhatsApp (Siempre Visible para Login/QR)...")
         if not self.driver:
             if not self.iniciar_driver(headless=False):
@@ -234,6 +312,17 @@ class BotPrecioAGD:
         except Exception as e: logger.exception(f"Error esperando escaneo:"); return False
 
     def _monitorear_mensajes(self):
+        """
+        Realiza una única iteración de monitoreo de mensajes.
+
+        Verifica el estado de la sesión, abre el chat del contacto, busca nuevos mensajes,
+        y si encuentra un mensaje relevante, lo envía al backend. Maneja un contador
+        de errores para detectar fallos consecutivos.
+
+        Returns:
+            str or bool: True si el monitoreo fue exitoso, False si la sesión se perdió,
+                         "FATAL" si se alcanzó el límite de errores.
+        """
         if not self.driver: return False
         try:
             if self.generic_error_counter >= 3:
@@ -360,6 +449,17 @@ class BotPrecioAGD:
         return True
 
     def run(self):
+            """
+            Punto de entrada principal para ejecutar el bot.
+
+            Este método contiene el ciclo de vida principal del bot:
+            1. Intenta iniciar en modo `headless` si ya existe un perfil de Chrome.
+            2. Si falla o no hay perfil, pasa a modo `visible` para el login manual (QR).
+            3. Entra en el bucle de monitoreo.
+            4. Si el monitoreo detecta una sesión perdida, reinicia el ciclo.
+            5. Si detecta un error fatal, limpia el perfil y reinicia el ciclo.
+            Maneja interrupciones por teclado y errores catastróficos para un apagado seguro.
+            """
             logger.info("Bot iniciado.")
             local_storage_path = os.path.join(self.perfil_chrome, "Default", "Local Storage", "leveldb")
             while True:
@@ -423,6 +523,9 @@ class BotPrecioAGD:
             self.shutdown()
 
     def shutdown_driver(self):
+        """
+        Cierra la instancia actual del driver de Chrome de forma segura.
+        """
         if self.driver:
             logger.info("Cerrando driver...")
             try: self.driver.quit()
@@ -432,14 +535,20 @@ class BotPrecioAGD:
                 self.driver = None; time.sleep(3)
 
     def shutdown(self):
+        """
+        Realiza el apagado completo y limpio del bot.
+        """
         logger.info("\nDeteniendo el bot...")
         self.shutdown_driver()
         logger.info("Bot detenido.")
 
     def _force_kill_drivers(self):
             """
-            Intenta forzar el cierre de chromedriver Y de los procesos
-            chrome.exe ESPECÍFICOS de este perfil, SIN ABRIR VENTANAS DE CONSOLA.
+            Fuerza el cierre de todos los procesos de chromedriver y Chrome asociados a este perfil.
+
+            Esto es una medida de seguridad para evitar procesos zombis que puedan
+            bloquear el perfil de Chrome en futuros inicios. Es específico para
+            el sistema operativo (Windows, Linux, macOS).
             """
             logger.info("Intentando forzar cierre de drivers Y chrome (solo de este perfil)...")
             system = platform.system()

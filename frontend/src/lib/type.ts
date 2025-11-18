@@ -1,3 +1,9 @@
+/**
+ * @file type.ts
+ * @description Archivo central que define todas las interfaces y tipos de TypeScript
+ *              utilizados en la aplicación para estandarizar la estructura de datos.
+ */
+
 export interface ReportConfig {
   id: string;
   endpoint: string;

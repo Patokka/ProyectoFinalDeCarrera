@@ -7,90 +7,104 @@ import Input from "../ui/Input";
 import { Recipient } from "@/lib/type";
 import { fetchDestinatarios, putCorreos } from "@/lib/configuracion/auth";
 
+/**
+ * @interface RecipientsModalProps
+ * @description Propiedades para el componente RecipientsModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ */
 interface RecipientsModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+/**
+ * @component RecipientsModal
+ * @description Un modal para gestionar la lista de correos electrónicos destinatarios
+ *              de los reportes automáticos. Permite añadir, editar y eliminar destinatarios.
+ * @param {RecipientsModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de gestión de destinatarios o `null` si está cerrado.
+ */
 export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProps) {
     const [recipients, setRecipients] = useState<Recipient[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState<{ [key: number]: string }>({});
 
+    /**
+     * @effect
+     * @description Carga la lista de destinatarios desde la API cuando se abre el modal.
+     */
     useEffect(() => {
         if (isOpen) {
             const loadDestinatarios = async () => {
                 try {
                     setIsLoading(true);
-                    const data = await fetchDestinatarios(); // devuelve Recipient[]
-                    console.log(data)
-                    setRecipients(data); // asignar al estado
+                    setRecipients(await fetchDestinatarios());
                 } catch (error:any) {
-                    const message = error instanceof Error ? error.message : "Error al cargar los destinatarios";
-                    toast.error(message);
+                    toast.error(error.message || "Error al cargar destinatarios");
                 } finally {
                     setIsLoading(false);
-                    
                 }
             };
-
             loadDestinatarios();
         }
     }, [isOpen]);
 
+    /**
+     * @function handleAddRecipient
+     * @description Añade un nuevo campo de entrada para un destinatario.
+     */
     const handleAddRecipient = () => {
-        if (recipients.length >= 10) {
-            toast.warning("Máximo de 10 destinatarios alcanzado");
-            return;
-        }
-        const newIndex = recipients.length + 1;
-        setRecipients([...recipients, { clave: `DESTINATARIO_${newIndex}`, valor: "" }]);
+        if (recipients.length >= 10) return toast.warning("Máximo de 10 destinatarios alcanzado.");
+        const newKey = `DESTINATARIO_${Date.now()}`; // Clave única temporal
+        setRecipients([...recipients, { clave: newKey, valor: "" }]);
     };
 
+    /**
+     * @function handleRemoveRecipient
+     * @description Elimina un campo de destinatario de la lista.
+     */
     const handleRemoveRecipient = (index: number) => {
-        setRecipients((prev) => prev.filter((_, i) => i !== index));
-        setErrors((prev) => {
+        setRecipients(prev => prev.filter((_, i) => i !== index));
+        setErrors(prev => {
             const newErrors = { ...prev };
             delete newErrors[index];
             return newErrors;
         });
     };
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el valor de un campo de destinatario.
+     */
     const handleInputChange = (index: number, value: string) => {
-        setRecipients((prev) =>
-            prev.map((r, i) => (i === index ? { ...r, valor: value } : r))
-        );
-
-        if (errors[index]) {
-            setErrors((prev) => ({ ...prev, [index]: "" }));
-        }
+        setRecipients(prev => prev.map((r, i) => (i === index ? { ...r, valor: value } : r)));
+        if (errors[index]) setErrors(prev => ({ ...prev, [index]: "" }));
     };
 
-    const validateEmail = (email: string) => {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
-    };
-
+    /**
+     * @function handleSave
+     * @description Valida todos los correos y guarda la lista actualizada de destinatarios.
+     */
     const handleSave = async () => {
         const newErrors: { [key: number]: string } = {};
         recipients.forEach((r, i) => {
-            if (!validateEmail(r.valor)) newErrors[i] = "Mail inválido";
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.valor)) newErrors[i] = "Mail inválido";
         });
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
-            toast.error("Por favor, completa todos los campos obligatorios");
-            return;
+            return toast.error("Por favor, corrija los errores.");
         }
 
         try {
             setIsSaving(true);
-            await putCorreos(recipients)
-            toast.success("Destinatarios actualizados con éxito");
+            await putCorreos(recipients);
+            toast.success("Destinatarios actualizados.");
             onClose();
         } catch (error) {
-            toast.error("Error al guardar los destinatarios");
+            toast.error("Error al guardar los destinatarios.");
         } finally {
             setIsSaving(false);
         }
@@ -101,64 +115,30 @@ export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProp
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
-                {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                        Configurar Destinatarios
-                    </h3>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
+                    <h3 className="text-lg font-semibold">Configurar Destinatarios</h3>
+                    <button onClick={onClose} className="btn-icon-gray"><X size={20} /></button>
                 </div>
 
-                {/* Body */}
                 <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
-                    {isLoading ? (
-                        <p className="text-center text-gray-500">Cargando...</p>
-                    ) : (
+                    {isLoading ? <p className="text-center text-gray-500">Cargando...</p> :
                         recipients.map((r, i) => (
                             <div key={i} className="flex items-center space-x-2 w-full">
                                 <div className="flex-1">
-                                    <Input
-                                        label={`Mail ${i + 1}`}
-                                        value={r.valor}
-                                        onChange={(val) => handleInputChange(i, val)}
-                                        placeholder={`destinatario${i + 1}@correo.com`}
-                                        error={errors[i]}
-                                    />
+                                    <Input label={`Mail ${i + 1}`} value={r.valor} onChange={val => handleInputChange(i, val)} error={errors[i]} />
                                 </div>
-                                <button
-                                    onClick={() => handleRemoveRecipient(i)}
-                                    className="text-red-500 hover:text-red-700"
-                                >
-                                    <Trash2 className="w-4 h-4 mt-5" />
-                                </button>
+                                <button onClick={() => handleRemoveRecipient(i)} className="btn-icon-red mt-5"><Trash2 size={16} /></button>
                             </div>
                         ))
-                    )}
+                    }
                 </div>
 
-                {/* Footer */}
                 <div className="flex justify-between items-center p-6 border-t bg-gray-50">
-                    <button
-                        onClick={handleAddRecipient}
-                        className={`flex items-center space-x-2 ${recipients.length >=10 ? "text-gray-400" :"text-green-600 hover:text-green-700 hover:cursor-pointer"}`}
-                        disabled={recipients.length >= 10}
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span>Agregar destinatario</span>
+                    <button onClick={handleAddRecipient} className="btn-link" disabled={recipients.length >= 10}>
+                        <Plus size={16} /><span>Agregar destinatario</span>
                     </button>
-
-                    <button
-                        onClick={handleSave}
-                        className={`btn-primary flex items-center space-x-2 ${isSaving ? "opacity-50 cursor-not-allowed" : ""} pl-2 pr-2`}
-                        disabled={isSaving}
-                    >
-                        <Download className="w-5 h-5" />
-                        <span>{isSaving ? "Guardando..." : "Guardar Configuración"}</span>
+                    <button onClick={handleSave} className="btn-primary" disabled={isSaving}>
+                        <Download size={16} /><span>{isSaving ? "Guardando..." : "Guardar"}</span>
                     </button>
                 </div>
             </div>

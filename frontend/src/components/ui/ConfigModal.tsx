@@ -5,6 +5,13 @@ import { updateJobConfig, fetchJobConfig } from "@/lib/reportes/auth";
 import { ConfigCard } from "@/lib/type";
 import SelectFilter from "./SelectFilter";
 
+/**
+ * @hook useConfigModal
+ * @description Un hook personalizado para gestionar el estado y la lógica de `ConfigModal`.
+ *              Encapsula el estado de apertura, la tarjeta de configuración seleccionada,
+ *              los valores de tiempo y día, y el estado de envío.
+ * @returns {object} Un objeto con el estado y las funciones para controlar el modal.
+ */
 export const useConfigModal = () => {
     const [selectedConfigCard, setSelectedConfigCard] = useState<ConfigCard | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -13,22 +20,29 @@ export const useConfigModal = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeactivated, setIsDeactivated] = useState(false);
 
+    /**
+     * @function openModal
+     * @description Abre el modal y carga la configuración actual para la tarjeta seleccionada.
+     */
     const openModal = async (card: ConfigCard) => {
         setSelectedConfigCard(card);
         setIsOpen(true);
         try {
             const data = await fetchJobConfig(card.jobId);
             if (data) {
-                setConfigDay(data.day ? data.day.toString() : "");
-                setConfigTime(`${data.hour.toString().padStart(2, '0')}:${data.minute.toString().padStart(2, '0')}`);
+                setConfigDay(data.day ? String(data.day) : "");
+                setConfigTime(`${String(data.hour).padStart(2, '0')}:${String(data.minute).padStart(2, '0')}`);
                 setIsDeactivated(!data.active);
             }
         } catch (error) {
-            console.error("Error fetching configuration:", error);
             toast.error("Error al cargar la configuración");
         }
     };
 
+    /**
+     * @function closeModal
+     * @description Cierra el modal y resetea su estado.
+     */
     const closeModal = () => {
         setIsOpen(false);
         setSelectedConfigCard(null);
@@ -36,10 +50,14 @@ export const useConfigModal = () => {
         setConfigDay("");
     };
 
-return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting,setIsSubmitting, isDeactivated, setIsDeactivated};
+    return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated};
 };
 
-    interface ConfigModalProps {
+/**
+ * @interface ConfigModalProps
+ * @description Propiedades para el componente ConfigModal.
+ */
+interface ConfigModalProps {
     isOpen: boolean;
     onClose: () => void;
     selectedConfigCard: ConfigCard | null;
@@ -51,32 +69,33 @@ return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfig
     setIsSubmitting: (val: boolean) => void;
     isDeactivated: boolean;
     setIsDeactivated: (val: boolean) => void;
-    }
+}
 
-    export const ConfigModal = ({isOpen, onClose, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated, }: ConfigModalProps) => {
-
+/**
+ * @component ConfigModal
+ * @description Un modal para configurar los parámetros de una tarea programada (job),
+ *              como la hora y el día de ejecución.
+ * @param {ConfigModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de configuración o `null` si está cerrado.
+ */
+export const ConfigModal = ({isOpen, onClose, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated}: ConfigModalProps) => {
     if (!isOpen || !selectedConfigCard) return null;
 
+    /**
+     * @function handleSave
+     * @description Valida y guarda la nueva configuración de la tarea programada.
+     */
     const handleSave = async () => {
-        // Si está activado el reporte, entonces sí requerimos hora
-        if (!configTime && !(selectedConfigCard.id === "reporte-pagos" && isDeactivated)) {
-            toast.error("Debe seleccionar una hora");
-            return;
+        if (!configTime && !isDeactivated) {
+            return toast.error("Debe seleccionar una hora.");
         }
-
         const [hour, minute] = configTime ? configTime.split(":").map(Number) : [0, 0];
         const day = configDay ? Number(configDay) : undefined;
 
         try {
             setIsSubmitting(true);
-            await updateJobConfig({
-                job_id: selectedConfigCard.jobId,
-                hour,
-                minute,
-                day,
-                active: !isDeactivated,
-            });
-            toast.success("Configuración actualizada");
+            await updateJobConfig({ job_id: selectedConfigCard.jobId, hour, minute, day, active: !isDeactivated });
+            toast.success("Configuración actualizada.");
             onClose();
         } catch (e) {
             toast.error("Error al guardar la configuración");
@@ -87,84 +106,38 @@ return {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfig
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="flex items-start justify-between p-6 border-b">
-            <h3 className="text-lg font-semibold text-center text-gray-900">
-                {selectedConfigCard.title}
-            </h3>
-            <button
-                onClick={onClose}
-                className={`text-gray-400 ml-4 hover:text-gray-600 ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-                disabled={isSubmitting}
-            >
-                <X className="w-5 h-5" />
-            </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-            {/* Hora */}
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Hora</label>
-                <input
-                type="time"
-                value={configTime}
-                onChange={(e) => setConfigTime(e.target.value)}
-                className={`w-full border h-10 rounded-lg px-3 py-2 focus:outline-none focus:ring-2  "focus:ring-blue-500"`}
-                />
-            </div>
-
-            {/* Día (solo si es tipo schedule) */}
-            {selectedConfigCard.type === "schedule" && (
-                <SelectFilter
-                label="Día del mes"
-                value={configDay}
-                onChange={(val) => setConfigDay(val)}
-                options={Array.from({ length: 31 }, (_, i) => ({
-                    value: String(i + 1),
-                    label: String(i + 1).padStart(2, "0"),
-                }))}
-                placeholder="Seleccionar día"
-                />
-            )}
-
-            {/* Checkbox para "reporte-pagos" */}
-            {selectedConfigCard.id === "reporte-pagos" && (
-                <div className="flex items-center space-x-2 pt-2">
-                <input
-                    id="disable-report"
-                    type="checkbox"
-                    checked={isDeactivated}
-                    onChange={() => setIsDeactivated(!isDeactivated)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 hover:cursor-pointer"
-                />
-                <label htmlFor="disable-report" className="text-sm text-gray-700 hover:cursor-pointer">
-                    Desactivar envío mensual de este reporte
-                </label>
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="flex items-start justify-between p-6 border-b">
+                    <h3 className="text-lg font-semibold">{selectedConfigCard.title}</h3>
+                    <button onClick={onClose} disabled={isSubmitting} className="btn-icon-gray"><X size={20} /></button>
                 </div>
-            )}
+                <div className="p-6 space-y-4">
+                    <div className="space-y-2">
+                        <label className="label-class">Hora</label>
+                        <input type="time" value={configTime} onChange={e => setConfigTime(e.target.value)} className="input-field" />
+                    </div>
+                    {selectedConfigCard.type === "schedule" && (
+                        <SelectFilter
+                            label="Día del mes"
+                            value={configDay}
+                            onChange={setConfigDay}
+                            options={Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: String(i + 1).padStart(2, "0") }))}
+                        />
+                    )}
+                    {selectedConfigCard.id === "reporte-pagos" && (
+                        <div className="flex items-center space-x-2 pt-2">
+                            <input id="disable-report" type="checkbox" checked={isDeactivated} onChange={() => setIsDeactivated(!isDeactivated)} className="checkbox-class" />
+                            <label htmlFor="disable-report" className="text-sm">Desactivar envío de este reporte</label>
+                        </div>
+                    )}
+                </div>
+                <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
+                    <button onClick={onClose} disabled={isSubmitting} className="btn-secondary">Cancelar</button>
+                    <button onClick={handleSave} disabled={isSubmitting} className="btn-primary">
+                        <Download size={16} /><span>{isSubmitting ? "Guardando..." : "Guardar"}</span>
+                    </button>
+                </div>
             </div>
-
-            {/* Botones */}
-            <div className="flex justify-end space-x-2 p-6 border-t bg-gray-50">
-                <button
-                    onClick={onClose}
-                    className={`btn-secondary px-4 py-2 rounded-md transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""} `}
-                    disabled={isSubmitting}
-                >
-                    Cancelar
-                </button>
-                <button
-                    onClick={handleSave}
-                    disabled={isSubmitting}
-                    className={`btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors ${isSubmitting ? "opacity-50 cursor-not-allowed" : ""}pl-2 pr-2`}
-                >
-                    <Download className="h-5 w-5"/>
-                    <span>{isSubmitting ? "Guardando..." : "Guardar Configuración"}</span>
-                </button>
-            </div>
-        </div>
         </div>
     );
 };

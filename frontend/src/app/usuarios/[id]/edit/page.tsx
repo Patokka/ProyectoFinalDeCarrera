@@ -13,73 +13,67 @@ import { RotateCcw } from 'lucide-react';
 import { fetchUsuarioById, putUsuario } from '@/lib/usuarios/auth';
 import PasswordInput from '@/components/ui/PasswordInput';
 
+/**
+ * @constant rolOptions
+ * @description Opciones para el selector de rol de usuario.
+ */
 const rolOptions = [
     { value: 'ADMINISTRADOR', label: 'Administrador' },
     { value: 'OPERADOR', label: 'Operador' },
     { value: 'CONSULTA', label: 'Consulta' }
 ];
 
-const initialFormData: UsuarioForm = {
-    nombre: '',
-    apellido: '',
-    cuil: '',
-    contrasena: '',
-    mail: '',
-    rol: '' as TipoRol
-};
-
+/**
+ * @page ModificarUsuarioPage
+ * @description Página de formulario para editar un usuario existente.
+ *              Solo accesible para administradores.
+ * @returns {JSX.Element} El formulario de edición de usuario.
+ */
 export default function ModificarUsuarioPage() {
     const params = useParams();
     const idUsuario = params?.id;
     const router = useRouter();
-    const [formData, setFormData] = useState<UsuarioForm>(initialFormData);
+    const [formData, setFormData] = useState<UsuarioForm>({ nombre: '', apellido: '', cuil: '', contrasena: '', mail: '', rol: '' as TipoRol });
     const [usuario, setUsuario] = useState<UsuarioDtoOut>();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el estado del formulario cuando cambia un campo.
+     */
     const handleInputChange = (field: string, value: any) => {
-        setFormData(prev => ({
-        ...prev,
-        [field]: value
-        }));
-
-        if (errors[field]) {
-        setErrors(prev => ({ ...prev, [field]: '' }));
-        }
+        setFormData(prev => ({ ...prev, [field]: value }));
+        if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario antes del envío.
+     * @returns {boolean} True si el formulario es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.nombre.trim()) newErrors.nombre = 'Campo obligatorio';
-        if (!formData.nombre.trim()) newErrors.apellido = 'Campo obligatorio';
-        if (!formData.contrasena.trim()) {
-            newErrors.contrasena = 'Campo obligatorio';
-        } else {
-            //longitud mínima y cantidad de dígitos
-            const tieneLongitud = formData.contrasena.length >= 6;
-            const numeros = (formData.contrasena.match(/\d/g) || []).length;
-            const tieneDosNumeros = numeros >= 2;
-            if (!tieneLongitud || !tieneDosNumeros) {
-                newErrors.contrasena = 'Debe tener al menos 6 caracteres y 2 números';
-            }
+        if (!formData.apellido.trim()) newErrors.apellido = 'Campo obligatorio';
+        if (formData.contrasena && (formData.contrasena.length < 6 || (formData.contrasena.match(/\d/g) || []).length < 2)) {
+            newErrors.contrasena = 'Debe tener al menos 6 caracteres y 2 números';
         }
-        if (!formData.cuil) {
-            newErrors.cuil = "Campo obligatorio";
-        } else if (!validarCuilCuit(formData.cuil)) {
-            newErrors.cuil = "CUIL inválido";
-        }
+        if (!formData.cuil) newErrors.cuil = "Campo obligatorio";
+        else if (!validarCuilCuit(formData.cuil)) newErrors.cuil = "CUIL inválido";
         if (formData.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) newErrors.mail = 'Mail inválido';
-        if (!formData.rol.trim()) newErrors.rol = 'Campo obligatorio';
+        if (!formData.rol) newErrors.rol = 'Campo obligatorio';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function guardarUsuario
+     * @description Valida y envía los datos actualizados del usuario a la API.
+     */
     const guardarUsuario = async () => {
-        if (!validateForm()) {
-            toast.error('Por favor, completa todos los campos obligatorios');
-            return;
-        }
+        if (!validateForm()) return toast.error('Complete los campos obligatorios.');
         try {
             const payload = {
                 ...formData,
@@ -89,153 +83,67 @@ export default function ModificarUsuarioPage() {
                 delete payload.mail;
             }
             await putUsuario(payload, Number(idUsuario));
-            toast.success('Usuario guardado con éxito, volviendo a página de usuarios...');
+            toast.success('Usuario actualizado con éxito.');
             router.push('/usuarios');
         } catch (error: any) {
-            // Parseamos el mensaje que devolvió el backend
-            const msg = error.message || 'Error al guardar el usuario';
-            if (msg.includes("CUIT - CUIL ya está registrado")) {
-                setErrors(prev => ({ ...prev, cuil: "Este CUIT - CUIL ya existe para otro usuario" }));
-                toast.error(msg);
-            } else{
-                toast.error(msg);
-            }
+            toast.error(error.message || 'Error al actualizar el usuario.');
         }
     };
 
+    /**
+     * @effect
+     * @description Carga los datos del usuario a editar al montar el componente.
+     */
     useEffect(() => {
         const loadUsuario = async () => {
-            if (!idUsuario) {
-                setError('Id de usuario inválido');
-                setLoading(false);
-                return;
-            }
+            if (!idUsuario) return setError('ID de usuario inválido.');
             try {
                 setLoading(true);
                 const usu = await fetchUsuarioById(Number(idUsuario));
                 setUsuario(usu);
                 setFormData({
                     nombre: usu.nombre || '',
-                    cuil: usu.cuil || '',
                     apellido: usu.apellido || '',
+                    cuil: usu.cuil || '',
                     mail: usu.mail || '',
-                    rol: usu.rol as TipoRol || '',
-                    contrasena: ''
-                })
+                    rol: usu.rol,
+                    contrasena: '' // La contraseña no se precarga por seguridad
+                });
             } catch (e: any) {
                 toast.error('Error al cargar los datos del usuario');
                 setError('Error al cargar datos');
             } finally {
                 setLoading(false);
             }
-            };
+        };
         loadUsuario();
-    }, []);
+    }, [idUsuario]);
 
-    if (loading) {
-        return (
-            <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
-                <div className="bg-gray-50 p-6 flex items-center justify-center">
-                <p className="text-gray-500">Cargando datos del usuario...</p>
-                </div>
-            </ProtectedRoute>
-        );
-    }
-    if (error) {
-        return (
-            <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
-                <div className="bg-gray-50 p-6">
-                <div className="text-center py-12 text-red-600 font-semibold">{error}</div>
-                </div>
-            </ProtectedRoute>
-        );
-    }
-    if (!usuario) {
-        return (
-            <ProtectedRoute>
-            <div className="bg-gray-50 p-6">
-                <div className="text-center py-12 font-semibold text-gray-700">
-                    No se encontró el usuario
-                </div>
-            </div>
-            </ProtectedRoute>
-        );
-    }
-
+    if (loading) return <ProtectedRoute><div className="p-6 text-center">Cargando...</div></ProtectedRoute>;
+    if (error) return <ProtectedRoute><div className="p-6 text-center text-red-600">{error}</div></ProtectedRoute>;
+    if (!usuario) return <ProtectedRoute><div className="p-6 text-center">No se encontró el usuario.</div></ProtectedRoute>;
 
     return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
         <div className="bg-gray-50 p-6">
-            <div className="">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                        <div className="flex items-center justify-between mb-6">
-                            <h1 className="text-2xl font-bold text-gray-900">Modificar Usuario:</h1>
-                            <button
-                                onClick={guardarUsuario}
-                                className="btn-primary px-4 py-2 rounded-md flex items-center space-x-2 transition-colors"
-                            >
-                                <RotateCcw className='h-4 w-4'/>
-                                <span>Actualizar Usuario</span>
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                        <Input
-                            label="Nombre"
-                            value={formData.nombre}
-                            onChange={(val) => handleInputChange('nombre', val)}
-                            placeholder="Ej: Juan"
-                            error={errors.nombre}
-                        />
-                        <Input
-                            label="Apellido"
-                            value={formData.apellido}
-                            onChange={(val) => handleInputChange('apellido', val)}
-                            placeholder="Ej: Perez"
-                            error={errors.apellido}
-                        />
-                        <Input
-                            label="CUIT - CUIL"
-                            value={formatCuitDisplay(formData.cuil)}
-                            onChange={(val) => {
-                                // Permitís solo dígitos y guiones
-                                if (/^[0-9-]*$/.test(val)) {
-                                    setFormData({ ...formData, cuil: val });
-                                }
-                            }}
-                            placeholder="99-99999999-9"
-                            error={errors.cuil}
-                        />
-                        <SelectFilter
-                            options={rolOptions}
-                            value={formData.rol}
-                            onChange={(val) => handleInputChange('rol', val as TipoRol)}
-                            label="Rol"
-                        />
-                        <Input
-                            label="Mail (opcional)"
-                            value={String(formData.mail)}
-                            onChange={(val) => handleInputChange('mail', val)}
-                            placeholder="ejemplo@correo.com"
-                            error={errors.mail}
-                        />
-                        <PasswordInput
-                            label="Contraseña"
-                            value={formData.contrasena}
-                            onChange={(val) => handleInputChange('contrasena', val)}
-                            placeholder="Requisitos: 6 caracteres y 2 números"
-                            error={errors.contrasena}
-                        />
-                    </div>
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-bold">Modificar Usuario</h1>
+                    <button onClick={guardarUsuario} className="btn-primary">
+                        <RotateCcw size={16}/><span>Actualizar Usuario</span>
+                    </button>
                 </div>
-
-                <div className="mt-6">
-                    <Link href={`/usuarios`} passHref>
-                        <button className="btn-secondary px-4 py-2 rounded-md transition-colors">
-                            Volver
-                        </button>
-                    </Link>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <Input label="Nombre" value={formData.nombre} onChange={val => handleInputChange('nombre', val)} error={errors.nombre} />
+                    <Input label="Apellido" value={formData.apellido} onChange={val => handleInputChange('apellido', val)} error={errors.apellido} />
+                    <Input label="CUIT - CUIL" value={formatCuitDisplay(formData.cuil)} onChange={val => handleInputChange('cuil', val.replace(/[^0-9]/g, ''))} error={errors.cuil} />
+                    <SelectFilter label="Rol" options={rolOptions} value={formData.rol} onChange={val => handleInputChange('rol', val as TipoRol)} error={errors.rol} />
+                    <Input label="Mail (opcional)" value={formData.mail || ''} onChange={val => handleInputChange('mail', val)} error={errors.mail} />
+                    <PasswordInput label="Nueva Contraseña (opcional)" value={formData.contrasena} onChange={val => handleInputChange('contrasena', val)} error={errors.contrasena} />
                 </div>
+            </div>
+            <div className="mt-6">
+                <Link href="/usuarios"><button className="btn-secondary">Volver</button></Link>
             </div>
         </div>
     </ProtectedRoute>
