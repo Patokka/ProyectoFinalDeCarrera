@@ -1,6 +1,13 @@
 import re
 
 def validar_cuil_cuit(cuil: str) -> bool:
+    """
+    Valida si un número de CUIL o CUIT tiene un formato y dígito verificador válidos.
+    Args:
+        cuil (str): El número de CUIL/CUIT a validar (solo dígitos).
+    Returns:
+        bool: True si el CUIL/CUIT es válido, False en caso contrario.
+    """
     if not re.fullmatch(r"\d{11}", cuil):
         return False
 

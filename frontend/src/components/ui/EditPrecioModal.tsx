@@ -9,6 +9,14 @@ import SelectFilter from '../ui/SelectFilter';
 import { PrecioForm, TipoOrigenPrecio, PrecioDtoOut } from '@/lib/type';
 import { putPrecio } from '@/lib/precios/auth';
 
+/**
+ * @interface EditPrecioModalProps
+ * @description Propiedades para el componente EditPrecioModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} onSuccess - Callback para ejecutar después de una edición exitosa.
+ * @property {PrecioDtoOut} precioActual - El objeto del precio que se está editando.
+ */
 interface EditPrecioModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -16,6 +24,12 @@ interface EditPrecioModalProps {
     precioActual: PrecioDtoOut; // datos actuales del precio a editar
 }
 
+/**
+ * @component EditPrecioModal
+ * @description Un modal con un formulario para editar un registro de precio existente.
+ * @param {EditPrecioModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de edición o `null` si está cerrado.
+ */
 const EditPrecioModal = ({ isOpen, onClose, onSuccess, precioActual }: EditPrecioModalProps) => {
     const [fecha, setFecha] = useState("");
     const [precio, setPrecio] = useState<number | undefined>(undefined);
@@ -28,7 +42,10 @@ const EditPrecioModal = ({ isOpen, onClose, onSuccess, precioActual }: EditPreci
         { value: "AGD", label: "Aceitera General Deheza (AGD)" },
     ];
 
-    // Cuando se abre el modal, inicializamos con los valores actuales
+    /**
+     * @effect
+     * @description Inicializa el estado del formulario con los datos del precio actual cuando se abre el modal.
+     */
     useEffect(() => {
         if (isOpen && precioActual) {
             setFecha(precioActual.fecha_precio);
@@ -38,6 +55,11 @@ const EditPrecioModal = ({ isOpen, onClose, onSuccess, precioActual }: EditPreci
         }
     }, [isOpen, precioActual]);
 
+    /**
+     * @function validateForm
+     * @description Valida que todos los campos del formulario estén completos.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!fecha) {
@@ -56,6 +78,10 @@ const EditPrecioModal = ({ isOpen, onClose, onSuccess, precioActual }: EditPreci
         return true;
     };
 
+    /**
+     * @function handleSubmit
+     * @description Valida y envía los datos actualizados del precio a la API.
+     */
     const handleSubmit = async () => {
         if (!validateForm()) return;
 
@@ -79,6 +105,10 @@ const EditPrecioModal = ({ isOpen, onClose, onSuccess, precioActual }: EditPreci
         }
     };
 
+    /**
+     * @function handleClose
+     * @description Setea los errores a 0 y llama a la función pasada por prop.
+     */
     const handleClose = () => {
         setErrors({});
         onClose();

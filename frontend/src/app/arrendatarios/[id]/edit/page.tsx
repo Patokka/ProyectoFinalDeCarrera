@@ -6,14 +6,17 @@ import { useParams, useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import SelectFilter from '@/components/ui/SelectFilter';
 import { toast } from 'sonner';
-import { ArrendadorDtoOut, ArrendadorForm, ArrendatarioDtoOut, ArrendatarioForm, Option, TipoCondicion } from '@/lib/type';
+import { ArrendatarioDtoOut, ArrendatarioForm, Option, TipoCondicion } from '@/lib/type';
 import { fetchLocalidades, fetchProvincias } from '@/lib/ubicaciones/auth';
-import { fetchArrendadorById, postArrendador, putArrendador } from '@/lib/arrendadores/auth';
 import Input from '@/components/ui/Input';
 import { formatCuitDisplay, validarCuilCuit } from '@/lib/helpers';
 import { RotateCcw } from 'lucide-react';
 import { fetchArrendatarioById, putArrendatario } from '@/lib/arrendatarios/auth';
 
+/**
+ * @constant condicionFiscalOptions
+ * @description Opciones para el selector de condición fiscal.
+ */
 const condicionFiscalOptions = [
     { value: 'MONOTRIBUTISTA', label: 'MONOTRIBUTISTA' },
     { value: 'RESPONSABLE_INSCRIPTO', label: 'RESPONSABLE INSCRIPTO' },
@@ -28,6 +31,11 @@ const initialFormData: ArrendatarioForm = {
     localidad_id: 0,
 };
 
+/**
+ * @page ModificarArrendatarioPage
+ * @description Página de formulario para editar los datos de un arrendatario existente.
+ * @returns {JSX.Element} El formulario de edición de arrendatario.
+ */
 export default function ModificarArrendatarioPage() {
     const params = useParams();
     const idArrendatario = params?.id;
@@ -42,6 +50,10 @@ export default function ModificarArrendatarioPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el estado del formulario cuando cambia un campo.
+     */
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({
         ...prev,
@@ -53,6 +65,11 @@ export default function ModificarArrendatarioPage() {
         }
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario antes del envío.
+     * @returns {boolean} True si el formulario es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.razon_social.trim()) newErrors.nombre = 'Campo obligatorio';
@@ -68,6 +85,10 @@ export default function ModificarArrendatarioPage() {
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function guardarArrendatario
+     * @description Valida y guarda los cambios del arrendatario.
+     */
     const guardarArrendatario = async () => {
         if (!validateForm()) {
             toast.error('Por favor, completa todos los campos obligatorios');
@@ -96,6 +117,10 @@ export default function ModificarArrendatarioPage() {
         }
     };
 
+    /**
+     * @effect
+     * @description Carga datos iniciales (provincias y datos del arrendatario) al montar.
+     */
     useEffect(() => {
         const dataProvincias = async () => {
             try {
@@ -137,6 +162,10 @@ export default function ModificarArrendatarioPage() {
         loadArrendatario();
     }, []);
 
+    /**
+     * @effect
+     * @description Carga las localidades cuando se selecciona una provincia.
+     */
     useEffect(() => {
         const cargarLocalidades = async () => {
         if (!provinciaActual?.value) {

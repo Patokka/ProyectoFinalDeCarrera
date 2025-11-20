@@ -13,6 +13,10 @@ import { RotateCcw } from 'lucide-react';
 import { fetchUsuarioById, putUsuario } from '@/lib/usuarios/auth';
 import PasswordInput from '@/components/ui/PasswordInput';
 
+/**
+ * @constant rolOptions
+ * @description Opciones para el selector de rol de usuario.
+ */
 const rolOptions = [
     { value: 'ADMINISTRADOR', label: 'Administrador' },
     { value: 'OPERADOR', label: 'Operador' },
@@ -28,6 +32,12 @@ const initialFormData: UsuarioForm = {
     rol: '' as TipoRol
 };
 
+/**
+ * @page ModificarUsuarioPage
+ * @description Página de formulario para editar un usuario existente.
+ *              Solo accesible para administradores.
+ * @returns {JSX.Element} El formulario de edición de usuario.
+ */
 export default function ModificarUsuarioPage() {
     const params = useParams();
     const idUsuario = params?.id;
@@ -38,6 +48,10 @@ export default function ModificarUsuarioPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el estado del formulario cuando cambia un campo.
+     */
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({
         ...prev,
@@ -49,6 +63,11 @@ export default function ModificarUsuarioPage() {
         }
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario antes del envío.
+     * @returns {boolean} True si el formulario es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.nombre.trim()) newErrors.nombre = 'Campo obligatorio';
@@ -75,6 +94,10 @@ export default function ModificarUsuarioPage() {
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function guardarUsuario
+     * @description Valida y envía los datos actualizados del usuario a la API.
+     */
     const guardarUsuario = async () => {
         if (!validateForm()) {
             toast.error('Por favor, completa todos los campos obligatorios');
@@ -103,6 +126,10 @@ export default function ModificarUsuarioPage() {
         }
     };
 
+    /**
+     * @effect
+     * @description Carga los datos del usuario a editar al montar el componente.
+     */
     useEffect(() => {
         const loadUsuario = async () => {
             if (!idUsuario) {

@@ -13,6 +13,10 @@ import { Download } from 'lucide-react';
 import { postUsuario } from '@/lib/usuarios/auth';
 import PasswordInput from '@/components/ui/PasswordInput';
 
+/**
+ * @constant rolesOptions
+ * @description Opciones para el selector de rol de usuario.
+ */
 const rolesOptions = [
     { value: 'ADMINISTRADOR', label: 'Administrador' },
     { value: 'OPERADOR', label: 'Operador' },
@@ -28,11 +32,21 @@ const initialFormData: UsuarioForm = {
     rol: 'CONSULTA' as TipoRol
 };
 
+/**
+ * @page CrearUsuarioPage
+ * @description Página con el formulario para crear un nuevo usuario.
+ *              Solo accesible para administradores.
+ * @returns {JSX.Element} El formulario de creación de usuario.
+ */
 export default function CrearUsuarioPage() {
     const router = useRouter();
     const [formData, setFormData] = useState<UsuarioForm>(initialFormData);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el estado del formulario cuando cambia un campo.
+     */
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({
         ...prev,
@@ -44,6 +58,11 @@ export default function CrearUsuarioPage() {
         }
     };
 
+    /**
+     * @function validateForm
+     * @description Valida todos los campos del formulario.
+     * @returns {boolean} True si el formulario es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.nombre.trim()) newErrors.nombre = 'Campo obligatorio';
@@ -70,6 +89,10 @@ export default function CrearUsuarioPage() {
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function guardarUsuario
+     * @description Valida y envía los datos del nuevo usuario a la API.
+     */
     const guardarUsuario = async () => {
         if (!validateForm()) {
             toast.error('Por favor, completa todos los campos obligatorios');

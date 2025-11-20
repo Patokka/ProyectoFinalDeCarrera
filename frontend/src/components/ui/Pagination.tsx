@@ -2,6 +2,14 @@
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+/**
+ * @interface PaginationProps
+ * @description Propiedades para el componente Pagination.
+ * @property {number} currentPage - El número de la página actual.
+ * @property {number} totalPages - El número total de páginas.
+ * @property {(page: number) => void} onPageChange - Función callback que se ejecuta al cambiar de página.
+ * @property {string} [className] - Clases CSS adicionales para el contenedor.
+ */
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -9,13 +17,22 @@ interface PaginationProps {
   className?: string;
 }
 
-export default function Pagination({ 
-  currentPage, 
-  totalPages, 
-  onPageChange, 
-  className = "" 
-}: PaginationProps) {
-  const getVisiblePages = () => {
+/**
+ * @component Pagination
+ * @description Un componente de paginación reutilizable que muestra los controles
+ *              para navegar entre páginas. Incluye lógica para mostrar un número
+ *              limitado de páginas y elipsis.
+ * @param {PaginationProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El componente de paginación o `null` si solo hay una página.
+ */
+export default function Pagination({ currentPage, totalPages, onPageChange, className = "" }: PaginationProps) {
+  /**
+   * @function getVisiblePages
+   * @description Calcula qué números de página deben ser visibles en la barra de paginación
+   *              para evitar mostrar demasiados números a la vez.
+   * @returns {(number | string)[]} Un array con los números de página y elipsis.
+   */
+    const getVisiblePages = () => {
     const delta = 2;
     const range = [];
     const rangeWithDots = [];

@@ -6,6 +6,20 @@ from model.Localidad import Localidad
 from util.database import Base
 
 class Arrendador(Base):
+    """
+    Modelo de base de datos que representa a un Arrendador.
+    Atributos:
+        id (int): Clave primaria.
+        nombre_o_razon_social (str): Nombre o Razón Social.
+        cuil (str): CUIT o CUIL.
+        condicion_fiscal (TipoCondicion): Condición fiscal ante AFIP.
+        mail (str): Correo electrónico.
+        telefono (str): Número de teléfono.
+        descripcion (str): Descripción adicional.
+        localidad_id (int): Clave foránea a la localidad.
+        localidad (Localidad): Relación con el objeto Localidad.
+        participaciones (list[ParticipacionArrendador]): Relación con las participaciones en arrendamientos.
+    """
     __tablename__ = "arrendador"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

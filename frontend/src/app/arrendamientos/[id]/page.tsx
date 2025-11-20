@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { Edit, Trash } from "lucide-react"
+import { Trash } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import Pagination from "@/components/ui/Pagination"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
@@ -16,6 +16,13 @@ import { useAuth } from "@/components/context/AuthContext"
 
 const ITEMS_PER_PAGE = 6
 
+/**
+ * @page ArrendamientoDetailPage
+ * @description Página que muestra los detalles completos de un arrendamiento, incluyendo
+ *              información general, arrendadores participantes y un historial paginado de pagos.
+ *              Permite la cancelación del arrendamiento.
+ * @returns {JSX.Element} La vista de detalle del arrendamiento.
+ */
 export default function ArrendamientoDetailPage() {
     const params = useParams()
     const idArrendamiento = params?.id
@@ -29,7 +36,12 @@ export default function ArrendamientoDetailPage() {
     const { user } = useAuth();
     const canEditEliminate = canEditOrDelete(user?.rol);
 
-    // Cargar arrendamiento + participaciones + pagos
+
+    /**
+     * @effect
+     * @description Carga los datos del arrendamiento, sus participaciones y su historial de pagos
+     *              al montar el componente o cuando el ID del arrendamiento cambia.
+     */    
     useEffect(() => {
         const load = async () => {
         if (!idArrendamiento) {
@@ -55,8 +67,10 @@ export default function ArrendamientoDetailPage() {
         load()
     }, [idArrendamiento])
 
-    // Ordenar pagos por fecha ascendente (más vieja primero)
-    const sortedPagos = useMemo(() => {
+    /**
+     * @memo sortedPagos
+     * @description Memoriza la lista de pagos ordenada por fecha de vencimiento ascendente.
+     */    const sortedPagos = useMemo(() => {
         return [...pagos].sort((a, b) => {
         const dateA = new Date(a.vencimiento)
         const dateB = new Date(b.vencimiento)
@@ -64,8 +78,10 @@ export default function ArrendamientoDetailPage() {
         })
     }, [pagos])
 
-    // Paginación
-    const totalPages = Math.ceil(sortedPagos.length / ITEMS_PER_PAGE)
+    /**
+     * @memo paginatedPagos
+     * @description Memoriza la porción de pagos a mostrar en la página actual.
+     */    const totalPages = Math.ceil(sortedPagos.length / ITEMS_PER_PAGE)
     const paginatedPagos = useMemo(() => {
         const start = (currentPage - 1) * ITEMS_PER_PAGE
         return sortedPagos.slice(start, start + ITEMS_PER_PAGE)
@@ -102,6 +118,11 @@ export default function ArrendamientoDetailPage() {
         )
     }
 
+    
+    /**
+     * @function handleCancelarArrendamiento
+     * @description Muestra una confirmación y, si es aceptada, cancela el arrendamiento.
+     */
     function handleCancelarArrendamiento() {
         const toastId = toast.info(`¿Está seguro que desea cancelar el arrendamiento?`, {
         action: {

@@ -4,6 +4,19 @@ from util.database import Base
 
 
 class ParticipacionArrendador(Base):
+    """
+    Modelo de base de datos que representa la participación de un Arrendador en un Arrendamiento.
+    Atributos:
+        id (int): Clave primaria.
+        hectareas_asignadas (float): Hectáreas asignadas a este arrendador en el contrato.
+        quintales_asignados (float): Quintales asignados.
+        porcentaje (float): Porcentaje de participación en el contrato.
+        observacion (str): Observaciones.
+        arrendador_id (int): Clave foránea al arrendador.
+        arrendamiento_id (int): Clave foránea al arrendamiento.
+        arrendador (Arrendador): Relación con el arrendador.
+        arrendamiento (Arrendamiento): Relación con el arrendamiento.
+    """
     __tablename__ = "participacion_arrendador"
     __table_args__ = (
         UniqueConstraint("arrendamiento_id", "arrendador_id", name="uq_arrendamiento_arrendador"),

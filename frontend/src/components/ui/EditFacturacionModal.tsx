@@ -8,6 +8,14 @@ import { FacturacionDtoOut } from "@/lib/type";
 import { putFacturacion } from "@/lib/facturaciones/auth";
 import { NumberInput } from "./NumberInput";
 
+/**
+ * @interface EditFacturacionModalProps
+ * @description Propiedades para el componente EditFacturacionModal.
+ * @property {boolean} isOpen - Indica si el modal está abierto.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} [onSuccess] - Callback opcional para después de una edición exitosa.
+ * @property {FacturacionDtoOut | null} factura - El objeto de la factura a editar.
+ */
 interface EditFacturacionModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -15,12 +23,22 @@ interface EditFacturacionModalProps {
     factura: FacturacionDtoOut | null;
 }
 
+/**
+ * @component EditFacturacionModal
+ * @description Un modal con un formulario para editar la fecha y el monto de una facturación existente.
+ * @param {EditFacturacionModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de edición o `null` si está cerrado.
+ */
 const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onClose, onSuccess, factura }) => {
     const [fecha, setFecha] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [montoFacturacion, setMontoFacturacion] = useState<number | undefined>(undefined);
-    
+
+    /**
+     * @effect
+     * @description Carga los datos de la factura seleccionada en el formulario cuando el modal se abre.
+     */
     useEffect(() => {
         if (factura) {
             setFecha(factura.fecha_facturacion);
@@ -28,12 +46,21 @@ const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onC
         }
     }, [factura]);
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea su estado.
+     */
     const handleClose = () => {
         setErrors({});
         setIsSubmitting(false);
         onClose();
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!fecha) newErrors.fecha = "La fecha de facturación es obligatoria";
@@ -44,6 +71,10 @@ const EditFacturacionModal: React.FC<EditFacturacionModalProps> = ({ isOpen, onC
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function handleGuardar
+     * @description Valida y guarda los cambios de la facturación.
+     */
     const handleGuardar = async () => {
         if (!validateForm() || !factura) return;
 

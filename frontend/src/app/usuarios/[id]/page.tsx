@@ -12,6 +12,11 @@ import Text from "@/components/ui/Text"
 import Link from "next/link"
 import { fetchUsuarioById } from "@/lib/usuarios/auth"
 
+/**
+ * @page UsuarioDetailPage
+ * @description Página los datos pertenecientes a un usuario, sólo accedido por administradores.
+ * @returns {JSX.Element} El Componente de detalle de usuario.
+ */
 export default function UsuarioDetailPage() {
     const params = useParams()
     const idUsuario = params?.id

@@ -13,6 +13,29 @@ from model.Usuario import Usuario
 from util.database import Base
 
 class Arrendamiento(Base):
+    """
+    Modelo de base de datos que representa un contrato de Arrendamiento.
+    Atributos:
+        id (int): Clave primaria.
+        estado (EstadoArrendamiento): Estado del contrato (Activo, Finalizado, Vencido.).
+        tipo (TipoArrendamiento): Tipo de arrendamiento.
+        localidad_id (int): Clave foránea de la localidad del campo.
+        usuario_id (int): Clave foránea del usuario que creó el contrato.
+        arrendatario_id (int): Clave foránea del arrendatario.
+        fecha_inicio (date): Fecha de inicio del contrato.
+        fecha_fin (date): Fecha de fin del contrato.
+        quintales (float): Cantidad de quintales pactados por año por hectárea.
+        hectareas (float): Cantidad de hectáreas arrendadas.
+        plazo_pago (PlazoPago): Periodicidad para realizar los pagos.
+        dias_promedio (TipoDiasPromedio): Configuración para cálculo de promedios.
+        origen_precio (TipoOrigenPrecio): Fuente del precio (Rosario, Chicago, etc.).
+        porcentaje_aparceria (float): Porcentaje en caso de aparcería.
+        descripcion (str): Observaciones adicionales.
+        localidad (Localidad): Relación con la localidad.
+        usuario (Usuario): Relación con el usuario.
+        arrendatario (Arrendatario): Relación con el arrendatario.
+        participaciones (list[ParticipacionArrendador]): Lista de participaciones de arrendadores en este contrato.
+    """
     __tablename__ = "arrendamiento"
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

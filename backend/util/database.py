@@ -19,20 +19,31 @@ engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Base(DeclarativeBase):
+    """
+    Clase base para los modelos declarativos de SQLAlchemy.
+    """
     pass
 
 # Función para obtener sesión de base de datos
 def get_db():
+    """
+    Generador de dependencias que provee una sesión de base de datos.
+    Cierra la sesión automáticamente al finalizar la petición.
+    Yields:
+        Session: Objeto de sesión de SQLAlchemy.
+    """
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-# --- FUNCIÓN MODIFICADA CON REINTENTOS ---
 def create_tables():
     """
-    Crea las tablas, pero reintenta 10 veces si la base de datos no está lista.
+    Crea las tablas en la base de datos. Reintenta 10 veces si la base de datos no está lista.
+    Útil para entornos dockerizados donde la base de datos puede tardar en iniciar.
+    Raises:
+        OperationalError: Si no se puede conectar a la base de datos después de los reintentos.
     """
     print("Intentando conectar a la base de datos para crear tablas...")
     intentos = 10

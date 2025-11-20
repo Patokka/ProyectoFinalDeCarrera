@@ -8,12 +8,26 @@ import Link from 'next/link'
 import QuintalesSummary from '../ui/QuintalesSummary'
 import ProtectedRoute from './ProtectedRoute'
 
+/**
+ * @component SideBar
+ * @description Un panel lateral que contiene componentes de resumen como el calendario
+ *              de pagos, un resumen de pagos del mes y un resumen de quintales.
+ *              Puede ser colapsado por el usuario.
+ * @param {object} props - Propiedades del componente.
+ * @param {ReactNode} props.children - El contenido principal de la página que se mostrará
+ *                                     junto a la barra lateral.
+ * @returns {JSX.Element} El componente de la barra lateral y el contenido principal.
+ */
 export default function SideBar({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   const [sidebarVisible, setSidebarVisible] = useState(true)
   const [mounted, setMounted] = useState(false)
-  
-  
+
+  /**
+   * @effect
+   * @description Asegura que el componente se renderice solo en el cliente
+   *              para evitar problemas de hidratación con `localStorage`.
+   */
     useEffect(() => {
       setMounted(true)
     }, [])

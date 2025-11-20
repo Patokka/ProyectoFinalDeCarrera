@@ -17,13 +17,19 @@ import { postArrendamiento, postParticipaciones } from '@/lib/arrendamientos/aut
 import { generarCuotas } from '@/lib/pagos/auth';
 import { useRouter } from 'next/navigation';
 
-
-// Opciones para los selectores
+/**
+ * @constant tipoOptions
+ * @description Opciones para el filtro de tipo de arrendamiento.
+ */
 const tipoOptions = [
   { value: 'FIJO', label: 'FIJO' },
   { value: 'A_PORCENTAJE', label: 'APARCERIA' }
 ];
 
+/**
+ * @constant plazoOptions
+ * @description Opciones para el filtro de período de pago de cuotas.
+ */
 const plazoOptions = [
   { value: 'MENSUAL', label: 'Mensual' },
   { value: 'BIMESTRAL', label: 'Bimestral' },
@@ -33,6 +39,10 @@ const plazoOptions = [
   { value: 'ANUAL', label: 'Anual' }
 ];
 
+/**
+ * @constant promedioOptions
+ * @description Opciones para el filtro de cómo calcular el precio promedio de tonelada de soja.
+ */
 const promedioOptions = [
   { value: 'ULTIMOS_5_HABILES', label: 'Últimos 5 días hábiles del mes anterior al pago' },
   { value: 'ULTIMOS_10_HABILES', label: 'Últimos 10 días hábiles del mes anterior al pago' },
@@ -40,6 +50,10 @@ const promedioOptions = [
   { value: 'DEL_10_AL_15_MES_ACTUAL', label: 'Precios del día 10 al día 15 del mes actual al pago' }
 ];
 
+/**
+ * @constant fuenteOptions
+ * @description Opciones para el filtro de fuente de datos para calcular el precio.
+ */
 const fuenteOptions = [
   { value: 'BCR', label: 'BCR' },
   { value: 'AGD', label: 'AGD' }
@@ -62,8 +76,12 @@ const initialFormData: ArrendamientoForm = {
   descripcion: ''
 };
 
-
-
+/**
+ * @page CrearArrendamientoPage
+ * @description Página con el formulario para crear un nuevo arrendamiento. Permite configurar
+ *              todos los detalles del contrato y asignar las participaciones de los arrendadores.
+ * @returns {JSX.Element} El formulario de creación de arrendamiento.
+ */
 export default function CrearArrendamientoPage() {
   const router = useRouter();
   const [formData, setFormData] = useState<ArrendamientoForm>(initialFormData);
@@ -84,9 +102,11 @@ export default function CrearArrendamientoPage() {
   // Calcular totales
   const totalHectareas = participaciones.reduce((sum, p) => sum + (p.hectareas_asignadas || 0), 0);
   const totalQuintales = participaciones.reduce((sum, p) => sum + (p.quintales_asignados || 0), 0);
-
-
-
+  
+  /**
+   * @function handleInputChange
+   * @description Actualiza el estado del formulario principal.
+   */
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -96,6 +116,10 @@ export default function CrearArrendamientoPage() {
     }));
   };
 
+  /**
+   * @function handleNumberChange
+   * @description Actualiza campos numéricos del formulario.
+   */
   const handleNumberChange = (field: string, value: number|undefined) => {
     setFormData(prev => ({
       ...prev,
@@ -103,7 +127,10 @@ export default function CrearArrendamientoPage() {
     }));
   };
 
-
+  /**
+   * @function agregarArrendador
+   * @description Añade un arrendador a la tabla de participaciones.
+   */
   const agregarArrendador = () => {
     if (!nuevoArrendador.arrendador_id) return;
     if (participaciones.some((a) => a.arrendador_id === nuevoArrendador.arrendador_id)){
@@ -120,11 +147,18 @@ export default function CrearArrendamientoPage() {
     });
   };
 
-
+  /*
+   * @function eliminarArrendador
+   * @description Elimina un arrendador de la tabla de participaciones.
+   */
   const eliminarArrendador = (id: number) => {
     setParticipaciones(participaciones.filter(p => p.arrendador_id !== Number(id)));
   };
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  /**
+   * @function guardarArrendamiento
+   * @description Valida y guarda el arrendamiento, sus participaciones y genera las cuotas.
+   */
   const guardarArrendamiento = async () => {
     // Validaciones
       console.log(formData)
@@ -207,6 +241,10 @@ export default function CrearArrendamientoPage() {
     setTimeout(() => {window.location.href = "/arrendamientos";}, 1500);
   };
 
+  /**
+   * @effect
+   * @description Carga datos iniciales (usuario, arrendatarios, provincias, etc.) al montar el componente.
+   */
   useEffect(() => {   
     //Sesión
     const usuarioString = localStorage.getItem('user');
@@ -223,8 +261,11 @@ export default function CrearArrendamientoPage() {
       }
     }
 
-    //Carga arrendatarios
-    const dataArrendatarios = async() =>{
+  /**
+   * @effect
+   * @description Carga los arrendatarios.
+   */    
+  const dataArrendatarios = async() =>{
       try {
         const data = await fetchArrendatarios();
         const options = data.map((a) => ({
@@ -237,8 +278,11 @@ export default function CrearArrendamientoPage() {
       }
     };
 
-    //Carga provincias
-    const dataProvincias = async() =>{
+  /**
+   * @effect
+   * @description Carga las provincias argentinas.
+   */    
+  const dataProvincias = async() =>{
       try {
         const data = await fetchProvincias();
         const options = data.map((a) => ({
@@ -251,8 +295,11 @@ export default function CrearArrendamientoPage() {
       }
     };
 
-    //Carga arrendadores
-    const dataArrendadores = async() =>{
+  /**
+   * @effect
+   * @description Carga los arrendadores.
+   */    
+  const dataArrendadores = async() =>{
       try {
         const data = await fetchArrendadores();
         const options = data.map((a) => ({
@@ -270,6 +317,10 @@ export default function CrearArrendamientoPage() {
     dataArrendadores();
   }, []);
 
+  /**
+   * @effect
+   * @description Carga las localidades cuando cambia la provincia seleccionada.
+   */
   useEffect(() =>{
   const cargarLocalidades = async () => {
     if (!provinciaActual?.value) {

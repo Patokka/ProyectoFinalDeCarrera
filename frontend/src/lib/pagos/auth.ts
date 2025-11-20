@@ -1,5 +1,10 @@
 import { PagoDia, PagoDtoOut, PagoForm, PaymentSummaryResponse, QuintalesSummaryResponse } from "../type";
 
+/**
+ * @function fetchPaymentSummary
+ * @description Obtiene un resumen de pagos del mes actual para el sidebar
+ * @returns {Promise<PaymentSummaryResponse[]>} Una promesa que se resuelve con un arreglo de pagos.
+ */
 export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
     const token = localStorage.getItem("token")
     if (!token) {
@@ -26,6 +31,11 @@ export async function fetchPaymentSummary(): Promise<PaymentSummaryResponse[]> {
     return res.json()
 }
 
+/**
+ * @function fetchPaymentDates
+ * @description Obtiene las fechas de pagos de un determinado mes.
+ * @returns {Promise<PagoDia[]>} Una promesa que se resuelve con un arreglo de pagos y vencimientos.
+ */
 export async function fetchPaymentDates(month: number, year: number): Promise<PagoDia[]> {
     const token = localStorage.getItem("token")
     if (!token) {
@@ -52,7 +62,11 @@ export async function fetchPaymentDates(month: number, year: number): Promise<Pa
     return data
 }
 
-
+/**
+ * @function generarCuotas
+ * @description Genera las cuotas pertinentes a un arrendamiento.
+ * @returns {Promise<void>} Una promesa que se resuelve con void.
+ */
 export async function generarCuotas(arrendamientoId: number): Promise<void> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -80,6 +94,11 @@ export async function generarCuotas(arrendamientoId: number): Promise<void> {
     }
 }
 
+/**
+ * @function fetchPagos
+ * @description Obtiene un arreglo de pagos.
+ * @returns {Promise<PagoDtoOut[]>} Una promesa que se resuelve con un arreglo de pagos.
+ */
 export async function fetchPagos(): Promise<PagoDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -110,6 +129,11 @@ export async function fetchPagos(): Promise<PagoDtoOut[]> {
     return res.json();
 }
 
+/**
+ * @function facturarPago
+ * @description actualiza el estado de un pago y crea la facturación y retención correspondiente.
+ * @returns {Promise<void>} Una promesa que se resuelve con un void.
+ */
 export async function facturarPago(pago: number): Promise<void>{
     const token = localStorage.getItem("token");
     if (!token) {
@@ -137,13 +161,22 @@ export async function facturarPago(pago: number): Promise<void>{
     }
 }
 
+/**
+ * @function facturarPagos
+ * @description Factura varios pagos
+ * @returns {Promise<void>} Una promesa que se resuelve con un void.
+ */
 export async function facturarPagos(pagos: number[]): Promise<void>{
     for (const p of pagos) {
         await facturarPago(p);
     }
 }
 
-
+/**
+ * @function fetchPagosByArrendador
+ * @description Obtiene un arreglo de pagos en base al id de un arrendador.
+ * @returns {Promise<PagoDtoOut[]>} Una promesa que se resuelve con un arreglo de pagos.
+ */
 export async function fetchPagosByArrendador(arrendador_id: number): Promise<PagoDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -174,6 +207,11 @@ export async function fetchPagosByArrendador(arrendador_id: number): Promise<Pag
     return res.json();
 }
 
+/**
+ * @function fetchPagosByArrendamiento
+ * @description Obtiene un arreglo de pagos en base al id de un arrendamiento.
+ * @returns {Promise<PagoDtoOut[]>} Una promesa que se resuelve con un arreglo de pagos.
+ */
 export async function fetchPagosByArrendamiento(arrendamiento_id: number): Promise<PagoDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -204,6 +242,11 @@ export async function fetchPagosByArrendamiento(arrendamiento_id: number): Promi
     return res.json();
 }
 
+/**
+ * @function fetchPagoById
+ * @description Obtiene un pago.
+ * @returns {Promise<PagoDtoOut[]>} Una promesa que se resuelve con un pago.
+ */
 export async function fetchPagoById(pago_id: number): Promise<PagoDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -234,6 +277,11 @@ export async function fetchPagoById(pago_id: number): Promise<PagoDtoOut> {
     return res.json();
 }
 
+/**
+ * @function cancelarPagos
+ * @description Cancela un pago actualizando su estado.
+ * @returns {Promise<PagoDtoOut>} Una promesa que se resuelve con un pago.
+ */
 export async function cancelarPago(pago_id: number){
     const token = localStorage.getItem("token");
     if (!token) {
@@ -264,6 +312,11 @@ export async function cancelarPago(pago_id: number){
     return true;
 }
 
+/**
+ * @function postPago
+ * @description Crea un pago particular.
+ * @returns {Promise<PagoDtoOut>} Una promesa que se resuelve con pago.
+ */
 export async function postPago(formData: PagoForm): Promise<PagoDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -310,6 +363,11 @@ export async function postPago(formData: PagoForm): Promise<PagoDtoOut> {
     return res.json();
 }
 
+/**
+ * @function asignarPrecioPago
+ * @description Calcula y asigna el precio a un pago, tanto el promedio como el monto total.
+ * @returns {Promise<PagoDtoOut>} Una promesa que se resuelve con un pago.
+ */
 export async function asignarPrecioPago(idPago: number): Promise<PagoDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -342,6 +400,12 @@ export async function asignarPrecioPago(idPago: number): Promise<PagoDtoOut> {
 
     return res.json();
 }
+
+/**
+ * @function fetchNextMonthQuintalesSummary
+ * @description Obtiene un resumen de quintales del próximo mes.
+ * @returns {Promise<QuintalesSummaryResponse[]>} Una promesa que se resuelve con un resumen de quintales.
+ */
 export async function fetchNextMonthQuintalesSummary(): Promise<QuintalesSummaryResponse[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -369,6 +433,11 @@ export async function fetchNextMonthQuintalesSummary(): Promise<QuintalesSummary
     return res.json();
 }
 
+/**
+ * @function putPago
+ * @description Actualiza un pago particular.
+ * @returns {Promise<PagoDtoOut>} Una promesa que se resuelve con pago.
+ */
 export async function putPago(pago_id: number, formData: PagoForm): Promise<PagoDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {

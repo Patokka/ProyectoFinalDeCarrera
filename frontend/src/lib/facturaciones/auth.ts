@@ -1,5 +1,10 @@
 import { FacturacionDtoOut } from "../type";
 
+/**
+ * @function fetchFacturaciones
+ * @description Obtiene una lista de facturaciones.
+ * @returns {Promise<FacturacionDtoOut[]>} Una promesa que se resuelve con un arreglo de facturaciones.
+ */
 export async function fetchFacturaciones(): Promise<FacturacionDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,6 +35,11 @@ export async function fetchFacturaciones(): Promise<FacturacionDtoOut[]> {
     return res.json();
 }
 
+/**
+ * @function fetchFacturacionesByArrendatario}
+ * @description Obtiene una lista de facturaciones en base al id de un arrendatario.
+ * @returns {Promise<FacturacionDtoOut[]>} Una promesa que se resuelve con un arreglo de facturaciones.
+ */
 export async function fetchFacturacionesByArrendatario(arrendatario_id: number): Promise<FacturacionDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -60,6 +70,11 @@ export async function fetchFacturacionesByArrendatario(arrendatario_id: number):
     return res.json();
 }
 
+/**
+ * @function fetchFacturacionById
+ * @description Obtiene una facturacion.
+ * @returns {Promise<FacturacionDtoOut[]>} Una promesa que se resuelve con una facturacion.
+ */
 export async function fetchFacturacionById(facturacion_id: number): Promise<FacturacionDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -90,6 +105,11 @@ export async function fetchFacturacionById(facturacion_id: number): Promise<Fact
     return res.json();
 }
 
+/**
+ * @function putFacturacionFacturaciones
+ * @description Actualiza una facturación.
+ * @returns {Promise<FacturacionDtoOut>} Una promesa que se resuelve con una facturación.
+ */
 export async function putFacturacion(facturacion_id: number, fecha: string, monto_facturacion: number|undefined): Promise<FacturacionDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {

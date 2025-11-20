@@ -1,5 +1,13 @@
 import React from "react";
 
+/**
+ * @interface TextProps
+ * @description Propiedades para el componente Text.
+ * @property {string} label - La etiqueta a mostrar sobre el campo.
+ * @property {string} value - El valor a mostrar en el campo.
+ * @property {boolean} [disabled] - Si el campo está deshabilitado.
+ * @property {boolean} [readOnly] - Si el campo es de solo lectura.
+ */
 interface TextProps {
   label: string;
   value: string;
@@ -7,6 +15,13 @@ interface TextProps {
   readOnly?: boolean;
 }
 
+/**
+ * @component Text
+ * @description Un componente para mostrar un campo de texto de solo lectura,
+ *              ideal para presentar información que no debe ser editada por el usuario.
+ * @param {TextProps} props - Las propiedades del componente.
+ * @returns {JSX.Element} El campo de texto de solo lectura.
+ */
 export default function Text({ label, value, disabled = true, readOnly=true, }: TextProps) {
   return (
     <div>

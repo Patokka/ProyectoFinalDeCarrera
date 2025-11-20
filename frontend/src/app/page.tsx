@@ -3,6 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+/**
+ * @component HomePage
+ * @description La página raíz de la aplicación. Su única función es redirigir al usuario
+ *              a la página de inicio de sesión (`/login`) si no está autenticado, o al
+ *              dashboard (`/dashboard`) si ya existe un token de autenticación.
+ * @returns {JSX.Element} Muestra un indicador de carga mientras se realiza la redirección.
+ */
 export default function HomePage() {
   const router = useRouter();
 

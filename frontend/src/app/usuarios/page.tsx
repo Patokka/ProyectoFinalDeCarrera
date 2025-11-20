@@ -14,6 +14,12 @@ import { formatCuit, formatCuitDisplay, getRolBadgeColor } from '@/lib/helpers';
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page UsuariosPage
+ * @description Página para la gestión de usuarios del sistema. Permite a los administradores
+ *              ver, buscar, crear y eliminar usuarios.
+ * @returns {JSX.Element} La página de gestión de usuarios.
+ */
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<UsuarioDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -23,7 +29,10 @@ export default function UsuariosPage() {
   const [searchTermCuit, setSearchTermCuit] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch inicial 
+  /**
+   * @effect
+   * @description Carga la lista de usuarios al montar el componente.
+   */
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -39,7 +48,10 @@ export default function UsuariosPage() {
     loadData();
   }, []);
 
-  // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de usuarios filtrada por nombre y CUIL.
+   */
   const filteredData = useMemo(() => {
     return usuarios.filter(item => {
       const matchesNombre = item.nombre
@@ -52,7 +64,11 @@ export default function UsuariosPage() {
       return matchesNombre && matchesCuit;
     });
   }, [usuarios, searchTermNombre, searchTermCuit]);
-
+  
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos para la página actual.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -63,38 +79,43 @@ export default function UsuariosPage() {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit]);
 
-const handleDelete = (id: number) => {
-  if (id === user?.id) {
-    toast.error("No puede eliminarse a sí mismo.");
-    return;
-  }
-  // Confirmación
-  const confirmToastId = toast.info(
-    "¿Está seguro que desea eliminar este usuario?",
-    {
-      action: {
-        label: "Confirmar",
-        onClick: () => {
-          toast.dismiss(confirmToastId);
-          //Delete
-          toast.promise(
-            deleteUsuario(id).then(() => {
-              setUsuarios(prev =>
-                prev.filter((item) => item.id !== id)
-              );
-            }),
-            {
-              loading: "Eliminando usuario...",
-              success: "Usuario eliminado con éxito",
-              error: (err) => err.message || "Error al eliminar el usuario",
-            }
-          );
-        },
-      },
-      duration: 5000, // 5 segundos
+  /**
+   * @function handleDelete
+   * @description Muestra una confirmación y elimina un usuario.
+   * @param {number} id - El ID del usuario a eliminar.
+   */
+  const handleDelete = (id: number) => {
+    if (id === user?.id) {
+      toast.error("No puede eliminarse a sí mismo.");
+      return;
     }
-  );
-};
+    // Confirmación
+    const confirmToastId = toast.info(
+      "¿Está seguro que desea eliminar este usuario?",
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
+            //Delete
+            toast.promise(
+              deleteUsuario(id).then(() => {
+                setUsuarios(prev =>
+                  prev.filter((item) => item.id !== id)
+                );
+              }),
+              {
+                loading: "Eliminando usuario...",
+                success: "Usuario eliminado con éxito",
+                error: (err) => err.message || "Error al eliminar el usuario",
+              }
+            );
+          },
+        },
+        duration: 5000, // 5 segundos
+      }
+    );
+  };
   return (
     <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
       <div className="bg-gray-50 p-6">

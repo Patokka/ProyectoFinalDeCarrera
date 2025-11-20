@@ -10,6 +10,13 @@ import { getPagoBadgeColorCalendar } from "@/lib/helpers";
 
 interface CalendarProps {}
 
+/**
+ * @component Calendar
+ * @description Un componente de calendario mensual que muestra los días con pagos
+ *              pendientes, vencidos o realizados, resaltados con diferentes colores.
+ *              Es expandible y colapsable.
+ * @returns {JSX.Element} El componente del calendario.
+ */
 export default function Calendar({}: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [paymentDates, setPaymentDates] = useState<PagoDia[]>([])
@@ -20,12 +27,25 @@ export default function Calendar({}: CalendarProps) {
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
   const PRIORITY = ["VENCIDO", "PENDIENTE", "REALIZADO", "CANCELADO"]
 
+  /**
+   * @function getHighestPriority
+   * @description Determina el estado de mayor prioridad para un día si hay múltiples pagos.
+   * @param {string[]} diaEstados - Array de estados de pago para un día.
+   * @returns {string | null} El estado de mayor prioridad.
+   */
   function getHighestPriority(diaEstados: string[]) {
     for (const p of PRIORITY) {
       if (diaEstados.includes(p)) return p
     }
     return null
   }
+
+  /**
+   * @function getDayStatus
+   * @description Obtiene el estado de mayor prioridad para una fecha específica.
+   * @param {Date} date - La fecha a consultar.
+   * @returns {string | null} El estado del día.
+   */
   const getDayStatus = (date: Date) => {
     const dayStr = format(date, "yyyy-MM-dd")
     const estadosEnDia = paymentDates
@@ -47,7 +67,11 @@ export default function Calendar({}: CalendarProps) {
       setLoading(false)
     }
   }
-
+  
+  /**
+   * @effect
+   * @description Carga los datos de los pagos para el mes actual cada vez que `currentDate` cambia.
+   */
   useEffect(() => {
     loadPayments()
   }, [currentDate])

@@ -1,4 +1,9 @@
 
+/**
+ * @function fetchReporte
+ * @description Obtiene un reporte en formato Blob desde el endpoint especificado con los parámetros dados.
+ * @returns {Promise<{Blob,string}>} Una promesa que se resuelve con un blob y nombre de archivo.
+ */
 export async function fetchReporte(endpoint: string, params: Record<string, string>): Promise<{ blob: Blob, filename: string }> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -44,6 +49,11 @@ export async function fetchReporte(endpoint: string, params: Record<string, stri
     };
 }
 
+/**
+ * @function updateJobConfig
+ * @description Actualiza la configuración de un job con los datos proporcionados.
+ * 
+ */
 export async function updateJobConfig(data: {job_id: string; hour: number; minute: number; day?: number; active: boolean;}) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -65,6 +75,11 @@ export async function updateJobConfig(data: {job_id: string; hour: number; minut
     return res.json();
 }
 
+/**
+ * @function fetchReporteArrendador
+ * @description Obtiene un reporte en formato Blob para un arrendador específico.
+ * @returns {Promise<{Blob,string}>} Una promesa que se resuelve con un blob y nombre de archivo.
+ */
 export async function fetchReporteArrendador(endpoint: string, params: {inicio: string, fin: string, arrendador_id: number}): Promise<Blob> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -100,6 +115,11 @@ export async function fetchReporteArrendador(endpoint: string, params: {inicio: 
     return res.blob(); 
 }
 
+/**
+ * @function fetchJobConfig
+ * @description Obtiene la configuración de un job específico.
+ * 
+ */
 export async function fetchJobConfig(jobId: string) {
     const token = localStorage.getItem("token");
     if (!token) {

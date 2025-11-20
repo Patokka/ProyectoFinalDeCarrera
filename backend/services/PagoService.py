@@ -18,13 +18,33 @@ from datetime import date, timedelta
 
 
 class PagoService:
+    """
+    Clase de servicio que encapsula la lógica de negocio para la gestión de pagos y cuotas.
+    """
 
     @staticmethod
     def listar_todos(db: Session):
+        """
+        Obtiene todos los pagos de la base de datos, ordenados por fecha de vencimiento.
+        Args:
+            db (Session): La sesión de la base de datos.
+        Returns:
+            list[Pago]: Una lista de todos los pagos.
+        """
         return db.query(Pago).order_by(asc(Pago.vencimiento)).all()
 
     @staticmethod
     def obtener_por_id(db: Session, pago_id: int):
+        """
+        Obtiene un pago por su ID.
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago_id (int): El ID del pago a buscar.
+        Returns:
+            Pago: El pago encontrado.
+        Raises:
+            HTTPException: Si el pago no se encuentra (código 404).
+        """
         obj = db.query(Pago).get(pago_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
@@ -32,6 +52,16 @@ class PagoService:
 
     @staticmethod
     def crear(db: Session, dto: PagoDto):
+        """
+        Crea un nuevo pago en la base de datos.
+
+        Args:
+            db (Session): La sesión de la base de datos.
+            dto (PagoDto): Los datos del pago a crear.
+
+        Returns:
+            Pago: El pago recién creado.
+        """
         nuevo = Pago(**dto.model_dump())
         if(dto.vencimiento <= date.today()):
             nuevo.estado = EstadoPago.VENCIDO            
@@ -44,6 +74,17 @@ class PagoService:
 
     @staticmethod
     def actualizar(db: Session, pago_id: int, dto: PagoDtoModificacion):
+        """
+        Actualiza los datos de un pago existente.
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago_id (int): El ID del pago a actualizar.
+            dto (PagoDtoModificacion): Los datos a modificar.
+        Returns:
+            Pago: El pago actualizado.
+        Raises:
+            HTTPException: Si el pago no se encuentra (código 404).
+        """
         obj = db.query(Pago).get(pago_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
@@ -59,6 +100,15 @@ class PagoService:
 
     @staticmethod
     def eliminar(db: Session, pago_id: int):
+        """
+        Elimina un pago de la base de datos.
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago_id (int): El ID del pago a eliminar.
+        Raises:
+            HTTPException: Si el pago no se encuentra (404) o si tiene
+                        relaciones que impiden su eliminación.
+        """
         obj = db.query(Pago).get(pago_id)
         if not obj:
             raise HTTPException(status_code=404, detail="Pago no encontrado.")
@@ -68,7 +118,14 @@ class PagoService:
         
     @staticmethod
     def _sumar_meses(fecha: date, meses: int) -> date:
-        """Suma meses a una fecha manteniendo día y ajustando año."""
+        """
+        Función auxiliar para sumar una cantidad de meses a una fecha.
+        Args:
+            fecha (date): La fecha inicial.
+            meses (int): El número de meses a sumar.
+        Returns:
+            date: La nueva fecha calculada.
+        """
         mes = fecha.month - 1 + meses
         anio = fecha.year + mes // 12
         mes = mes % 12 + 1
@@ -78,9 +135,14 @@ class PagoService:
     @staticmethod
     def generarCuotas(db: Session, arrendamiento_id: int):
         """
-        Genera cuotas de pago en función de las participaciones.
-        - FIJO: genera cuotas completas con quintales calculados a 2 decimales.
-        - A_PORCENTAJE: genera cuotas con vencimientos iguales pero sin quintales.
+        Genera automáticamente las cuotas de pago para un arrendamiento.
+        Args:
+            db (Session): La sesión de la base de datos.
+            arrendamiento_id (int): El ID del arrendamiento.
+        Returns:
+            list[Pago]: La lista de cuotas generadas.
+        Raises:
+            HTTPException: Si no hay participaciones o la periodicidad no es válida.
         """
         hoy = date.today()
         arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id=arrendamiento_id)
@@ -168,6 +230,14 @@ class PagoService:
 
     @staticmethod
     def _obtener_precios_promedio(db: Session, pago: "Pago"):
+        """
+        Calcula el precio promedio para un pago basándose en su configuración de `dias_promedio`.
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago (Pago): El objeto de pago.
+        Returns:
+            tuple[Decimal, list[Precio]]: El precio promedio calculado y la lista de precios utilizados.
+        """
         vencimiento = pago.vencimiento
         mes_anterior = (vencimiento.replace(day=1) - timedelta(days=1)).month
         anio_anterior = (vencimiento.replace(day=1) - timedelta(days=1)).year
@@ -236,6 +306,14 @@ class PagoService:
 
     @staticmethod
     def generarPrecioCuota(db: Session, pago):
+        """
+        Calcula y asigna el precio promedio y el monto a pagar a una cuota específica.
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago (int | Pago): El ID del pago o el objeto Pago.
+        Returns:
+            Pago: El pago actualizado con el precio y monto.
+        """
         
         if isinstance(pago, int):
             pago = db.query(Pago).options(joinedload(Pago.arrendamiento)).get(pago)
@@ -267,7 +345,7 @@ class PagoService:
     @staticmethod
     def generarPreciosCuotasMensual(db: Session):
         """
-        Método para asignarle el precio a las cuotas del mes actual
+        Job periódico asignarle el precio a las cuotas del mes actual
         y que toman precios del mes anterior, además son cuotas de pago
         y no de entrega de producción por eso se sacan las que tienen quintales = None
         """
@@ -364,6 +442,13 @@ class PagoService:
         
     @staticmethod
     def obtener_pagos_agrupados_mes(db: Session):
+        """
+        Obtiene un resumen de los pagos pendientes y vencidos del mes actual, agrupados por arrendatario.
+        Args:
+            db (Session): La sesión de la base de datos.
+        Returns:
+            list[dict]: Lista de diccionarios con el resumen por arrendatario.
+        """
         today = date.today()
 
         results = (
@@ -394,7 +479,13 @@ class PagoService:
     
     @staticmethod
     def obtener_resumen_quintales_proximo_mes(db: Session):
-        #Calcular el año y mes del próximo mes
+        """
+        Obtiene un resumen de los quintales pendientes de pago para el próximo mes, agrupados por arrendatario.
+        Args:
+            db (Session): La sesión de la base de datos.
+        Returns:
+            list[dict]: Lista de diccionarios con el resumen por arrendatario.
+        """
         today = date.today()
         proximo_mes_fecha = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
         
@@ -429,6 +520,15 @@ class PagoService:
     
     @staticmethod
     def obtener_vencimientos_mes(db: Session, mes: int, anio: int):
+        """
+        Obtiene las fechas y estados de los vencimientos de un mes y año específicos.
+        Args:
+            db (Session): La sesión de la base de datos.
+            mes (int): Mes a consultar.
+            anio (int): Año a consultar.
+        Returns:
+            list[dict]: Lista de diccionarios con fecha y estado.
+        """
         results = (
             db.query(Pago.vencimiento, Pago.estado)
             .filter(extract("month", Pago.vencimiento) == mes)
@@ -447,6 +547,14 @@ class PagoService:
 
     @staticmethod
     def obtener_pendientes_arrendador(db:Session, arrendador_id: int):
+        """
+        Obtiene los pagos pendientes de un arrendador específico.
+        Args:
+            db (Session): La sesión de la base de datos.
+            arrendador_id (int): El ID del arrendador.
+        Returns:
+            list[Pago]: Lista de pagos pendientes.
+        """
         pagos = (
             db.query(Pago)
             .join(Pago.participacion_arrendador)
@@ -460,12 +568,30 @@ class PagoService:
 
     @staticmethod
     def obtener_pagos_arrendamiento(db, arrendamiento_id):
+        """
+        Obtiene todos los pagos asociados a un arrendamiento.
+        Args:
+            db (Session): La sesión de la base de datos.
+            arrendamiento_id (int): El ID del arrendamiento.
+        Returns:
+            list[Pago]: Lista de pagos.
+        """
         arrendamiento = ArrendamientoService.obtener_por_id(db=db, arrendamiento_id= arrendamiento_id)
         resultados = db.query(Pago).filter(Pago.arrendamiento_id == arrendamiento_id).all()
         return resultados
     
     @staticmethod
     def cancelar_pago(db, pago_id):
+        """
+        Cambia el estado de un pago a 'CANCELADO'.
+        Args:
+            db (Session): La sesión de la base de datos.
+            pago_id (int): El ID del pago a cancelar.
+        Returns:
+            Pago: El pago actualizado.
+        Raises:
+            HTTPException: Si el pago ya está cancelado.
+        """
         pago = PagoService.obtener_por_id(db,pago_id)
         if pago.estado == EstadoPago.CANCELADO:
             raise HTTPException(status_code=409, detail="El pago ya se encuentra cancelado")

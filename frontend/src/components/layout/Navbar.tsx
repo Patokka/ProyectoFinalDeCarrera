@@ -7,6 +7,11 @@ import { User, LogOut, Menu, X, FileText, Users, Building2, CreditCard, Receipt,
 import { useAuth } from '@/components/context/AuthContext'
 import ProtectedRoute from './ProtectedRoute'
 
+/**
+ * @constant navigationItems
+ * @description Array de objetos que define los elementos de navegación principal.
+ *              Cada objeto contiene el nombre, la ruta y el ícono.
+ */
 const navigationItems = [
   { name: 'Arrendamientos', href: '/arrendamientos', icon: FileText },
   { name: 'Arrendadores', href: '/arrendadores', icon: Users },
@@ -19,12 +24,24 @@ const navigationItems = [
   { name: 'Usuarios', href: '/usuarios', icon: User},
 ]
 
+/**
+ * @component Navbar
+ * @description La barra de navegación superior de la aplicación. Es responsive,
+ *              muestra los enlaces de navegación, el nombre del usuario y el botón de cierre de sesión.
+ *              Filtra los enlaces visibles según el rol del usuario.
+ * @returns {JSX.Element | null} El componente de la barra de navegación o `null` si no hay sesión.
+ */
 export default function Navbar() {
   const { user, logout } = useAuth()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
+  /**
+   * @effect
+   * @description Evita problemas de hidratación asegurando que el componente se renderice
+   *              solo en el lado del cliente después del montaje.
+   */
   useEffect(() => {
     setMounted(true)
   }, [])

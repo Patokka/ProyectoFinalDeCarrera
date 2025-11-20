@@ -10,11 +10,24 @@ import { fetchArrendadores } from "@/lib/arrendadores/auth"
 import DateInput from "./DateInput"
 import { ArrendadorSelect } from "./ArrendadorSelect"
 
+/**
+ * @interface HistorialPagosArrendadorModalProps
+ * @description Propiedades para el componente HistorialPagosArrendadorModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ */
 interface HistorialPagosArrendadorModalProps {
     isOpen: boolean
     onClose: () => void
 }
 
+/**
+ * @component HistorialPagosArrendadorModal
+ * @description Un modal que permite a los usuarios seleccionar un arrendador y un rango de fechas
+ *              para generar un reporte en PDF del historial de sus pagos.
+ * @param {HistorialPagosArrendadorModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal para generar el reporte o `null` si está cerrado.
+ */
 export default function HistorialPagosArrendadorModal({isOpen, onClose,}: HistorialPagosArrendadorModalProps) {
     const [fechaInicio, setFechaInicio] = useState("")
     const [fechaFin, setFechaFin] = useState("")
@@ -27,6 +40,10 @@ export default function HistorialPagosArrendadorModal({isOpen, onClose,}: Histor
         arrendadorId?: string
     }>({})
 
+    /**
+     * @effect
+     * @description Carga la lista de arrendadores cuando el modal se abre.
+     */
     useEffect(() => {
         if (isOpen) {
         const loadArrendadores = async () => {
@@ -46,6 +63,11 @@ export default function HistorialPagosArrendadorModal({isOpen, onClose,}: Histor
         }
     }, [isOpen])
 
+    /**
+     * @function handleGenerateReport
+     * @description Valida los campos del formulario y, si son correctos,
+     *              solicita la generación y descarga del reporte.
+     */
     const handleGenerateReport = async () => {
         const newErrors: {
             fechaInicio?: string
@@ -99,12 +121,22 @@ export default function HistorialPagosArrendadorModal({isOpen, onClose,}: Histor
             setIsGenerating(false)
         }
     }
+
+    /**
+     * @function resetForm
+     * @description Resetea el estado del formulario.
+     */
     const resetForm = () => {
         setFechaInicio("")
         setFechaFin("")
         setArrendadorId("")
         setErrors({})
     }
+
+    /**
+     * @function handleClose
+     * @description Cierra el modal.
+     */
     const handleClose = () => {
         if (isGenerating) return;
         resetForm();

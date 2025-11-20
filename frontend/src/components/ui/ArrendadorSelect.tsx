@@ -1,6 +1,15 @@
 import { Option } from "@/lib/type";
 import { useEffect, useState, useRef } from "react";
 
+/**
+ * @interface ArrendadorSelectProps
+ * @description Propiedades para el componente ArrendadorSelect.
+ * @property {Option[]} arrendadores - La lista completa de arrendadores para seleccionar.
+ * @property {string | number} [value] - El ID del arrendador actualmente seleccionado.
+ * @property {(arrendador: string) => void} onSelect - Función callback que se ejecuta al seleccionar un arrendador.
+ * @property {string} label - La etiqueta a mostrar encima del campo de selección.
+ * @property {string} [placeholder] - El texto a mostrar en el campo de búsqueda.
+ */
 interface ArrendadorSelectProps {
   arrendadores: Option[];
   value?: string | number;
@@ -9,6 +18,13 @@ interface ArrendadorSelectProps {
   placeholder?: string;
 }
 
+/**
+ * @component ArrendadorSelect
+ * @description Un componente de selección con búsqueda para encontrar y seleccionar
+ *              un arrendador de una lista.
+ * @param {ArrendadorSelectProps} props - Las propiedades del componente.
+ * @returns {JSX.Element} El componente de selección de arrendador.
+ */
 export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({ arrendadores, value, onSelect, label, placeholder = "Buscar arrendador..."}) => {
   const [query, setQuery] = useState("");
   const [filtered, setFiltered] = useState<Option[]>([]);
@@ -16,6 +32,10 @@ export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({ arrendadores
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  /**
+   * @effect
+   * @description Filtra la lista de arrendadores cada vez que cambia el término de búsqueda.
+   */
   useEffect(() => {
     setFiltered(
       arrendadores.filter(a =>
@@ -25,7 +45,10 @@ export const ArrendadorSelect: React.FC<ArrendadorSelectProps> = ({ arrendadores
     setShowDropdown(query.length > 0);
   }, [query, arrendadores]);
 
-  // Cerrar dropdown al hacer clic fuera
+  /**
+   * @effect
+   * @description Cierra el menú desplegable si se hace clic fuera del componente.
+   */
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (

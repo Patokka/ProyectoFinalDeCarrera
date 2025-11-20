@@ -6,6 +6,12 @@ import { fetchNextMonthQuintalesSummary } from '@/lib/pagos/auth'
 import { QuintalesSummaryResponse } from '@/lib/type'
 import { formatQuintales } from '@/lib/helpers'
 
+/**
+ * @component QuintalesSummary
+ * @description Un componente de tarjeta que muestra un resumen de los quintales a pagar
+ *              en el próximo mes, agrupados por arrendatario. Es expandible y colapsable.
+ * @returns {JSX.Element} El componente de resumen de quintales.
+ */
 export default function QuintalesSummary() {
     const [summary, setSummary] = useState<QuintalesSummaryResponse[]>([])
     const [loading, setLoading] = useState(true)
@@ -15,6 +21,10 @@ export default function QuintalesSummary() {
     const month = String(nextMonthDate.getMonth() + 1).padStart(2, '0');
     const year = nextMonthDate.getFullYear();
 
+    /**
+     * @effect
+     * @description Carga el resumen de quintales desde la API al montar el componente.
+     */
     useEffect(() => {
         async function loadSummary() {
         try {

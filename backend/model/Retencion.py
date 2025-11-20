@@ -7,6 +7,18 @@ from model.Facturacion import Facturacion
 from util.database import Base
 
 class Retencion(Base):
+    """
+    Modelo de base de datos que representa una Retención impositiva.
+    Atributos:
+        id (int): Clave primaria.
+        fecha_retencion (date): Fecha de la retención.
+        monto_imponible (Decimal): Monto sobre el cual se calcula la retención.
+        total_retencion (Decimal): Monto retenido.
+        arrendador_id (int): Clave foránea al arrendador.
+        facturacion_id (int): Clave foránea a la facturación.
+        arrendador (Arrendador): Relación con el arrendador.
+        facturacion (Facturacion): Relación con la facturación.
+    """
     __tablename__ = "retencion"
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

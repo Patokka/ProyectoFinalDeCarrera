@@ -6,23 +6,46 @@ import { Download, X } from "lucide-react";
 import { NumberInput } from "./NumberInput";
 import { facturarPago } from "@/lib/pagos/auth";
 
+/**
+ * @interface FacturacionModalProps
+ * @description Propiedades para el componente FacturacionModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} [onSuccess] - Callback opcional tras una creación exitosa.
+ */
 interface FacturacionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
 }
 
+/**
+ * @component FacturacionModal
+ * @description Un modal para crear una nueva facturación a partir de un número de pago.
+ * @param {FacturacionModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de facturación o `null` si está cerrado.
+ */
 const FacturacionModal: React.FC<FacturacionModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [numero_pago, setNumeroPago] = useState<number>();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea su estado.
+     */
     const handleClose = () => {
         setNumeroPago(undefined);
         setErrors({});
         setIsSubmitting(false);
         onClose();
     };
-    // validación
+
+    /**
+     * @function validateForm
+     * @description Valida que se haya ingresado un número de pago.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!numero_pago) newErrors.numero_pago = "Campo obligatorio";
@@ -34,6 +57,10 @@ const FacturacionModal: React.FC<FacturacionModalProps> = ({ isOpen, onClose, on
         return true;
     };
 
+    /**
+     * @function handleGuardar
+     * @description Valida el formulario y envía la solicitud para crear la facturación.
+     */
     const handleGuardar = async () => {
         if (!validateForm()) return;
         try {

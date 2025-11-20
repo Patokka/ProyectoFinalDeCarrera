@@ -5,6 +5,13 @@ import { updateJobConfig, fetchJobConfig } from "@/lib/reportes/auth";
 import { ConfigCard } from "@/lib/type";
 import SelectFilter from "./SelectFilter";
 
+/**
+ * @hook useConfigModal
+ * @description Un hook personalizado para gestionar el estado y la lógica de `ConfigModal`.
+ *              Encapsula el estado de apertura, la tarjeta de configuración seleccionada,
+ *              los valores de tiempo y día, y el estado de envío.
+ * @returns {object} Un objeto con el estado y las funciones para controlar el modal.
+ */
 export const useConfigModal = () => {
     const [selectedConfigCard, setSelectedConfigCard] = useState<ConfigCard | null>(null);
     const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +20,10 @@ export const useConfigModal = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isDeactivated, setIsDeactivated] = useState(false);
 
+    /**
+     * @function openModal
+     * @description Abre el modal y carga la configuración actual para la tarjeta seleccionada.
+     */
     const openModal = async (card: ConfigCard) => {
         setSelectedConfigCard(card);
         setIsOpen(true);
@@ -29,6 +40,10 @@ export const useConfigModal = () => {
         }
     };
 
+    /**
+     * @function closeModal
+     * @description Cierra el modal y resetea su estado.
+     */
     const closeModal = () => {
         setIsOpen(false);
         setSelectedConfigCard(null);

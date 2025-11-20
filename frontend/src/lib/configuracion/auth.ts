@@ -1,5 +1,10 @@
 import { Recipient } from "../type";
 
+/**
+ * @function fetchConfiguracion
+ * @description Obtiene una configuración en base a una clave.
+ * @returns {Promise<string | null>} Una promesa que se resuelve un string.
+ */
 export async function fetchConfiguracion(clave: string): Promise<string | null> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -27,6 +32,11 @@ export async function fetchConfiguracion(clave: string): Promise<string | null> 
     return data.valor ?? null;
 }
 
+/**
+ * @function actualizarConfiguracion
+ * @description Actualiza una configuración en base a una clave.
+ * @returns {Promise<void>} Una promesa que se resuelve con void.
+ */
 export async function actualizarConfiguracion(clave: string, valor: string): Promise<void> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -55,6 +65,11 @@ export async function actualizarConfiguracion(clave: string, valor: string): Pro
     }
 }
 
+/**
+ * @function eliminarConfiguracion
+ * @description Elimina una configuración en base a una clave.
+ * @returns {Promise<void>} Una promesa que se resuelve con void.
+ */
 export async function eliminarConfiguracion(clave: string): Promise<void> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -82,6 +97,11 @@ export async function eliminarConfiguracion(clave: string): Promise<void> {
 }
 
 
+/**
+ * @function fetchDestinatarios
+ * @description Obtiene una lista de destinatarios de correos electrónicos.
+ * @returns {Promise<Recipient[]>} Una promesa que se con un arreglo de recipientes de correos.
+ */
 export async function fetchDestinatarios(): Promise<Recipient[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -116,6 +136,11 @@ export async function fetchDestinatarios(): Promise<Recipient[]> {
     }));
 }
 
+/**
+ * @function putCorreos
+ * @description Actualiza la lista de correos destinatarios.
+ * @returns {Promise<boolean>} Una promesa que se resuelve con un boolean.
+ */
 export async function putCorreos(recipients: Recipient[]): Promise<boolean> {
     const token = localStorage.getItem("token");
     if (!token) {

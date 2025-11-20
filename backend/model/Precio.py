@@ -7,6 +7,15 @@ from util.database import Base
 from enums.TipoOrigenPrecio import TipoOrigenPrecio
 
 class Precio(Base):
+    """
+    Modelo de base de datos que representa un Precio de mercado.
+    Atributos:
+        id (int): Clave primaria.
+        fecha_precio (date): Fecha del precio.
+        precio_obtenido (Decimal): Valor del precio (generalmente por tonelada).
+        origen (TipoOrigenPrecio): Fuente del precio.
+        pagos (list[Pago]): Lista de pagos que utilizaron este precio.
+    """
     __tablename__ = "precio"
     __table_args__ = (
         UniqueConstraint("fecha_precio", "origen", name="uq_fecha_origen"),

@@ -10,12 +10,23 @@ import DateInput from "./DateInput";
 import { NumberInput } from "./NumberInput";
 import { postPago } from "@/lib/pagos/auth";
 
+/**
+ * @interface PagoModalProps
+ * @description Propiedades para el componente PagoParticularModal.
+ */
 interface PagoModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
 }
 
+/**
+ * @component PagoParticularModal
+ * @description Modal para la creación de un pago "particular" o manual,
+ *              sea de tipo fijo (quintales) or a porcentaje.
+ * @param {PagoModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal o `null` si está cerrado.
+ */
 const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [arrendamientos, setArrendamientos] = useState<ArrendamientoDtoOut[]>([]);
     const [participaciones, setParticipaciones] = useState<ParticipacionArrendadorDtoOut[]>([]);
@@ -50,6 +61,10 @@ const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => 
         { value: "DEL_10_AL_15_MES_ACTUAL", label: "Precios del día 10 al día 15 del mes actual al pago" },
     ];
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea todos los estados.
+     */
     const handleClose = () => {
         // Reset de todos los campos del formulario
         setArrendamientoSeleccionado(null);
@@ -70,7 +85,11 @@ const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => 
         // No se limpian arrendamientos porque se recargan automáticamente al abrir
         onClose();
     };
-    // cargar arrendamientos
+
+    /**
+     * @effect
+     * @description Carga los arrendamientos activos cuando se abre el modal.
+     */
     useEffect(() => {
         if (isOpen) {
         setLoadingArr(true);
@@ -81,7 +100,10 @@ const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => 
         }
     }, [isOpen]);
 
-    // cargar participaciones
+    /**
+     * @effect
+     * @description Carga las participaciones cuando se selecciona un arrendamiento.
+     */
     useEffect(() => {
         if (arrendamientoSeleccionado) {
         setLoadingPart(true);
@@ -95,7 +117,11 @@ const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => 
         }
     }, [arrendamientoSeleccionado]);
 
-    // validación
+    /**
+     * @function validateForm
+     * @description Valida el formulario antes del envío.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
 
@@ -119,6 +145,10 @@ const PagoModal: React.FC<PagoModalProps> = ({ isOpen, onClose, onSuccess }) => 
         return true;
     };
 
+    /**
+     * @function handleGuardar
+     * @description Valida y envía los datos para crear el nuevo pago.
+     */
     const handleGuardar = async () => {
         if (!validateForm()) return;
 

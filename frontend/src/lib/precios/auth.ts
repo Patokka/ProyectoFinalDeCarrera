@@ -1,5 +1,10 @@
 import { PrecioDtoOut, PrecioForm } from "../type";
 
+/**
+ * @function fetchPreciosAGD
+ * @description Obtiene un arreglo de precios en donde el origen es AGD.
+ * @returns {Promise<PrecioDtoOut[]>} Una promesa que se resuelve con un arreglo de precios.
+ */
 export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,6 +35,11 @@ export async function fetchPreciosAGD(): Promise<PrecioDtoOut[]> {
     return res.json();
 }
 
+/**
+ * @function fetchPreciosBCR
+ * @description Obtiene un arreglo de precios en donde el origen es BCR.
+ * @returns {Promise<PrecioDtoOut[]>} Una promesa que se resuelve con un arreglo de precios.
+ */
 export async function fetchPreciosBCR(): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -60,6 +70,11 @@ export async function fetchPreciosBCR(): Promise<PrecioDtoOut[]> {
     return res.json();
 }
 
+/**
+ * @function postPrecio
+ * @description Crea un nuevo precio con los datos proporcionados.
+ * @returns {Promise<PrecioDtoOut>} Una promesa que se resuelve con un precio.
+ */
 export async function postPrecio(formData: PrecioForm): Promise<PrecioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -102,6 +117,11 @@ export async function postPrecio(formData: PrecioForm): Promise<PrecioDtoOut> {
     return res.json();
 }
 
+/**
+ * @function deletePrecio
+ * @description Elimina un precio por su ID.
+ * @returns {Promise<PrecioDtoOut>} Una promesa que se resuelve con un precio.
+ */
 export async function deletePrecio(precio_id: number) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -132,6 +152,11 @@ export async function deletePrecio(precio_id: number) {
     return true;
 }
 
+/**
+ * @function putPrecio
+ * @description Actualiza un precio con los datos proporcionados.
+ * @returns {Promise<PrecioDtoOut>} Una promesa que se resuelve con un precio.
+ */
 export async function putPrecio(formData: PrecioForm, idPrecio: number): Promise<PrecioDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -174,6 +199,11 @@ export async function putPrecio(formData: PrecioForm, idPrecio: number): Promise
     return res.json();
 }
 
+/**
+ * @function fetchPreciosPago
+ * @description Obtiene un arreglo de precios asociados a un pago específico.
+ * @returns {Promise<PrecioDtoOut[]>} Una promesa que se resuelve con un arreglo de precios.
+ */
 export async function fetchPreciosPago(pago_id: number): Promise<PrecioDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {

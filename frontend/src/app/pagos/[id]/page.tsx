@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { FileText, Trash } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import ProtectedRoute from "@/components/layout/ProtectedRoute"
@@ -13,6 +13,13 @@ import { cancelarPago, facturarPago, fetchPagoById } from "@/lib/pagos/auth"
 import { fetchPreciosPago } from "@/lib/precios/auth"
 import { useAuth } from "@/components/context/AuthContext"
 
+/**
+ * @page PagoDetailPage
+ * @description Página que muestra los detalles de un pago específico, incluyendo
+ *              la información del arrendador, arrendatario y los precios utilizados
+ *              para el cálculo del monto si aplica.
+ * @returns {JSX.Element} La vista de detalle del pago.
+ */
 export default function PagoDetailPage() {
     const params = useParams()
     const idPago = params?.id
@@ -25,7 +32,10 @@ export default function PagoDetailPage() {
     const { user } = useAuth();
     const canEditEliminate = canEditOrDelete(user?.rol);
 
-    // Cargar Pago y su correspondiente Participación
+    /**
+     * @effect
+     * @description Carga los datos del pago y los precios asociados al montar el componente.
+     */
     useEffect(() => {
         const load = async () => {
         if (!idPago) {
@@ -81,6 +91,10 @@ export default function PagoDetailPage() {
         )
     }
 
+    /**
+     * @function handleCancelarPago
+     * @description Muestra una confirmación y cancela el pago actual.
+     */
     function handleCancelarPago() {
         const toastId = toast.info(`¿Está seguro que desea cancelar el pago?`, {
         action: {
@@ -100,6 +114,10 @@ export default function PagoDetailPage() {
         })
     }
 
+    /**
+     * @function handleFacturarPago
+     * @description Muestra una confirmación y factura el pago actual.
+     */
     function handleFacturarPago() {
         const toastId = toast.info(`¿Está seguro que desea facturar el pago?`, {
             action: {

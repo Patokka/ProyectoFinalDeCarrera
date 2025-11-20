@@ -2,6 +2,10 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 
+/**
+ * @interface User
+ * @description Define la estructura del objeto de usuario.
+ */
 interface User {
   nombre: string
   apellido: string
@@ -9,6 +13,10 @@ interface User {
   rol: string
 }
 
+/**
+ * @interface AuthContextType
+ * @description Define el tipo del contexto de autenticación, incluyendo el usuario y las funciones de login/logout.
+ */
 interface AuthContextType {
   user: User | null
   login: (cuil: string, contrasena: string) => Promise<void>
@@ -16,6 +24,13 @@ interface AuthContextType {
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+/**
+ * @provider AuthProvider
+ * @description Proveedor de contexto que gestiona el estado de autenticación del usuario.
+ *              Maneja el login, logout y la persistencia del estado en `localStorage`.
+ * @param {object} props - Propiedades del componente.
+ * @param {ReactNode} props.children - Componentes hijos que tendrán acceso al contexto.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window !== 'undefined') {
@@ -25,6 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null
   })
 
+  /**
+   * @function login
+   * @description Realiza una solicitud de login a la API y, si es exitosa,
+   *              actualiza el estado del usuario y guarda los datos en `localStorage`.
+   */
   const login = async (cuil: string, contrasena: string) => {
     const res = await fetch(`/api/login`, {
       method: 'POST',
@@ -51,11 +71,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('token', data.access_token)
   }
 
+  /**
+   * @function logout
+   * @description Cierra la sesión del usuario, eliminando sus datos del estado y de `localStorage`.
+   */
   const logout = () => {
     setUser(null)
     localStorage.removeItem('user')
     localStorage.removeItem('token')
   }
+
+  /**
+   * @effect
+   * @description Sincroniza el estado de autenticación entre diferentes pestañas del navegador
+   *              escuchando cambios en `localStorage`.
+   */
   useEffect(() => {
     const handleStorageChange = () => {
       const storedUser = localStorage.getItem('user')
@@ -82,7 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
-// Hook para consumir el contexto
+/**
+ * @hook useAuth
+ * @description Hook personalizado para consumir fácilmente el contexto de autenticación.
+ * @returns {AuthContextType} El contexto de autenticación.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) throw new Error('useAuth debe usarse dentro de AuthProvider')

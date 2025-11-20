@@ -16,6 +16,16 @@ from sqlalchemy.orm import Session
 security = HTTPBearer()
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)) -> UsuarioLogueado:
+    """
+    Obtiene el usuario actual autenticado a partir del token JWT.
+    Args:
+        credentials (HTTPAuthorizationCredentials): Las credenciales extraídas del header de autorización.
+        db (Session): Sesión de base de datos.
+    Returns:
+        UsuarioLogueado: Objeto con la información del usuario logueado.
+    Raises:
+        HTTPException: Si el token es inválido, ha expirado o el usuario no existe (401).
+    """
     token = credentials.credentials
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -34,6 +44,16 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
 
 #Función para otorgar permisos a determinados roles de usuarios
 def admin_required(current_user: UsuarioLogueado = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Dependencia para requerir permisos de Administrador.
+    Args:
+        current_user (UsuarioLogueado): El usuario actual autenticado.
+        db (Session): Sesión de base de datos.
+    Returns:
+        UsuarioLogueado: El usuario si tiene permisos de administrador.
+    Raises:
+        HTTPException: Si el usuario no tiene rol de Administrador (403).
+    """
     usuario = db.query(Usuario).get(current_user.id)
     if usuario.rol != TipoRol.ADMINISTRADOR:
         raise HTTPException(status_code=403, detail="No tienes permisos de Administrador.")
@@ -41,6 +61,17 @@ def admin_required(current_user: UsuarioLogueado = Depends(get_current_user), db
 
 #Función para otorgar permisos a determinados roles de usuarios
 def canEditDelete(current_user: UsuarioLogueado = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Dependencia para verificar si el usuario tiene permisos de edición/eliminación.
+    Los usuarios con rol CONSULTA no tienen estos permisos.
+    Args:
+        current_user (UsuarioLogueado): El usuario actual autenticado.
+        db (Session): Sesión de base de datos.
+    Returns:
+        UsuarioLogueado: El usuario si tiene permisos.
+    Raises:
+        HTTPException: Si el usuario tiene rol CONSULTA (403).
+    """
     usuario = db.query(Usuario).get(current_user.id)
     if usuario.rol == TipoRol.CONSULTA:
         raise HTTPException(status_code=403, detail="No tienes permisos para realizar esta acción.")

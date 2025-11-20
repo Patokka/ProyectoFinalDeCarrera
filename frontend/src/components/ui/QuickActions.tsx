@@ -10,6 +10,11 @@ import {
   CreditCard
 } from 'lucide-react'
 
+/**
+ * @constant quickActions
+ * @description Array de objetos que define las tarjetas de "Acciones Rápidas" en el dashboard.
+ *              Cada objeto representa una sección principal de la aplicación.
+ */
 const quickActions = [
   {
     title: 'Arrendamientos',
@@ -55,6 +60,12 @@ const quickActions = [
   }
 ]
 
+/**
+ * @component QuickActions
+ * @description Un componente que muestra una grilla de tarjetas de acceso rápido
+ *              a las principales secciones de la aplicación.
+ * @returns {JSX.Element} El componente de acciones rápidas.
+ */
 export default function QuickActions() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">

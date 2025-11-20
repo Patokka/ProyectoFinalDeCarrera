@@ -7,17 +7,34 @@ import Input from "../ui/Input";
 import { Recipient } from "@/lib/type";
 import { fetchDestinatarios, putCorreos } from "@/lib/configuracion/auth";
 
+/**
+ * @interface RecipientsModalProps
+ * @description Propiedades para el componente RecipientsModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ */
 interface RecipientsModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
+/**
+ * @component RecipientsModal
+ * @description Un modal para gestionar la lista de correos electrónicos destinatarios
+ *              de los reportes automáticos. Permite añadir, editar y eliminar destinatarios.
+ * @param {RecipientsModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de gestión de destinatarios o `null` si está cerrado.
+ */
 export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProps) {
     const [recipients, setRecipients] = useState<Recipient[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [errors, setErrors] = useState<{ [key: number]: string }>({});
 
+    /**
+     * @effect
+     * @description Carga la lista de destinatarios desde la API cuando se abre el modal.
+     */
     useEffect(() => {
         if (isOpen) {
             const loadDestinatarios = async () => {
@@ -39,6 +56,10 @@ export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProp
         }
     }, [isOpen]);
 
+    /**
+     * @function handleAddRecipient
+     * @description Añade un nuevo campo de entrada para un destinatario.
+     */
     const handleAddRecipient = () => {
         if (recipients.length >= 10) {
             toast.warning("Máximo de 10 destinatarios alcanzado");
@@ -48,6 +69,10 @@ export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProp
         setRecipients([...recipients, { clave: `DESTINATARIO_${newIndex}`, valor: "" }]);
     };
 
+    /**
+     * @function handleRemoveRecipient
+     * @description Elimina un campo de destinatario de la lista.
+     */
     const handleRemoveRecipient = (index: number) => {
         setRecipients((prev) => prev.filter((_, i) => i !== index));
         setErrors((prev) => {
@@ -57,6 +82,10 @@ export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProp
         });
     };
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el valor de un campo de destinatario.
+     */
     const handleInputChange = (index: number, value: string) => {
         setRecipients((prev) =>
             prev.map((r, i) => (i === index ? { ...r, valor: value } : r))
@@ -72,6 +101,10 @@ export default function RecipientsModal({ isOpen, onClose }: RecipientsModalProp
         return regex.test(email);
     };
 
+    /**
+     * @function handleSave
+     * @description Valida todos los correos y guarda la lista actualizada de destinatarios.
+     */
     const handleSave = async () => {
         const newErrors: { [key: number]: string } = {};
         recipients.forEach((r, i) => {

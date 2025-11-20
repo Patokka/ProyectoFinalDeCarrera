@@ -6,6 +6,13 @@ import { RotateCcw, X } from "lucide-react";
 import { NumberInput } from "./NumberInput";
 import { fetchConfiguracion, actualizarConfiguracion } from "@/lib/configuracion/auth";
 
+/**
+ * @interface MinimoImponibleModalProps
+ * @description Propiedades para el componente MinimoImponibleModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} [onSuccess] - Callback opcional tras una actualización exitosa.
+ */
 interface MinimoImponibleModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -14,12 +21,21 @@ interface MinimoImponibleModalProps {
 
 const CLAVE_MONTO = "MINIMO_IMPONIBLE";
 
+/**
+ * @component MinimoImponibleModal
+ * @description Un modal para ver y actualizar el valor del mínimo no imponible para las retenciones.
+ * @param {MinimoImponibleModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal o `null` si está cerrado.
+ */
 const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onClose, onSuccess }) => {
     const [monto, setMonto] = useState<number | undefined>(undefined);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Cargar valor actual de la configuración al abrir el modal
+    /**
+     * @effect
+     * @description Carga el valor actual del mínimo imponible desde la API cuando se abre el modal.
+     */    
     useEffect(() => {
         if (isOpen) {
             fetchConfiguracion(CLAVE_MONTO)
@@ -33,6 +49,10 @@ const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onC
         }
     }, [isOpen]);
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea su estado.
+     */
     const handleClose = () => {
         setMonto(undefined);
         setErrors({});
@@ -40,6 +60,11 @@ const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onC
         onClose();
     };
 
+    /**
+     * @function validateForm
+     * @description Valida que el monto ingresado sea un número válido y positivo.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (monto === undefined || monto < 0) {
@@ -53,6 +78,10 @@ const MinimoImponibleModal: React.FC<MinimoImponibleModalProps> = ({ isOpen, onC
         return true;
     };
 
+    /**
+     * @function handleGuardar
+     * @description Valida el formulario y envía el nuevo valor del mínimo imponible a la API.
+     */
     const handleGuardar = async () => {
     if (!validateForm()) return;
 

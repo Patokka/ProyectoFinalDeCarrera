@@ -13,6 +13,10 @@ import { toast } from 'sonner';
 import { canEditOrDelete, formatCuit, formatCuitDisplay, getCondicionBadgeColor } from '@/lib/helpers';
 import { useAuth } from '@/components/context/AuthContext';
 
+/**
+ * @constant condicionFiscalOptions
+ * @description Opciones para el filtro de condición fiscal.
+ */
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
   { value: 'MONOTRIBUTISTA', label: 'MONOTRIBUTISTA' },
@@ -22,6 +26,12 @@ const condicionFiscalOptions = [
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page ArrendadoresPage
+ * @description Página principal para la gestión de arrendadores. Muestra una lista paginada
+ *              y filtrable de arrendadores, permitiendo crear, ver, editar y eliminar registros.
+ * @returns {JSX.Element} La página de gestión de arrendadores.
+ */
 export default function ArrendadoresPage() {
   const [arrendadores, setArrendadores] = useState<ArrendadorDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +43,10 @@ export default function ArrendadoresPage() {
   const { user } = useAuth();
   const canEditEliminate = canEditOrDelete(user?.rol);
 
-  // Fetch inicial
+  /**
+   * @effect
+   * @description Carga la lista inicial de arrendadores desde la API al montar el componente.
+   */  
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -49,60 +62,77 @@ export default function ArrendadoresPage() {
     loadData();
   }, []);
 
-  // Filtrar datos
-  const filteredData = useMemo(() => {
-    return arrendadores.filter(item => {
-      const matchesNombre = item.nombre_o_razon_social
-        .toLowerCase()
-        .includes(searchTermNombre.toLowerCase());
-      const matchesCuit = item.cuil
-        .toLowerCase()
-        .includes(searchTermCuit.toLowerCase().replace(/-/g,""));
-      const matchesCondicion = !condicionFilter || item.condicion_fiscal === condicionFilter;
 
-      return matchesNombre && matchesCuit && matchesCondicion;
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de arrendadores filtrada según los términos de búsqueda y filtros aplicados.
+   */
+    const filteredData = useMemo(() => {
+      return arrendadores.filter(item => {
+        const matchesNombre = item.nombre_o_razon_social
+          .toLowerCase()
+          .includes(searchTermNombre.toLowerCase());
+        const matchesCuit = item.cuil
+          .toLowerCase()
+          .includes(searchTermCuit.toLowerCase().replace(/-/g,""));
+        const matchesCondicion = !condicionFilter || item.condicion_fiscal === condicionFilter;
+
+        return matchesNombre && matchesCuit && matchesCondicion;
     });
   }, [arrendadores, searchTermNombre, searchTermCuit, condicionFilter]);
 
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos a mostrar en la página actual de la tabla.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
 
+  /**
+   * @effect
+   * @description Reinicia la paginación a la primera página cada vez que cambian los filtros.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit, condicionFilter]);
 
-const handleDelete = (id: number) => {
-  // Confirmación
-  const confirmToastId = toast.info(
-    "¿Está seguro que desea eliminar este arrendador?",
-    {
-      action: {
-        label: "Confirmar",
-        onClick: () => {
-          toast.dismiss(confirmToastId);
-          
-          //Delete
-          toast.promise(
-            deleteArrendador(id).then(() => {
-              setArrendadores(prev =>
-                prev.filter((item) => item.id !== id)
-              );
-            }),
-            {
-              loading: "Eliminando arrendador...",
-              success: "Arrendador eliminado con éxito",
-              error: (err) => err.message || "Error al eliminar el arrendador",
-            }
-          );
+  /**
+   * @function handleDelete
+   * @description Muestra una confirmación y, si es aceptada, elimina un arrendador.
+   * @param {number} id - El ID del arrendador a eliminar.
+   */
+  const handleDelete = (id: number) => {
+    // Confirmación
+    const confirmToastId = toast.info(
+      "¿Está seguro que desea eliminar este arrendador?",
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
+            
+            //Delete
+            toast.promise(
+              deleteArrendador(id).then(() => {
+                setArrendadores(prev =>
+                  prev.filter((item) => item.id !== id)
+                );
+              }),
+              {
+                loading: "Eliminando arrendador...",
+                success: "Arrendador eliminado con éxito",
+                error: (err) => err.message || "Error al eliminar el arrendador",
+              }
+            );
+          },
         },
-      },
-      duration: 5000, // 5 segundos
-    }
-  );
-};
+        duration: 5000, // 5 segundos
+      }
+    );
+  };
   return (
     <ProtectedRoute>
       <div className="bg-gray-50 p-6">

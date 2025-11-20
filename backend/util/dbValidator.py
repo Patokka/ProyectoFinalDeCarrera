@@ -3,6 +3,16 @@ from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.collections import InstrumentedList
 
 def verificar_relaciones_existentes(instance, exclude: list[str] = None):
+    """
+    Verifica si una instancia de un modelo tiene relaciones existentes que impidan su eliminación.
+    Args:
+        instance: La instancia del modelo SQLAlchemy a verificar.
+        exclude (list[str], optional): Lista de nombres de relaciones a excluir de la verificación.
+    Returns:
+        bool: True si no hay relaciones que impidan la eliminación.
+    Raises:
+        HTTPException: Si se encuentran relaciones existentes que impiden la eliminación (código 400).
+    """
     exclude = exclude or []
     mapper = class_mapper(type(instance))
 

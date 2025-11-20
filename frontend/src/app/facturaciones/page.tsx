@@ -17,6 +17,12 @@ import EditFacturacionModal from '@/components/ui/EditFacturacionModal';
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page FacturacionesPage
+ * @description Página principal para la gestión de facturaciones. Muestra una lista paginada
+ *              y filtrable de todas las facturaciones registradas.
+ * @returns {JSX.Element} La página de gestión de facturaciones.
+ */
 export default function FacturacionesPage() {
   const [facturaciones, setFacturaciones] = useState<FacturacionDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,7 +37,10 @@ export default function FacturacionesPage() {
   const [isEditFacturacionModalOpen, setIsEditFacturacionModalOpen] = useState(false);
   const [selectedFacturacion, setSelectedFacturacion] = useState<FacturacionDtoOut | null>(null);
   
-  // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de facturaciones filtrada por arrendador y rango de fechas.
+   */
   const filteredData = useMemo(() => {
     return facturaciones.filter(item => {
       const matchesArrendador = item.arrendador.nombre_o_razon_social
@@ -46,16 +55,28 @@ export default function FacturacionesPage() {
     });
   }, [facturaciones, searchTermArrendador, fechaDesde, fechaHasta]);
 
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos a mostrar en la página actual.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
 
+  /**
+   * @effect
+   * @description Carga inicial de las facturaciones al montar el componente.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermArrendador, fechaDesde, fechaHasta]);
 
+  /**
+   * @function loadFacturaciones
+   * @description Carga o recarga la lista de facturaciones desde la API.
+   */
   const loadFacturaciones = async () =>{
     try{
       setLoading(true);
@@ -69,6 +90,10 @@ export default function FacturacionesPage() {
     }
   };
 
+  /**
+   * @effect
+   * @description Resetea la paginación a la primera página cuando cambian los filtros.
+   */
   useEffect(()=> {
     loadFacturaciones();
   },[]);

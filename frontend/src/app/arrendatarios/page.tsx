@@ -13,6 +13,10 @@ import { deleteArrendatario, fetchArrendatarios } from '@/lib/arrendatarios/auth
 import { canEditOrDelete, formatCuit, formatCuitDisplay, getCondicionBadgeColor } from '@/lib/helpers';
 import { useAuth } from '@/components/context/AuthContext';
 
+/**
+ * @constant condicionFiscalOptions
+ * @description Opciones para el filtro de condición fiscal.
+ */
 const condicionFiscalOptions = [
   { value: '', label: 'Todas las condiciones' },
   { value: 'MONOTRIBUTISTA', label: 'MONOTRIBUTISTA' },
@@ -22,6 +26,12 @@ const condicionFiscalOptions = [
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page ArrendatariosPage
+ * @description Página principal para la gestión de arrendatarios. Muestra una lista paginada
+ *              y filtrable, permitiendo crear, ver, editar y eliminar registros.
+ * @returns {JSX.Element} La página de gestión de arrendatarios.
+ */
 export default function ArrendatariosPage() {
   const [arrendatarios, setArrendatarios] = useState<ArrendatarioDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +43,10 @@ export default function ArrendatariosPage() {
   const [condicionFilter, setCondicionFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch inicial
+  /**
+   * @effect
+   * @description Carga la lista inicial de arrendatarios desde la API.
+   */
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -49,7 +62,10 @@ export default function ArrendatariosPage() {
     loadData();
   }, []);
 
-  // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de arrendatarios filtrada por los criterios de búsqueda.
+   */
   const filteredData = useMemo(() => {
     return arrendatarios.filter(item => {
       const matchesNombre = item.razon_social
@@ -64,45 +80,58 @@ export default function ArrendatariosPage() {
     });
   }, [arrendatarios, searchTermNombre, searchTermCuit, condicionFilter]);
 
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos a mostrar en la página actual.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
 
+  /**
+   * @effect
+   * @description Resetea la paginación cuando cambian los filtros.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermNombre, searchTermCuit, condicionFilter]);
 
-const handleDelete = (id: number) => {
-  // Confirmación
-  const confirmToastId = toast.info(
-    "¿Está seguro que desea eliminar este arrendatario?",
-    {
-      action: {
-        label: "Confirmar",
-        onClick: () => {
-          toast.dismiss(confirmToastId);
-          
-          //Delete
-          toast.promise(
-            deleteArrendatario(id).then(() => {
-              setArrendatarios(prev =>
-                prev.filter((item) => item.id !== id)
-              );
-            }),
-            {
-              loading: "Eliminando arrendatario...",
-              success: "Arrendador eliminado con éxito",
-              error: (err) => err.message || "Error al eliminar el arrendatario",
-            }
-          );
+  /**
+   * @function handleDelete
+   * @description Muestra una confirmación y elimina un arrendatario.
+   * @param {number} id - El ID del arrendatario a eliminar.
+   */
+  const handleDelete = (id: number) => {
+    // Confirmación
+    const confirmToastId = toast.info(
+      "¿Está seguro que desea eliminar este arrendatario?",
+      {
+        action: {
+          label: "Confirmar",
+          onClick: () => {
+            toast.dismiss(confirmToastId);
+            
+            //Delete
+            toast.promise(
+              deleteArrendatario(id).then(() => {
+                setArrendatarios(prev =>
+                  prev.filter((item) => item.id !== id)
+                );
+              }),
+              {
+                loading: "Eliminando arrendatario...",
+                success: "Arrendador eliminado con éxito",
+                error: (err) => err.message || "Error al eliminar el arrendatario",
+              }
+            );
+          },
         },
-      },
-      duration: 5000, // 5 segundos
-    }
-  );
-};
+        duration: 5000, // 5 segundos
+      }
+    );
+  };
   return (
     <ProtectedRoute>
       <div className="bg-gray-50 p-6">

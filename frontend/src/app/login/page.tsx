@@ -6,6 +6,12 @@ import { Eye, EyeOff, LogIn } from 'lucide-react'
 import { useAuth } from '@/components/context/AuthContext'
 import { formatCuitDisplay } from '@/lib/helpers'
 
+/**
+ * @page LoginPage
+ * @description Página de inicio de sesión de la aplicación.
+ *              Permite a los usuarios autenticarse con su CUIL y contraseña.
+ * @returns {JSX.Element} El formulario de inicio de sesión.
+ */
 export default function LoginPage() {
   const { login } = useAuth()
   const [formData, setFormData] = useState({ cuil: '', contrasena: '' })
@@ -14,6 +20,11 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
+  /**
+   * @function handleSubmit
+   * @description Maneja el envío del formulario de inicio de sesión.
+   * @param {React.FormEvent} e - El evento del formulario.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -30,6 +41,10 @@ export default function LoginPage() {
     }
   }
 
+  /**
+   * @function handleInputChange
+   * @description Actualiza el estado del formulario cuando los campos de entrada cambian.
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))

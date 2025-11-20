@@ -17,6 +17,12 @@ import { useAuth } from "@/components/context/AuthContext"
 
 const ITEMS_PER_PAGE = 5
 
+/**
+ * @page ArrendatarioDetailPage
+ * @description Página que muestra los detalles de un arrendatario, incluyendo su información
+ *              y un historial paginado y filtrable de sus facturaciones.
+ * @returns {JSX.Element} La vista de detalle del arrendatario.
+ */
 export default function ArrendatarioDetailPage() {
     const params = useParams()
     const idArrendatario = params?.id
@@ -31,7 +37,11 @@ export default function ArrendatarioDetailPage() {
     const { user } = useAuth();
     const canEditEliminate = canEditOrDelete(user?.rol);
     
-    // Cargar arrendatario + facturaciones del mes actual
+    /**
+     * @effect
+     * @description Carga los datos del arrendatario y su historial de facturaciones
+     *              al montar el componente.
+     */    
     useEffect(() => {
         const load = async () => {
         if (!idArrendatario) {
@@ -55,7 +65,10 @@ export default function ArrendatarioDetailPage() {
         load()
     }, [idArrendatario])
 
-    // Filtrado de facturaciones del mes actual
+    /**
+     * @memo filteredFacturaciones
+     * @description Memoriza la lista de facturaciones filtrada por el rango de fechas.
+     */
     const filteredFacturaciones = useMemo(() => {
         return facturaciones.filter((facturacion) => {
         const fecha = new Date(facturacion.fecha_facturacion)
@@ -65,10 +78,18 @@ export default function ArrendatarioDetailPage() {
         })
     }, [facturaciones, fechaDesde, fechaHasta])
 
+    /**
+     * @effect
+     * @description Resetea la paginación cuando cambian los filtros.
+     */
     useEffect(() => {
         setCurrentPage(1)
     }, [fechaDesde, fechaHasta])
-    // Paginación
+
+    /**
+     * @memo paginatedFacturaciones
+     * @description Memoriza la porción de facturaciones a mostrar en la página actual.
+     */
     const totalPages = Math.ceil(filteredFacturaciones.length / ITEMS_PER_PAGE)
     const paginatedFacturaciones = useMemo(() => {
         const start = (currentPage - 1) * ITEMS_PER_PAGE
@@ -106,6 +127,10 @@ export default function ArrendatarioDetailPage() {
         )
     }
 
+    /**
+     * @function handleDeleteArrendatario
+     * @description Muestra una confirmación y elimina el arrendatario actual.
+     */
     function handleDeleteArrendatario() {
         const toastId = toast.info(`¿Está seguro que desea eliminar el arrendatario?`, {
         action: {

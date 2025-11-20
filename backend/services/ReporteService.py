@@ -38,15 +38,34 @@ from model.Retencion import Retencion
 load_dotenv()
 
 def formato_fecha(fecha):
+    """
+    Formatea un objeto de fecha a un string 'dd/mm/YYYY'.
+    Args:
+        fecha (date): La fecha a formatear.
+    Returns:
+        str: La fecha formateada o "-" si la fecha es nula.
+    """
     return fecha.strftime("%d/%m/%Y") if fecha else "-"
 
 
 def formato_moneda(valor):
+    """
+    Formatea un valor numérico a un string de moneda en formato argentino.
+    Args:
+        valor (float | Decimal | None): El valor a formatear.
+    Returns:
+        str: El valor formateado como moneda o "-" si es nulo.
+    """
     if valor is None:
         return "-"
     return f"${valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 class ReporteService:  
+    """
+    Clase de servicio que encapsula la lógica para la generación de reportes en PDF y Excel,
+    así como el envío de reportes por correo electrónico.
+    """
+    
     SMTP_USER = os.getenv("SMTP_USER")
     SMTP_SERVER = os.getenv("SMTP_SERVER")
     SMTP_PORT = os.getenv("SMTP_PORT")
@@ -54,6 +73,9 @@ class ReporteService:
 
     @staticmethod
     def enviar_reporte_pagos_mes_anterior(db):
+        """
+        Job para generar y enviar por correo el reporte de pagos del mes anterior.
+        """
         hoy = date.today()
         #Calcular mes anterior
         if hoy.month == 1:
@@ -105,6 +127,9 @@ class ReporteService:
 
     @staticmethod
     def enviar_reportes_pagos(db):
+        """
+        Job para generar y enviar por correo el reporte de pagos PENDIENTES del mes actual.
+        """
         hoy = date.today()
         #Obtener destinatarios desde configuración (DESTINATARIO_*)
         destinatarios = [
@@ -152,9 +177,15 @@ class ReporteService:
     @staticmethod
     def generar_reporte_mensual_pdf(db, anio: int, mes: int, logo_path: str = None):
         """
-        Genera un reporte mensual, agrupado por arrendatario.
-        Incluye columna totales por arrendatario,
-        título centrado, logo y márgenes visibles.
+        Genera un reporte PDF de los pagos REALIZADOS en un mes y año específicos,
+        agrupado por arrendatario.
+        Args:
+            db (Session): La sesión de la base de datos.
+            anio (int): El año del reporte.
+            mes (int): El mes del reporte.
+            logo_path (str, optional): Ruta al archivo de logo. Defaults to None.
+        Returns:
+            io.BytesIO: Un buffer en memoria con el contenido del PDF.
         """
         hoy = date.today()
         if hoy.month == 1:
@@ -295,13 +326,14 @@ class ReporteService:
     @staticmethod
     def generar_reporte_facturacion_anual(db, anio_inicio: int, mes_inicio: int):
         """
-        Genera un Excel con hojas por arrendatario.
-        Cada hoja contiene:
-        - Título arriba con el arrendatario
-        - Filas = arrendadores
-        - Columnas = meses del período fiscal (12 meses) + columna Total
-        - Celdas = total facturado (según Facturacion.fecha_facturacion)
-        - Fila extra = Totales por mes
+        Genera un reporte en Excel de la facturación de un período fiscal de 12 meses, agrupado
+        por arrendatario en cada una de las hojas.
+        Args:
+            db (Session): La sesión de la base de datos.
+            anio_inicio (int): El año de inicio del período fiscal.
+            mes_inicio (int): El mes de inicio del período fiscal.
+        Returns:
+            io.BytesIO: Un buffer en memoria con el contenido del Excel.
         """
         wb = Workbook()
         wb.remove(wb.active)
@@ -416,8 +448,14 @@ class ReporteService:
     @staticmethod
     def generar_reporte_pagos_pendientes_pdf(db, anio: int, mes: int, logo_path: str = None):
         """
-        Genera un reporte en PDF con los pagos pendientes de un mes (actual o futuro),
-        agrupados por arrendatario, con totales al pie.
+        Genera un reporte PDF de los pagos PENDIENTES o VENCIDOS para un mes y año.
+        Args:
+            db (Session): La sesión de la base de datos.
+            anio (int): El año del reporte.
+            mes (int): El mes del reporte.
+            logo_path (str, optional): Ruta al archivo de logo. Defaults to None.
+        Returns:
+            io.BytesIO: Un buffer en memoria con el contenido del PDF.
         """
         hoy = date.today()
         # Validación: mes pasado no permitido
@@ -591,8 +629,16 @@ class ReporteService:
     @staticmethod
     def generar_reporte_por_arrendador_pdf(db, arrendador_id: int, fecha_inicio: date, fecha_fin: date, logo_path: str = None):
         """
-        Genera un reporte en PDF con los pagos de un arrendador
-        específico en un rango de fechas.
+        Genera un reporte PDF con el historial de pagos para un arrendador específico
+        en un rango de fechas.
+        Args:
+            db (Session): La sesión de la base de datos.
+            arrendador_id (int): El ID del arrendador.
+            fecha_inicio (date): La fecha de inicio del reporte.
+            fecha_fin (date): La fecha de fin del reporte.
+            logo_path (str, optional): Ruta al archivo de logo. Defaults to None.
+        Returns:
+            io.BytesIO: Un buffer en memoria con el contenido del PDF.
         """
         arrendador = db.query(Arrendador).get(arrendador_id)
         if not arrendador:

@@ -5,6 +5,12 @@ import { DollarSign, ChevronDown, ChevronUp } from 'lucide-react'
 import { fetchPaymentSummary } from '@/lib/pagos/auth'
 import { PaymentSummaryResponse } from '@/lib/type'
 
+/**
+ * @component PaymentSummary
+ * @description Un componente de tarjeta que muestra un resumen de los pagos pendientes
+ *              para el mes actual, agrupados por arrendatario. Es expandible y colapsable.
+ * @returns {JSX.Element} El componente de resumen de pagos.
+ */
 export default function PaymentSummary() {
   const [payments, setPayments] = useState<PaymentSummaryResponse[]>([])
   const [loading, setLoading] = useState(true)
@@ -14,6 +20,10 @@ export default function PaymentSummary() {
   const month = String(nextMonthDate.getMonth() + 1).padStart(2, '0');
   const year = nextMonthDate.getFullYear();
 
+  /**
+   * @effect
+   * @description Carga el resumen de pagos desde la API al montar el componente.
+   */
   useEffect(() => {
     async function loadPayments() {
       try {

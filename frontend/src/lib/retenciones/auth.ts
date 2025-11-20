@@ -1,5 +1,10 @@
 import { RetencionDtoOut } from "../type";
 
+/**
+ * @function fetchRetenciones
+ * @description Obtiene un arreglo de retenciones.
+ * @returns {Promise<RetencionDtoOut[]>} Una promesa que se resuelve con un arreglo de retenciones.
+ */
 export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,6 +35,11 @@ export async function fetchRetenciones(): Promise<RetencionDtoOut[]> {
     return res.json();
 }
 
+/**
+ * @function fetchRetencionByFacturacionId
+ * @description Obtiene una retención por su ID de facturación.
+ * @returns {Promise<RetencionDtoOut>} Una promesa que se resuelve con una retención.
+ */
 export async function fetchRetencionByFacturacionId(facturacion_id: number): Promise<RetencionDtoOut | null> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -60,6 +70,11 @@ export async function fetchRetencionByFacturacionId(facturacion_id: number): Pro
     return res.json();
 }
 
+/**
+ * @function putRetencion
+ * @description Actualiza una retención con los datos proporcionados.
+ * @returns {Promise<RetencionDtoOut>} Una promesa que se resuelve con una retención.
+ */
 export async function putRetencion(retencion_id: number, fecha: string, total_retencion: number | undefined): Promise<RetencionDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {

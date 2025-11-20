@@ -16,6 +16,12 @@ import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 6;
 
+/**
+ * @page PreciosPage
+ * @description Página para visualizar y gestionar los precios de la soja de BCR y AGD.
+ *              Muestra los precios en tablas separadas y paginadas.
+ * @returns {JSX.Element} La página de gestión de precios.
+ */
 export default function PreciosPage() {
   const [preciosBCR, setPreciosBCR] = useState<PrecioDtoOut[]>([]);
   const [preciosAGD, setPreciosAGD] = useState<PrecioDtoOut[]>([]);
@@ -61,7 +67,10 @@ export default function PreciosPage() {
     return filteredAGDData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredAGDData, currentPageAGD]);
 
-  // Reset páginas cuando cambian los filtros
+  /**
+   * @effect
+   * @description Carga los precios de BCR y AGD al montar el componente.
+   */
   useEffect(() => {
     setCurrentPageBCR(1);
     setCurrentPageAGD(1);
@@ -94,6 +103,10 @@ export default function PreciosPage() {
       setIsEditModalOpen(true);
     };
 
+  /**
+   * @function handleDelete
+   * @description Muestra una confirmación y elimina un precio.
+   */
   const handleDelete = (precio: PrecioDtoOut) => {
     // Confirmación
     const confirmToastId = toast.info(
@@ -130,7 +143,10 @@ export default function PreciosPage() {
     );
   };
 
-  // Tabla de precios reutilizable
+  /**
+   * @component PreciosTable
+   * @description Componente reutilizable para mostrar una tabla de precios.
+   */
   const PreciosTable = ({data, title, currentPage, totalPages, onPageChange}: { data: PrecioDtoOut[]; title: string; currentPage: number; totalPages: number; onPageChange: (page: number) => void; }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">

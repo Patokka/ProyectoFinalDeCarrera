@@ -6,22 +6,36 @@ import { X, Download } from "lucide-react";
 import PasswordInput from "./PasswordInput"; // Asegúrate de importar correctamente tu componente
 import { cambiarContrasena } from "@/lib/usuarios/auth";
 
+/**
+ * @interface CambiarContrasenaModalProps
+ * @description Propiedades para el componente CambiarContrasenaModal.
+ * @property {boolean} isOpen - Indica si el modal está abierto.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} [onSuccess] - Callback opcional para después de un cambio exitoso.
+ */
 interface CambiarContrasenaModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
 }
 
-const CambiarContrasenaModal: React.FC<CambiarContrasenaModalProps> = ({
-    isOpen,
-    onClose,
-    onSuccess,
-}) => {
+/**
+ * @component CambiarContrasenaModal
+ * @description Un modal que proporciona un formulario para que el usuario
+ *              pueda cambiar su propia contraseña.
+ * @param {CambiarContrasenaModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal o `null` si no está abierto.
+ */
+const CambiarContrasenaModal: React.FC<CambiarContrasenaModalProps> = ({isOpen, onClose, onSuccess,}) => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea su estado.
+     */
     const handleClose = () => {
         setCurrentPassword("");
         setNewPassword("");
@@ -30,7 +44,11 @@ const CambiarContrasenaModal: React.FC<CambiarContrasenaModalProps> = ({
         onClose();
     };
 
-    // Validaciones front
+    /**
+     * @function validateForm
+     * @description Valida los campos de contraseña.
+     * @returns {boolean} `true` si la validación es exitosa.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
 
@@ -59,6 +77,10 @@ const CambiarContrasenaModal: React.FC<CambiarContrasenaModalProps> = ({
         return true;
     };
 
+    /**
+     * @function handleGuardar
+     * @description Valida y envía la solicitud para cambiar la contraseña.
+     */
     const handleGuardar = async () => {
         if (!validateForm()) return;
 

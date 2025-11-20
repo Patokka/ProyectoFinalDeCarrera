@@ -16,7 +16,10 @@ import AsignarPrecioModal from '@/components/ui/AsignarPrecioPagoModal';
 import { useAuth } from '@/components/context/AuthContext';
 import EditPagoModal from '@/components/ui/EditPagoModal';
 
-// Opciones para los filtros
+/**
+ * @constant estadoOptions
+ * @description Opciones para el filtro de estado de pago.
+ */
 const estadoOptions = [
   { value: '', label: 'Todos los estados' },
   { value: 'PENDIENTE', label: 'PENDIENTE' },
@@ -28,6 +31,12 @@ const estadoOptions = [
 const ITEMS_PER_PAGE = 7;
 
 
+/**
+ * @page PagosPage
+ * @description Página principal para la gestión de pagos. Muestra una lista paginada
+ *              y filtrable de todos los pagos, permitiendo crear, editar, y facturar.
+ * @returns {JSX.Element} La página de gestión de pagos.
+ */
 export default function PagosPage() {
   const [pagos, setPagos] = useState<PagoDtoOut[]>([]);
   const [estadoFilter, setEstadoFilter] = useState('');
@@ -44,6 +53,10 @@ export default function PagosPage() {
   const [isEditPagoModalOpen, setIsEditPagoModalOpen] = useState(false);
   const [selectedPago, setSelectedPago] = useState<PagoDtoOut | null>(null);
   
+  /**
+   * @function loadPagos
+   * @description Carga o recarga la lista de pagos desde la API.
+   */
   const loadPagos = async () => {
     try {
       setLoading(true);
@@ -57,7 +70,10 @@ export default function PagosPage() {
       }
     };
 
-    // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de pagos filtrada por estado y fecha.
+   */
   const filteredData = useMemo(() => {
     return pagos.filter(item => {
       const matchesEstado =
@@ -71,22 +87,36 @@ export default function PagosPage() {
     });
   }, [pagos, estadoFilter, fechaDesde, fechaHasta]);
 
-  // Paginación
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos para la página actual.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
 
-  // Reset página cuando cambian los filtros
+  /**
+   * @effect
+   * @description Resetea la página al cambiar filtros.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [estadoFilter, fechaDesde, fechaHasta]);
 
+  /**
+   * @effect
+   * @description Carga inicial de los pagos.
+   */
   useEffect(() => {
     loadPagos();
   }, []);
 
+  /**
+   * @function handleSelectPago
+   * @description Maneja la selección/deselección de un pago.
+   */
   const handleSelectPago = (pagoId: number) => {
     setSelectedPagos(prev =>
       prev.includes(pagoId)
@@ -95,6 +125,10 @@ export default function PagosPage() {
     );
   };
 
+  /**
+   * @function handleSelectAll
+   * @description Selecciona/deselecciona todos los pagos facturables en la página actual.
+   */
   const handleSelectAll = () => {
     const allCurrentPageIds = paginatedData.filter(pago => (pago.estado === "PENDIENTE" && pago.precio_promedio && !!pago.quintales) || pago.estado === "VENCIDO").map(pago => pago.id);
     const allSelected = allCurrentPageIds.every(id => selectedPagos.includes(id));
@@ -106,6 +140,10 @@ export default function PagosPage() {
     }
   };
 
+  /**
+   * @function handleFacturarSeleccionados
+   * @description Confirma y ejecuta la facturación de los pagos seleccionados.
+   */
   const handleFacturarSeleccionados = () => {
     const confirmToastId = toast.info(
       `¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`,

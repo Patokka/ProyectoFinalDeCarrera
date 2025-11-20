@@ -14,14 +14,20 @@ import { toast } from 'sonner';
 import { canEditOrDelete, getEstadoBadgeColor } from '@/lib/helpers';
 import { useAuth } from '@/components/context/AuthContext';
 
-
-// Opciones para los filtros
+  /**
+ * @constant tipoOptions
+ * @description Opciones para el filtro de tipo de arrendamiento.
+ */
 const tipoOptions = [
   { value: '', label: 'Todos los tipos' },
   { value: 'FIJO', label: 'FIJO' },
   { value: 'A_PORCENTAJE', label: 'APARCERIA (A PORCENTAJE)' }
 ];
 
+/**
+ * @constant estadoOptions
+ * @description Opciones para el filtro de estado de arrendamiento.
+ */
 const estadoOptions = [
   { value: '', label: 'Todos los estados' },
   { value: 'ACTIVO', label: 'ACTIVO' },
@@ -32,6 +38,12 @@ const estadoOptions = [
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page ArrendamientosPage
+ * @description Página principal para la gestión de arrendamientos. Muestra una lista paginada
+ *              y filtrable de arrendamientos, permitiendo crear, ver y eliminar registros.
+ * @returns {JSX.Element} La página de gestión de arrendamientos.
+ */
 export default function ArrendamientosPage() {
   const [arrendamientos, setArrendamientos] = useState<ArrendamientoDtoOut[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,8 +55,10 @@ export default function ArrendamientosPage() {
   const { user } = useAuth();
   const canEditEliminate = canEditOrDelete(user?.rol);
 
-
-  // Traer los arrendamientos del backend
+  /**
+   * @effect
+   * @description Carga la lista inicial de arrendamientos desde la API al montar el componente.
+   */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -61,7 +75,10 @@ export default function ArrendamientosPage() {
     fetchData();
   }, []);
 
-  // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de arrendamientos filtrada según los filtros aplicados.
+   */  
   const filteredData = useMemo(() => {
     return arrendamientos.filter(item => {
       const matchesSearch = item.arrendatario.razon_social
@@ -73,18 +90,29 @@ export default function ArrendamientosPage() {
     });
   }, [arrendamientos, searchTerm, tipoFilter, estadoFilter]);
 
-  // Paginación
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos a mostrar en la página actual de la tabla.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
 
-  // Reset página cuando cambian los filtros
+  /**
+   * @effect
+   * @description Reinicia la paginación a la primera página cada vez que cambian los filtros.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, tipoFilter, estadoFilter]);
 
+  /**
+   * @function handleDelete
+   * @description Muestra una confirmación y, si es aceptada, elimina un arrendamiento.
+   * @param {number} id - El ID del arrendamiento a eliminar.
+   */
   const handleDelete = (id: number) => {
       // Confirmación
       const confirmToastId = toast.info(

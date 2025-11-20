@@ -17,6 +17,14 @@ import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 5;
 
+/**
+ * @page ArrendadorDetailPage
+ * @description Página que muestra los detalles completos de un arrendador específico,
+ *              incluyendo su información personal y una tabla paginada y filtrable
+ *              de sus pagos pendientes. Permite la facturación de pagos y la
+ *              eliminación del arrendador.
+ * @returns {JSX.Element} La vista de detalle del arrendador.
+ */
 export default function ArrendadorDetailPage() {
     const params = useParams();
     const idArrendador = params?.id;
@@ -32,7 +40,11 @@ export default function ArrendadorDetailPage() {
     const { user } = useAuth();
     const canEditEliminate = canEditOrDelete(user?.rol);
     
-    // Cargar arrendador + pagos
+    /**
+     * @effect
+     * @description Carga los datos del arrendador y sus pagos asociados al montar el componente
+     *              o cuando el ID del arrendador cambia.
+     */
     useEffect(() => {
         const load = async () => {
         if (!idArrendador) {
@@ -56,7 +68,10 @@ export default function ArrendadorDetailPage() {
         load();
     }, [idArrendador]);
 
-    // Filtrado de pagos
+    /**
+     * @memo filteredPagos
+     * @description Memoriza la lista de pagos filtrada por el rango de fechas seleccionado.
+     */
     const filteredPagos = useMemo(() => {
         return pagos.filter(pago => {
             const venc = new Date(pago.vencimiento);
@@ -66,24 +81,37 @@ export default function ArrendadorDetailPage() {
         });
     }, [pagos, fechaDesde, fechaHasta]);
 
-    // Paginación
-    const totalPages = Math.ceil(filteredPagos.length / ITEMS_PER_PAGE);
+    /**
+     * @memo paginatedPagos
+     * @description Memoriza la porción de pagos filtrados que corresponde a la página actual.
+     */    const totalPages = Math.ceil(filteredPagos.length / ITEMS_PER_PAGE);
     const paginatedPagos = useMemo(() => {
         const start = (currentPage - 1) * ITEMS_PER_PAGE;
         return filteredPagos.slice(start, start + ITEMS_PER_PAGE);
     }, [filteredPagos, currentPage]);
 
-    // Reset página al cambiar filtros
-    useEffect(() => {
+    /**
+     * @effect
+     * @description Resetea la paginación a la primera página cuando cambian los filtros de fecha.
+     */    useEffect(() => {
         setCurrentPage(1);
     }, [fechaDesde, fechaHasta]);
 
+    /**
+     * @function handleSelectPago
+     * @description Gestiona la selección/deselección de un pago individual para facturación.
+     * @param {number} id - El ID del pago a seleccionar/deseleccionar.
+     */
     const handleSelectPago = (id: number) => {
         setSelectedPagos(prev =>
             prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
     };
 
+    /**
+     * @function handleSelectAll
+     * @description Selecciona o deselecciona todos los pagos facturables en la página actual.
+     */
     const handleSelectAll = () => {
         const validIds = paginatedPagos
             .filter(p => (p.estado === 'PENDIENTE' && p.precio_promedio != null) || p.estado === 'VENCIDO')
@@ -96,6 +124,10 @@ export default function ArrendadorDetailPage() {
         }
     };
 
+    /**
+     * @function handleFacturarSeleccionados
+     * @description Muestra una confirmación y, si es aceptada, envía a facturar los pagos seleccionados.
+     */
     const handleFacturarSeleccionados = () => {
         if (selectedPagos.length === 0) return;
         const toastId = toast.info(`¿Está seguro que desea facturar ${selectedPagos.length} pago(s)?`, {
@@ -156,6 +188,11 @@ export default function ArrendadorDetailPage() {
         );
     }
 
+    
+    /**
+     * @function handleDeleteArrendador
+     * @description Muestra una confirmación y, si es aceptada, elimina el arrendador actual.
+     */
     function handleDeleteArrendador(){
         const toastId = toast.info(`¿Está seguro que desea eliminar el arrendador?`, {
         action: {

@@ -8,6 +8,14 @@ import DateInput from "./DateInput";
 import { PagoDtoOut, PagoForm } from "@/lib/type";
 import { putPago } from "@/lib/pagos/auth";
 
+/**
+ * @interface EditPagoModalProps
+ * @description Propiedades para el componente EditPagoModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} [onSuccess] - Callback opcional tras una edición exitosa.
+ * @property {PagoDtoOut | null} pago - El objeto del pago a editar.
+ */
 interface EditPagoModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -15,6 +23,13 @@ interface EditPagoModalProps {
     pago: PagoDtoOut | null;
 }
 
+/**
+ * @component EditPagoModal
+ * @description Un modal con un formulario para editar los detalles de un pago existente.
+ *              Permite modificar la fecha, quintales, porcentaje, monto y precio promedio.
+ * @param {EditPagoModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de edición o `null` si está cerrado.
+ */
 const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSuccess, pago }) => {
     const [vencimiento, setVencimiento] = useState("");
     const [quintales, setQuintales] = useState<number | undefined>(undefined);
@@ -24,6 +39,10 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
     const [montoAPagar, setMontoAPagar] = useState<number | undefined>(undefined);
     const [precioPromedioQuintal, setPrecioPromedioQuintal] = useState<number | undefined>(undefined);
 
+    /**
+     * @effect
+     * @description Carga los datos del pago seleccionado en el estado del formulario cuando se abre el modal.
+     */
     useEffect(() => {
         if (pago) {
             setVencimiento(pago.vencimiento);
@@ -42,6 +61,10 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
         }
     }, [pago, isOpen]);
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea todos los estados.
+     */
     const handleClose = () => {
         setErrors({});
         setIsSubmitting(false);
@@ -53,6 +76,11 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
         onClose();
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario antes del envío.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!vencimiento) newErrors.vencimiento = "La fecha de vencimiento es obligatoria";
@@ -79,7 +107,10 @@ const EditPagoModal: React.FC<EditPagoModalProps> = ({ isOpen, onClose, onSucces
         return Object.keys(newErrors).length === 0;
     };
 
-
+    /**
+     * @function handleGuardar
+     * @description Valida y envía los datos actualizados del pago a la API.
+     */
     const handleGuardar = async () => {
         if (!validateForm() || !pago) return;
         if (pago.estado === "REALIZADO" || pago.estado === "CANCELADO") {

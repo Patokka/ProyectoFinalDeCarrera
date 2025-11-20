@@ -8,6 +8,18 @@ from model.Pago import Pago
 from util.database import Base
 
 class Facturacion(Base):
+    """
+    Modelo de base de datos que representa una Facturación.
+    Atributos:
+        id (int): Clave primaria.
+        fecha_facturacion (date): Fecha en la que se realizó la facturación.
+        tipo_factura (TipoFactura): Tipo de factura (A, B, C, etc.).
+        monto_facturacion (Decimal): Monto total de la factura.
+        arrendador_id (int): Clave foránea al arrendador.
+        pago_id (int): Clave foránea al pago asociado.
+        arrendador (Arrendador): Relación con el arrendador.
+        pago (Pago): Relación con el pago.
+    """
     __tablename__ = "facturacion"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

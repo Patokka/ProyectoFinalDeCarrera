@@ -17,6 +17,12 @@ import { useAuth } from '@/components/context/AuthContext';
 
 const ITEMS_PER_PAGE = 8;
 
+/**
+ * @page RetencionesPage
+ * @description Página principal para la gestión de retenciones. Muestra una lista paginada
+ *              y filtrable de todas las retenciones, y permite configurar el mínimo imponible.
+ * @returns {JSX.Element} La página de gestión de retenciones.
+ */
 export default function RetencionesPage() {
   const [retenciones, setRetenciones] = useState<RetencionDtoOut[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,7 +37,10 @@ export default function RetencionesPage() {
   const { user } = useAuth();
   const canEditEliminate = canEditOrDelete(user?.rol);
 
-  // Filtrar datos
+  /**
+   * @memo filteredData
+   * @description Memoriza la lista de retenciones filtrada por arrendador y fecha.
+   */
   const filteredData = useMemo(() => {
     return retenciones.filter(item => {
       const matchesArrendador = item.arrendador.nombre_o_razon_social
@@ -46,16 +55,28 @@ export default function RetencionesPage() {
     });
   }, [retenciones, searchTermArrendador, fechaDesde, fechaHasta]);
 
+  /**
+   * @memo paginatedData
+   * @description Memoriza la porción de datos para la página actual.
+   */
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredData, currentPage]);
-
+  
+  /**
+   * @effect
+   * @description Resetea la paginación cuando cambian los filtros.
+   */
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTermArrendador, fechaDesde, fechaHasta]);
 
+  /**
+   * @function loadRetenciones
+   * @description Carga o recarga la lista de retenciones desde la API.
+   */
   const loadRetenciones = async () =>{
     try{
       setLoading(true);
@@ -69,6 +90,10 @@ export default function RetencionesPage() {
     }
   }
 
+  /**
+   * @effect
+   * @description Carga inicial de las retenciones.
+   */
   useEffect(()=> {
     loadRetenciones();
   },[]);

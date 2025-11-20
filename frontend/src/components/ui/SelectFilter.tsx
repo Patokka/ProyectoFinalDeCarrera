@@ -4,6 +4,17 @@ import { ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { Option } from '@/lib/type';
 
+/**
+ * @interface SelectFilterProps
+ * @description Propiedades para el componente SelectFilter.
+ * @property {Option[]} options - Array de opciones a mostrar.
+ * @property {string | number} value - El valor actualmente seleccionado.
+ * @property {(value: string) => void} onChange - Callback que se ejecuta al seleccionar una opción.
+ * @property {string} [placeholder] - Texto a mostrar cuando no hay valor seleccionado.
+ * @property {string} [className] - Clases CSS adicionales.
+ * @property {string} label - La etiqueta del campo.
+ * @property {string} [error] - Mensaje de error a mostrar.
+ */
 interface SelectFilterProps {
   options: Option[];                      
   value: string | number;
@@ -14,6 +25,12 @@ interface SelectFilterProps {
   error?: string;
 }
 
+/**
+ * @component SelectFilter
+ * @description Un componente de selector desplegable personalizado y accesible.
+ * @param {SelectFilterProps} props - Las propiedades del componente.
+ * @returns {JSX.Element} El componente de selector.
+ */
 export default function SelectFilter({options, value, onChange, placeholder = "Seleccionar...", className = "", label, error,}: SelectFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -22,6 +39,10 @@ export default function SelectFilter({options, value, onChange, placeholder = "S
   const normalizedValue = value !== undefined && value !== null ? String(value) : "";
   const selectedOption = options.find(option => String(option.value) === normalizedValue);
 
+  /**
+   * @effect
+   * @description Cierra el menú desplegable si se hace clic fuera del componente.
+   */
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

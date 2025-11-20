@@ -2,6 +2,12 @@ import QuickActions from '@/components/ui/QuickActions'
 import ProtectedRoute from '@/components/layout/ProtectedRoute'
 
 
+/**
+ * @page HomePage
+ * @description La página principal del dashboard. Muestra un mensaje de bienvenida
+ *              y el componente de "Acciones Rápidas" para una navegación sencilla.
+ * @returns {JSX.Element} La página de inicio del dashboard.
+ */
 export default function HomePage() {
 
   return (

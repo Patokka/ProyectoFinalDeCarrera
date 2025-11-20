@@ -11,8 +11,25 @@ from enums.TipoDiasPromedio import TipoDiasPromedio
 from enums.TipoOrigenPrecio import TipoOrigenPrecio
 from model.Arrendamiento import Arrendamiento
 
-
 class Pago(Base):
+    """
+    Modelo de base de datos que representa un Pago.
+    Atributos:
+        id (int): Clave primaria.
+        estado (EstadoPago): Estado del pago (Pendiente, Pagado, etc.).
+        quintales (float): Cantidad de quintales a pagar.
+        precio_promedio (Decimal): Precio promedio calculado para el pago.
+        vencimiento (date): Fecha de vencimiento del pago.
+        fuente_precio (TipoOrigenPrecio): Fuente de donde se obtuvo el precio.
+        monto_a_pagar (Decimal): Monto monetario total a pagar.
+        arrendamiento_id (int): Clave foránea al arrendamiento.
+        participacion_arrendador_id (int): Clave foránea a la participación del arrendador.
+        porcentaje (float): Porcentaje de cosecha a entregar en caso de que aplique.
+        dias_promedio (TipoDiasPromedio): Tipo de días promedio utilizado.
+        arrendamiento (Arrendamiento): Relación con el arrendamiento.
+        participacion_arrendador (ParticipacionArrendador): Relación con la participación.
+        precios (list[Precio]): Lista de precios asociados al pago para calcuular el promedio.
+    """
     __tablename__ = "pago"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

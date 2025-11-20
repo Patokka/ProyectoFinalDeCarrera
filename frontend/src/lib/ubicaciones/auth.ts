@@ -1,5 +1,10 @@
 import { LocalidadDtoOut, ProvinciaDtoOut } from "../type";
 
+/**
+ * @function fetchProvincias
+ * @description Obtiene un arreglo de provincias.
+ * @returns {Promise<ProvinciaDtoOut[]>} Una promesa que se resuelve con un arreglo de provincias.
+ */
 export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,7 +35,11 @@ export async function fetchProvincias(): Promise<ProvinciaDtoOut[]> {
     return res.json();
 }
 
-
+/**
+ * @function fetchLocalidades
+ * @description Obtiene un arreglo de localidades en base a un ID de provincia.
+ * @returns {Promise<LocalidadDtoOut[]>} Una promesa que se resuelve con un arreglo de localidades.
+ */
 export async function fetchLocalidades(provincia_id: number): Promise<LocalidadDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {

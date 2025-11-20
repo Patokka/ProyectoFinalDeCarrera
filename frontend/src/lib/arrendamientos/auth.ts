@@ -1,5 +1,15 @@
 import { ArrendamientoDtoOut, ArrendamientoForm, ParticipacionArrendador, ParticipacionArrendadorDtoOut } from "../type";
 
+/**
+ * @file auth.ts
+ * @description Funciones para interactuar con la API de arrendamientos y participaciones.
+ */
+
+/**
+ * @function fetchArrendamientos
+ * @description Obtiene todos los arrendamientos.
+ * @returns {Promise<ArrendamientoDtoOut[]>} Lista de arrendamientos.
+ */
 export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -30,6 +40,12 @@ export async function fetchArrendamientos(): Promise<ArrendamientoDtoOut[]> {
   return res.json();
 }
 
+/**
+ * @function postArrendamiento
+ * @description Crea un nuevo arrendamiento.
+ * @param {ArrendamientoForm} formData - Datos del arrendamiento.
+ * @returns {Promise<ArrendamientoDtoOut>} El arrendamiento creado.
+ */
 export async function postArrendamiento(formData: ArrendamientoForm): Promise<ArrendamientoDtoOut> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -82,7 +98,11 @@ export async function postArrendamiento(formData: ArrendamientoForm): Promise<Ar
     return res.json();
 }
 
-//Guarda individualmente una participación
+/**
+ * @function postParticipacion
+ * @description Guarda una participación de arrendador.
+ * @param {ParticipacionArrendador} participacion - Datos de la participación.
+ */
 export async function postParticipacion(participacion: ParticipacionArrendador): Promise<void> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -108,6 +128,12 @@ export async function postParticipacion(participacion: ParticipacionArrendador):
   }
 }
 
+/**
+ * @function postParticipaciones
+ * @description Guarda múltiples participaciones para un arrendamiento.
+ * @param {ParticipacionArrendador[]} participaciones - Array de participaciones.
+ * @param {number} arrendamientoId - ID del arrendamiento.
+ */
 export async function postParticipaciones(participaciones: ParticipacionArrendador[],arrendamientoId: number): Promise<void> {
   for (const p of participaciones) {
     const participacionConId = { ...p, arrendamiento_id: arrendamientoId };
@@ -115,6 +141,12 @@ export async function postParticipaciones(participaciones: ParticipacionArrendad
   }
 }
 
+/**
+ * @function fetchArrendamientoById
+ * @description Obtiene un arrendamiento por su ID.
+ * @param {number} arrendamiento_id - ID del arrendamiento.
+ * @returns {Promise<ArrendamientoDtoOut>} El arrendamiento.
+ */
 export async function fetchArrendamientoById(arrendamiento_id: number): Promise<ArrendamientoDtoOut> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -145,6 +177,12 @@ export async function fetchArrendamientoById(arrendamiento_id: number): Promise<
   return res.json();
 }
 
+/**
+ * @function fetchParticipacionesByArrendamiento
+ * @description Obtiene las participaciones de un arrendamiento.
+ * @param {number} arrendamiento_id - ID del arrendamiento.
+ * @returns {Promise<ParticipacionArrendadorDtoOut[]>} Lista de participaciones.
+ */
 export async function fetchParticipacionesByArrendamiento(arrendamiento_id: number): Promise<ParticipacionArrendadorDtoOut[]> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -175,6 +213,12 @@ export async function fetchParticipacionesByArrendamiento(arrendamiento_id: numb
   return res.json();
 }
 
+/**
+ * @function cancelarArrendamiento
+ * @description Cancela un arrendamiento.
+ * @param {number} arrendamiento_id - ID del arrendamiento.
+ * @returns {Promise<boolean>} `true` si fue exitoso.
+ */
 export async function cancelarArrendamiento(arrendamiento_id: number) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -204,7 +248,11 @@ export async function cancelarArrendamiento(arrendamiento_id: number) {
     return true;
 }
 
-
+/**
+ * @function fetchArrendamientosActivos
+ * @description Obtiene solo los arrendamientos activos.
+ * @returns {Promise<ArrendamientoDtoOut[]>} Lista de arrendamientos activos.
+ */
 export async function fetchArrendamientosActivos(): Promise<ArrendamientoDtoOut[]> {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -235,6 +283,12 @@ export async function fetchArrendamientosActivos(): Promise<ArrendamientoDtoOut[
   return res.json();
 }
 
+/**
+ * @function deleteArrendamiento
+ * @description Elimina un arrendamiento.
+ * @param {number} arrendamiento_id - ID del arrendamiento.
+ * @returns {Promise<boolean>} `true` si fue exitoso.
+ */
 export async function deleteArrendamiento(arrendamiento_id: number) {
     const token = localStorage.getItem("token");
     if (!token) {

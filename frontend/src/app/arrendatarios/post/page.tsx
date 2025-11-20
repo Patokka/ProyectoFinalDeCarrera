@@ -8,12 +8,15 @@ import SelectFilter from '@/components/ui/SelectFilter';
 import { toast } from 'sonner';
 import { ArrendatarioForm, Option, TipoCondicion } from '@/lib/type';
 import { fetchLocalidades, fetchProvincias } from '@/lib/ubicaciones/auth';
-import { postArrendador } from '@/lib/arrendadores/auth';
 import Input from '@/components/ui/Input';
 import { formatCuitDisplay, validarCuilCuit } from '@/lib/helpers';
 import { postArrendatario } from '@/lib/arrendatarios/auth';
 import { Download } from 'lucide-react';
 
+/**
+ * @constant condicionFiscalOptions
+ * @description Opciones para el selector de condición fiscal.
+ */
 const condicionFiscalOptions = [
     { value: 'MONOTRIBUTISTA', label: 'MONOTRIBUTISTA' },
     { value: 'RESPONSABLE_INSCRIPTO', label: 'RESPONSABLE INSCRIPTO' },
@@ -28,6 +31,11 @@ const initialFormData: ArrendatarioForm = {
     localidad_id: 0,
 };
 
+/**
+ * @page CrearArrendatarioPage
+ * @description Página con el formulario para crear un nuevo arrendatario.
+ * @returns {JSX.Element} El formulario de creación de arrendatario.
+ */
 export default function CrearArrendatarioPage() {
     const router = useRouter();
     const [formData, setFormData] = useState<ArrendatarioForm>(initialFormData);
@@ -36,6 +44,10 @@ export default function CrearArrendatarioPage() {
     const [provinciaActual, setProvinciaActual] = useState<Option>();
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+    /**
+     * @function handleInputChange
+     * @description Actualiza el estado del formulario cuando cambia un campo.
+     */
     const handleInputChange = (field: string, value: any) => {
         setFormData(prev => ({
         ...prev,
@@ -47,6 +59,11 @@ export default function CrearArrendatarioPage() {
         }
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario antes de enviarlo.
+     * @returns {boolean} True si el formulario es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!formData.razon_social.trim()) newErrors.nombre = 'Campo obligatorio';
@@ -62,6 +79,10 @@ export default function CrearArrendatarioPage() {
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function guardarArrendatario
+     * @description Valida y guarda el nuevo arrendatario.
+     */
     const guardarArrendatario = async () => {
         if (!validateForm()) {
             toast.error('Por favor, completa todos los campos obligatorios');
@@ -88,6 +109,10 @@ export default function CrearArrendatarioPage() {
         }
     };
 
+    /**
+     * @effect
+     * @description Carga la lista de provincias al montar el componente.
+     */
     useEffect(() => {
         const dataProvincias = async () => {
         try {
@@ -105,6 +130,10 @@ export default function CrearArrendatarioPage() {
         dataProvincias();
     }, []);
 
+    /**
+     * @effect
+     * @description Carga las localidades cuando cambia la provincia seleccionada.
+     */
     useEffect(() => {
         const cargarLocalidades = async () => {
         if (!provinciaActual?.value) {

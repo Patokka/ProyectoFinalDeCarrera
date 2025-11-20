@@ -9,12 +9,25 @@ import SelectFilter from '../ui/SelectFilter';
 import { PrecioForm, TipoOrigenPrecio } from '@/lib/type';
 import { postPrecio } from '@/lib/precios/auth';
 
+/**
+ * @interface PrecioModalProps
+ * @description Propiedades para el componente PrecioModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} onSuccess - Callback a ejecutar tras guardar un precio.
+ */
 interface PrecioModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
 }
 
+/**
+ * @component PrecioModal
+ * @description Un modal para cargar manualmente un nuevo registro de precio.
+ * @param {PrecioModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal o `null` si está cerrado.
+ */
 const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
     const [fecha, setFecha] = useState("");
     const [precio, setPrecio] = useState<number | undefined>(undefined);
@@ -27,6 +40,11 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
         { value: "AGD", label: "Aceitera General Deheza (AGD)" },
     ];
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
 
@@ -46,6 +64,10 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
         return true;
     };
 
+    /**
+     * @function handleSubmit
+     * @description Valida y envía el nuevo precio a la API.
+     */
     const handleSubmit = async () => {
         if (!validateForm()) return;
 
@@ -72,6 +94,10 @@ const PrecioModal = ({ isOpen, onClose, onSuccess }: PrecioModalProps) => {
         }
     };
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea su estado.
+     */
     const handleClose = () => {
         // Resetear todos los campos
         setFecha("");

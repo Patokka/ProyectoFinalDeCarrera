@@ -4,6 +4,17 @@ from enums.TipoRol import TipoRol
 from util.database import Base
 
 class Usuario(Base):
+    """
+    Modelo de base de datos que representa un Usuario del sistema.
+    Atributos:
+        id (int): Clave primaria.
+        nombre (str): Nombre del usuario.
+        apellido (str): Apellido del usuario.
+        contrasena (str): Contraseña hasheada.
+        mail (str): Correo electrónico.
+        cuil (str): CUIL del usuario.
+        rol (TipoRol): Rol del usuario (Administrador, Consulta o Lectura.).
+    """
     __tablename__ = "usuario"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

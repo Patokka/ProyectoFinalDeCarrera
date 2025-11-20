@@ -182,6 +182,13 @@ const configurationCards: ConfigCard[] = [
   },
 ]
 
+/**
+ * @page ReportesPage
+ * @description Página central para la generación de reportes y la configuración de tareas programadas.
+ *              Permite a los usuarios generar diferentes tipos de informes en PDF o Excel y
+ *              ajustar la configuración de notificaciones y procesos automáticos.
+ * @returns {JSX.Element} La página de reportes y configuración.
+ */
 export default function ReportesPage() {
   const [isRecipientsModalOpen, setIsRecipientsModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<string | null>(null)
@@ -193,6 +200,12 @@ export default function ReportesPage() {
   const [isHistorialPagosArrendadorModalOpen, setIsHistorialPagosArrendadorModalOpen,] = useState(false);
   // Configuration form states
   const {isOpen, openModal, closeModal, selectedConfigCard, configTime, setConfigTime, configDay, setConfigDay, isSubmitting, setIsSubmitting, isDeactivated, setIsDeactivated } = useConfigModal();   
+
+  /**
+   * @function handleGenerateReport
+   * @description Valida los parámetros y solicita la generación de un reporte a la API.
+   *              Maneja la descarga del archivo resultante.
+   */
   const handleGenerateReport = async () => {
     if (!selectedReport) return;
     const reportConfig = reportConfigs[selectedReport];
@@ -258,6 +271,11 @@ export default function ReportesPage() {
     }
   };
 
+  /**
+   * @function handleReportClick
+   * @description Abre el modal correspondiente al tipo de reporte seleccionado.
+   * @param {string} reportId - El ID del reporte a generar.
+   */
   const handleReportClick = (reportId: string) => {
     if (reportId === "historial-pagos-arrendador") {
       setIsHistorialPagosArrendadorModalOpen(true);

@@ -1,5 +1,16 @@
 import { ArrendadorDtoOut, ArrendadorForm } from "../type";
+/**
+ * @file auth.ts
+ * @description Funciones para interactuar con la API de arrendadores.
+ *              Incluye operaciones CRUD (Crear, Leer, Actualizar, Eliminar).
+ *              Maneja la autenticación y redirección automática al login si la sesión expira.
+ */
 
+/**
+ * @function fetchArrendadores
+ * @description Obtiene una lista de todos los arrendadores.
+ * @returns {Promise<ArrendadorDtoOut[]>} Una promesa que se resuelve con la lista de arrendadores.
+ */
 export async function fetchArrendadores(): Promise<ArrendadorDtoOut[]> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,7 +41,12 @@ export async function fetchArrendadores(): Promise<ArrendadorDtoOut[]> {
     return res.json();
 }
 
-
+/**
+ * @function deleteArrendador
+ * @description Elimina un arrendador por su ID.
+ * @param {number} arrendador_id - El ID del arrendador a eliminar.
+ * @returns {Promise<boolean>} `true` si la eliminación fue exitosa.
+ */
 export async function deleteArrendador(arrendador_id: number) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -61,6 +77,12 @@ export async function deleteArrendador(arrendador_id: number) {
     return true;
 }
 
+/**
+ * @function fetchArrendadorById
+ * @description Obtiene un arrendador específico por su ID.
+ * @param {number} arrendador_id - El ID del arrendador.
+ * @returns {Promise<ArrendadorDtoOut>} El objeto del arrendador.
+ */
 export async function fetchArrendadorById(arrendador_id: number): Promise<ArrendadorDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -91,6 +113,12 @@ export async function fetchArrendadorById(arrendador_id: number): Promise<Arrend
     return res.json();
 }
 
+/**
+ * @function postArrendador
+ * @description Crea un nuevo arrendador.
+ * @param {ArrendadorForm} formData - Los datos del nuevo arrendador.
+ * @returns {Promise<ArrendadorDtoOut>} El arrendador creado.
+ */
 export async function postArrendador(formData: ArrendadorForm): Promise<ArrendadorDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -137,6 +165,13 @@ export async function postArrendador(formData: ArrendadorForm): Promise<Arrendad
     return res.json();
 }
 
+/**
+ * @function putArrendador
+ * @description Actualiza un arrendador existente.
+ * @param {ArrendadorForm} formData - Los datos a actualizar.
+ * @param {number} arrendador_id - El ID del arrendador a actualizar.
+ * @returns {Promise<ArrendadorDtoOut>} El arrendador actualizado.
+ */
 export async function putArrendador(formData: ArrendadorForm, arrendador_id: number): Promise<ArrendadorDtoOut> {
     const token = localStorage.getItem("token");
     if (!token) {

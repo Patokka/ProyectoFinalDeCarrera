@@ -8,6 +8,14 @@ import { RetencionDtoOut } from "@/lib/type";
 import { putRetencion } from "@/lib/retenciones/auth";
 import { NumberInput } from "./NumberInput";
 
+/**
+ * @interface EditRetencionModalProps
+ * @description Propiedades para el componente EditRetencionModal.
+ * @property {boolean} isOpen - Controla la visibilidad del modal.
+ * @property {() => void} onClose - Función para cerrar el modal.
+ * @property {() => void} [onSuccess] - Callback opcional tras una edición exitosa.
+ * @property {RetencionDtoOut | null} retencion - El objeto de la retención a editar.
+ */
 interface EditRetencionModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -15,12 +23,22 @@ interface EditRetencionModalProps {
     retencion: RetencionDtoOut | null;
 }
 
+/**
+ * @component EditRetencionModal
+ * @description Un modal con un formulario para editar la fecha y el total de una retención existente.
+ * @param {EditRetencionModalProps} props - Las propiedades del componente.
+ * @returns {JSX.Element | null} El modal de edición o `null` si está cerrado.
+ */
 const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose, onSuccess, retencion }) => {
     const [fecha, setFecha] = useState("");
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [totalRetencion, setTotalRetencion] = useState<number | undefined>(undefined);
-    
+
+    /**
+     * @effect
+     * @description Carga los datos de la retención en el formulario cuando el modal se abre.
+     */
     useEffect(() => {
         if (retencion) {
             setFecha(retencion.fecha_retencion);
@@ -28,12 +46,21 @@ const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose
         }
     }, [retencion]);
 
+    /**
+     * @function handleClose
+     * @description Cierra el modal y resetea su estado.
+     */
     const handleClose = () => {
         setErrors({});
         setIsSubmitting(false);
         onClose();
     };
 
+    /**
+     * @function validateForm
+     * @description Valida los campos del formulario.
+     * @returns {boolean} `true` si es válido.
+     */
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
         if (!fecha) newErrors.fecha = "La fecha de retención es obligatoria";
@@ -44,6 +71,10 @@ const EditRetencionModal: React.FC<EditRetencionModalProps> = ({ isOpen, onClose
         return Object.keys(newErrors).length === 0;
     };
 
+    /**
+     * @function handleGuardar
+     * @description Valida y guarda los cambios de la retención.
+     */
     const handleGuardar = async () => {
         if (!validateForm() || !retencion) return;
 

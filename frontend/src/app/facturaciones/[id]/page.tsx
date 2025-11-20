@@ -11,6 +11,12 @@ import Link from "next/link"
 import { fetchFacturacionById } from "@/lib/facturaciones/auth"
 import { fetchRetencionByFacturacionId } from "@/lib/retenciones/auth"
 
+/**
+ * @page FacturacionDetailPage
+ * @description Página que muestra los detalles de una facturación específica, incluyendo
+ *              los datos de la retención asociada si existe.
+ * @returns {JSX.Element} La vista de detalle de la facturación.
+ */
 export default function FacturacionDetailPage() {
     const params = useParams()
     const idFacturacion = params?.id
@@ -20,7 +26,10 @@ export default function FacturacionDetailPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    // Cargar Facturación, retención si tiene y Arrendador
+    /**
+     * @effect
+     * @description Carga los datos de la facturación y su retención asociada al montar el componente.
+     */
     useEffect(() => {
         const load = async () => {
         if (!idFacturacion) {
