@@ -1,18 +1,18 @@
 #CONFIGURACIÓN
-$ProyectoRuta = "C:\Users\Usuario\Desktop\ProyectoFinal"
-$BackupCarpeta = "C:\Users\Usuario\Desktop\ProyectoFinal\backup" # Muevo la carpeta de backup a la raíz
+$ProyectoRuta = "UbicaciónProyecto"
+$BackupCarpeta = "UbicaciónDestino" # Muevo la carpeta de backup a la raíz
 $DbContenedorNombre = "sistema-arrendamientos-db-1" # ver con docker ps
-$DbUsuario = "root"
-$DbPassword = "Snordesan2025" 
+$DbUsuario = "nombreBDD"
+$DbPassword = "claveBDD" 
 $DbNombre = "sistema_arrendamientos"
 
 #Configuración SMTP
 $SmtpServidor = "smtp.gmail.com"
 $SmtpPuerto = 587
-$SmtpUsuario = "patogaggiotti@gmail.com"
-$SmtpPassword = "ftlu hied tuwd yrtn"
-$EmailDestino = "patogaggiotti@gmail.com"
-$EmailOrigen = "patogaggiotti@gmail.com"
+$SmtpUsuario = "usuario@ejemplo.com"
+$SmtpPassword = "claveGoogle" //Clave de google para envío de mails
+$EmailDestino = "mailDestinoBackup"
+$EmailOrigen = "mailOrigenBackup"
 
 #CREAR NOMBRE DE ARCHIVOS
 $Fecha = Get-Date -Format "yyyy-MM-dd"
