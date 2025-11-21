@@ -5,7 +5,7 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: Snordesan2025
+      MYSQL_ROOT_PASSWORD: //Contrasena a la base de datos
       MYSQL_DATABASE: sistema_arrendamientos
     command:
       - --character-set-server=utf8mb4
@@ -33,7 +33,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: "mysql+pymysql://root:Snordesan2025@db:3306/sistema_arrendamientos?charset=utf8mb4"
+      DATABASE_URL: "mysql+pymysql://user:contrasena@db:3306/sistema_arrendamientos?charset=utf8mb4"
       TZ: "America/Argentina/Buenos_Aires"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/docs"] 
