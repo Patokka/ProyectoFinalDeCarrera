@@ -3,7 +3,7 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 
 #Configuración para proteger contraseñas
-SECRET_KEY = "ClaveHasheoPasswordNordesan2025"
+SECRET_KEY = "claveHasheoEjemplo"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 180
 
