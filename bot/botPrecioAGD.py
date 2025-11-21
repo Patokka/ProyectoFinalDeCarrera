@@ -57,11 +57,11 @@ class BotPrecioAGD:
     maneja la autenticación con el backend y es robusto frente a errores
     comunes como la pérdida de sesión o fallos de conexión.
     """
-    CONTACTO = "Nordesan"
+    CONTACTO = "Ejemplo" //contacto en donde se reciben los precios a través de whatsapp
     URL_LOGIN = os.environ.get("BACKEND_LOGIN_URL", "http://localhost:8080/login")
     URL_DESTINO = os.environ.get("BACKEND_PRECIOS_URL", "http://localhost:8080/precios/consultarAGD")
-    USERNAME_LOGIN = "27221028940"
-    PASSWORD_LOGIN = "clave123"
+    USERNAME_LOGIN = "nombreEjemplo" //Datos para iniciar sesión en el sistema
+    PASSWORD_LOGIN = "claveEjemplo"
     QR_CODE_SELECTOR = 'div[data-ref]'
     CHAT_LIST_SELECTOR = '#pane-side'
 
